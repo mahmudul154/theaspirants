@@ -82,7 +82,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       </section>
 
       {/* Stats */}
-      <section className="py-10 bg-white ">
+       {/*<section className="py-10 bg-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((s) => (
@@ -94,7 +94,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Categories */}
       <section className="py-14">
@@ -125,7 +125,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-extrabold text-gray-700">Popular Exam Sets</h2>
+              <h2 className="text-3xl font-extrabold text-gray-700">Live Exam</h2>
               <p className="text-gray-500 mt-1">Most attempted by aspirants this week</p>
             </div>
             <button onClick={() => setCurrentPage("exams")} className="text-green-600 font-semibold text-sm hover:text-green-700 flex items-center gap-1">
@@ -223,7 +223,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: "📚", title: "50,000+ Questions", desc: "Curated from previous BCS, Bank, NTRCA and other govt exams." },
+              { icon: "📚", title: "5000+ Questions", desc: "Curated from previous BCS, Bank, NTRCA and other govt exams." },
               { icon: "⏱️", title: "Timed Mock Tests", desc: "Simulate real exam conditions with countdown timer and auto-submit." },
               { icon: "📊", title: "Detailed Analytics", desc: "Track your progress with subject-wise performance breakdown." },
               { icon: "💡", title: "Smart Explanations", desc: "Every question comes with detailed explanation and reference." },
@@ -246,7 +246,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       <section className="py-16 bg-gradient-to-r from-green-600 to-emerald-700">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Ready to become a Government Officer?</h2>
-          <p className="text-green-100 mb-8 text-lg">Join 2.5 lakh+ aspirants who trust Aspirants for their exam preparation.</p>
+          <p className="text-green-100 mb-8 text-lg">Join 100+ aspirants who trust Aspirants for their exam preparation.</p>
           <button
             onClick={() => setCurrentPage("signup")}
             className="px-10 py-4 bg-yellow-400 text-green-900 font-extrabold rounded-2xl text-lg hover:bg-yellow-300 shadow-xl transition"
@@ -262,10 +262,10 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold">A</div>
-                <span className="text-white font-bold text-lg">Aspirants</span>
+                {/* <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold">A</div> */}
+                <span className="text-white font-bold text-lg"></span>
               </div>
-              <p className="text-sm text-gray-500">Bangladesh's most trusted government exam preparation platform.</p>
+              <p className="text-sm text-gray-500"></p>
             </div>
             {[
               { title: "Exams", links: ["BCS", "Bank Jobs", "NTRCA", "Primary", "Defense"] },
