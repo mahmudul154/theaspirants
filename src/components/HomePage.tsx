@@ -28,25 +28,26 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 flex flex-col md:flex-row items-center gap-10">
           <div className="flex-1 text-center md:text-left">
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-5 backdrop-blur">
-              Govt Exam Preparaion   Platform
+              Competitive Exam Preparaion Platform
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-5">
-              Crack BCS, Bank &<br />
-              <span className="text-yellow-300">All Govt Exams</span>
+            <h1 className="text-4xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+              Crack Any Government <br />
+              <span className="text-yellow-300">Competitive Exams .</span>
             </h1>
-            <p className="text-green-100 text-lg mb-8 max-w-xl">
-              Practice with real exam questions, track your progress, and compete with thousands of aspirants across Bangladesh.
+            <p className="text-green-100 text-lg mb-6 max-w-xl">
+              Practice with real exam questions, track your progress,
+              <br/><span>and compete with thousands of aspirants across Bangladesh.</span> 
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <button
                 onClick={() => setCurrentPage("exams")}
-                className="px-8 py-3.5 bg-yellow-400 text-green-900 font-bold rounded-xl hover:bg-yellow-300 shadow-lg transition text-base"
+                className="px-4 py-3.5 bg-yellow-400 text-green-900 font-bold rounded-xl hover:bg-yellow-300 shadow-lg transition text-base"
               >
                 🚀 Start Practicing Free
               </button>
               <button
                 onClick={() => setCurrentPage("about")}
-                className="px-8 py-3.5 bg-white/15 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/25 transition text-base backdrop-blur"
+                className="px-4 py-3.5 bg-white/15 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/25 transition text-base backdrop-blur"
               >
                 Learn More
               </button>
@@ -54,25 +55,25 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           </div>
           {/* Hero Visual */}
           <div className="flex-1 flex justify-center">
-            <div className="relative w-72 h-72">
+            <div className="relative w-92 h-92">
               <div className="absolute inset-0 bg-white/10 rounded-3xl border border-white/20 backdrop-blur flex flex-col justify-center items-center gap-4 p-6">
                 <div className="text-5xl">📝</div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-xl">BCS 46th</p>
-                  <p className="text-green-200 text-sm">Preliminary Mock Test</p>
+                  <p className="text-white font-bold text-xl">Live Exam</p>
+                  <p className="text-green-200 text-sm">HSC- Admission- BCS</p>
                 </div>
                 <div className="w-full bg-white/20 rounded-full h-2">
-                  <div className="bg-yellow-400 h-2 rounded-full" style={{ width: "72%" }}></div>
+                  <div className="bg-yellow-400 h-2 rounded-full" style={{ width: "100%" }}></div>
                 </div>
-                <p className="text-white text-sm font-semibold">72% Completed</p>
+                <p className="text-white text-sm font-semibold"></p>
                 <div className="grid grid-cols-2 gap-3 w-full mt-2">
                   <div className="bg-white/15 rounded-xl p-3 text-center">
-                    <p className="text-yellow-300 font-bold text-xl">200</p>
+                    <p className="text-yellow-300 font-bold text-xl">5000+</p>
                     <p className="text-green-200 text-xs">Questions</p>
                   </div>
                   <div className="bg-white/15 rounded-xl p-3 text-center">
-                    <p className="text-yellow-300 font-bold text-xl">120</p>
-                    <p className="text-green-200 text-xs">Minutes</p>
+                    <p className="text-yellow-300 font-bold text-xl">200+</p>
+                    <p className="text-green-200 text-xs">Users</p>
                   </div>
                 </div>
               </div>
@@ -168,7 +169,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
                     </div>
                     <button
                       onClick={() => handleStartExam(exam.id)}
-                      className="mt-auto  w-20 py-2.5 text-sm font-bold text- rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow"
+                      className="mt-auto w-20 justify-right py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-500 hover:to-emerald-700 transition shadow"
                     >
                       Start→
                     </button>
@@ -223,7 +224,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: "📚", title: "5000+ Questions", desc: "Curated from previous BCS, Bank, NTRCA and other govt exams." },
+              { icon: "📚", title: "5000+ Questions", desc: "Curated from previous HSC, BCS, Bank, NTRCA and other govt exams." },
               { icon: "⏱️", title: "Timed Mock Tests", desc: "Simulate real exam conditions with countdown timer and auto-submit." },
               { icon: "📊", title: "Detailed Analytics", desc: "Track your progress with subject-wise performance breakdown." },
               { icon: "💡", title: "Smart Explanations", desc: "Every question comes with detailed explanation and reference." },
@@ -245,8 +246,8 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       {/* CTA Banner */}
       <section className="py-16 bg-gradient-to-r from-green-600 to-emerald-700">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Ready to become a Government Officer?</h2>
-          <p className="text-green-100 mb-8 text-lg">Join 100+ aspirants who trust Aspirants for their exam preparation.</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Ready to test yourself throug unlimited questions??</h2>
+          <p className="text-green-100 mb-8 text-lg">Join 200+ aspirants who trust Aspirants for their exam preparation.</p>
           <button
             onClick={() => setCurrentPage("signup")}
             className="px-10 py-4 bg-yellow-400 text-green-900 font-extrabold rounded-2xl text-lg hover:bg-yellow-300 shadow-xl transition"
@@ -260,15 +261,21 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       <footer className="bg-gray-900 text-gray-400 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                {/* <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold">A</div> */}
-                <span className="text-white font-bold text-lg"></span>
-              </div>
-              <p className="text-sm text-gray-500"></p>
+            <button
+            onClick={() => setCurrentPage("home")}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+           {/* <img src="/logo.png" alt="" className="w-30 h-30 object-contain" /> */}
+            <div className="flex flex-col leading-tight">
+              <span className="text-xl font-extrabold text-white tracking-tight">
+                
+              </span>
+              <span className="text-[10px] text-green-600 font-semibold tracking-wider uppercase">
+              </span>
             </div>
+          </button>
             {[
-              { title: "Exams", links: ["BCS", "Bank Jobs", "NTRCA", "Primary", "Defense"] },
+              { title: "Exams", links: ["HSC","BCS", "Bank Jobs", "NTRCA", "Primary", "Defense"] },
               { title: "Resources", links: ["Question Bank", "Previous Papers", "Study Notes", "Live Tests"] },
               { title: "Company", links: ["About Us", "Blog", "Privacy Policy", "Contact"] },
             ].map((col) => (

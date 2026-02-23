@@ -66,8 +66,8 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 items-center justify-center shadow-lg mb-3">
-            <span className="text-white font-extrabold text-2xl">A</span>
+          <div className="inline-flex3">
+            <span className="text-white font-extrabold text-2xl"></span>
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900">
             {isLogin ? "Welcome back!" : "Join Aspirants"}

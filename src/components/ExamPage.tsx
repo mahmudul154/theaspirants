@@ -8,12 +8,14 @@ interface ExamPageProps {
 
 export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
   const exam = examSets.find((e) => e.id === examId) || examSets[0];
-  const questions = sampleQuestions;
+
+const questions = sampleQuestions.filter(q => q.category === exam.category)
 
   const [phase, setPhase] = useState<"intro" | "exam" | "result">("intro");
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [timeLeft, setTimeLeft] = useState(exam.duration * 60);
+const initialTime = exam.duration === 100 ? 30 * 60 : exam.duration * 60;
+const [timeLeft, setTimeLeft] = useState(initialTime);
   const [flagged, setFlagged] = useState<Set<number>>(new Set());
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -59,7 +61,7 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl max-w-lg w-full p-8 text-center">
           <div className="text-5xl mb-4">📝</div>
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-2">{exam.title}</h1>
+          <h1 className="text-xl font-extrabold text-gray-900 mb-2">{exam.title}</h1>
           <p className="text-gray-500 mb-6">Read the instructions before starting</p>
           
           <div className="grid grid-cols-2 gap-4 mb-6">
@@ -173,7 +175,7 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
 
           <div className="flex gap-3">
             <button
-              onClick={() => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setTimeLeft(exam.duration * 60); setFlagged(new Set()); }}
+              onClick={() => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setTimeLeft(exam.duration); setFlagged(new Set()); }}
               className="flex-1 py-3 rounded-xl border-2 border-green-500 text-green-700 font-bold hover:bg-green-50 transition"
             >
               🔁 Retry Exam
@@ -191,7 +193,7 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
   }
 
   const q = questions[currentQ];
-  const timerDanger = timeLeft < 60;
+  const timerDanger = timeLeft < 100;
   const timerWarning = timeLeft < 300 && timeLeft >= 60;
 
   return (
@@ -200,7 +202,7 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 z-30">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex-1 hidden sm:block">
-            <p className="text-xs text-gray-500 font-medium truncate">{exam.title}</p>
+            <p className="text-s text-gray-500 font-medium truncate">{exam.title}</p>
           </div>
           <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg ${timerDanger ? "bg-red-100 text-red-600 animate-pulse" : timerWarning ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}>
             ⏱️ {formatTime(timeLeft)}
@@ -265,14 +267,14 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
               })}
             </div>
 
-            {answers[currentQ] !== undefined && (
+           {/* {answers[currentQ] !== undefined && (
               <button
                 onClick={() => setShowExplanation(!showExplanation)}
                 className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
                 💡 {showExplanation ? "Hide" : "Show"} Explanation
               </button>
-            )}
+            )}*/}
 
             {showExplanation && (
               <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">

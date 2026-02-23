@@ -140,9 +140,9 @@ export function ExamsPage({ setCurrentPage, setSelectedExam }: ExamsPageProps) {
 
                     <button
                       onClick={() => handleStartExam(exam.id)}
-                      className="mt-auto w-full py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-600 hover:to-emerald-700 transition shadow"
+                      className="mt-auto w-20 justify-right py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:from-green-500 hover:to-emerald-700 transition shadow"
                     >
-                      Start Exam →
+                      Start→
                     </button>
                   </div>
                 </div>
