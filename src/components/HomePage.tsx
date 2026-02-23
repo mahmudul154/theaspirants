@@ -30,7 +30,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-5 backdrop-blur">
               Competitive Exam Preparaion Platform
             </div>
-            <h1 className="text-4xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+            <h1 className="text-4xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4">
               Crack Government <br />
               <span className="text-yellow-300">Competitive Exams .</span>
             </h1>
@@ -264,7 +264,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             onClick={() => setCurrentPage("home")}
             className="flex items-center gap-2 cursor-pointer"
           >
-           {/* <img src="/logo.png" alt="" className="w-30 h-30 object-contain" /> */}
+            <img src="/logo.png" alt="" className="w-30 h-30 object-contain" /> 
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-extrabold text-white tracking-tight">
                 
