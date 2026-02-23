@@ -31,12 +31,11 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
               Competitive Exam Preparaion Platform
             </div>
             <h1 className="text-4xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
-              Crack Any Government <br />
+              Crack Government <br />
               <span className="text-yellow-300">Competitive Exams .</span>
             </h1>
             <p className="text-green-100 text-lg mb-6 max-w-xl">
-              Practice with real exam questions, track your progress,
-              <br/><span>and compete with thousands of aspirants across Bangladesh.</span> 
+              Practice with real exam questions, track your progress, and compete with thousands of aspirants across Bangladesh.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <button
