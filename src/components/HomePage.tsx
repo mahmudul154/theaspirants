@@ -377,7 +377,7 @@ Edtech
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <div className="mb-16">
-        <h2 className="text-4xl font-black text-gray-900 tracking-tighter">Why <span className="italic">Aspirants?</span></h2>
+        <h2 className="text-3xl font-black text-green-800 tracking-tighter">Why <span className="">Aspirants?</span></h2>
     </div>
 
     {/* Bento Grid Layout */}
@@ -421,33 +421,33 @@ Edtech
         <h3 className="text-xl font-black text-green-800">5000+ <br />Verified Questions</h3>
         <div className="flex items-end justify-between">
            <p className="text-green-600/60 text-[10px] font-black tracking-tighter">HSC • BCS • BANK</p>
-           <div className="text-4xl opacity-30">💡</div>
+           <div className="text-4xl opacity-30]">💡</div>
         </div>
       </div>
       
      {/* Analytics (Small White Card) */}
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-gray-900 border border-gray-100 rounded-[3rem] shadow-sm hover:shadow-xl transition-all group">
+      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-12 h-12 bg-blue-50 text-white- rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🕓</div>
-        <h3 className="text-lg font-extrabold text-white">Timed Mock Test</h3>
-        <p className="text-gray-500 text-[11px] leading-relaxed"></p>
+        <h3 className="text-lg font-extrabold text-green-800 ">Timed Mock Test</h3>
+        <p className="text-green-600/60 text-[10px] leading-relaxed">Track your performance by Timed Mock Test.</p>
       </div>
 
 
       {/* Analytics (Small White Card) */}
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-white border border-gray-100 rounded-[3rem] shadow-sm hover:shadow-xl transition-all group">
+      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📈</div>
-        <h3 className="text-lg font-extrabold text-gray-800">Smart Analytics</h3>
-        <p className="text-gray-500 text-[11px]  leading-relaxed">Detailed subject-wise breakdown of your performance.</p>
+        <h3 className="text-lg font-extrabold text-green-800">Smart Analytics</h3>
+        <p className="text-green-600/60 text-[10px] leading-relaxed">Detailed subject-wise breakdown of your performance.</p>
       </div>
 
      
 
       {/* Mobile Ready (Long Card) */}
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-white border border-gray-100 rounded-[3rem] flex items-center gap-5 shadow-sm hover:shadow-xl transition-all">
+      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">📱</div>
         <div>
-          <h3 className="font-bold text-gray-800 leading-none">Mobile Ready</h3>
-          <p className="text-gray-400 text-[11px] mt-1">Practice on any device.</p>
+          <h3 className="text-lg font-extrabold text-green-800">Mobile Ready</h3>
+          <p className="text-green-600/60 text-[10px] leading-relaxed">Practice on any device.</p>
         </div>
       </div>
 

@@ -27,7 +27,7 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
           >
             <img src="/logo.png" alt="" className="w-7 h-7 object-contain" />
             <div className="flex flex-col leading-tight">
-              <span className="text-xl font-extrabold text-gray-700 tracking-tight">
+              <span className="text-xl font-extrabold text-green-800 tracking-tight">
                 Aspirants
               </span>
               <span className="text-[10px] text-green-600 font-semibold tracking-wider uppercase">
