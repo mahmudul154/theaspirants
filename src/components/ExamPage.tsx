@@ -1,10 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { examSets, sampleQuestions } from "../data/examData";
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css'; // এটি সমীকরণগুলোকে সুন্দর দেখাবে
 
 interface ExamPageProps {
   examId: number;
   setCurrentPage: (page: string) => void;
 }
+const MarkdownRenderer = ({ content }: { content: string }) => (
+  <ReactMarkdown 
+    remarkPlugins={[remarkMath]} 
+    rehypePlugins={[rehypeKatex]}
+  >
+    {content}
+  </ReactMarkdown>
+);
 
 export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
   const exam = examSets.find((e) => e.id === examId) || examSets[0];
@@ -146,31 +158,46 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
           {/* Answer Review */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h3 className="font-bold text-gray-900 text-lg mb-4">📋 Answer Review</h3>
-            <div className="space-y-4">
-              {questions.map((q, i) => {
-                const userAnswer = answers[i];
-                const isCorrect = userAnswer === q.correct;
-                const isSkipped = userAnswer === undefined;
-                return (
-                  <div key={q.id} className={`p-4 rounded-xl border ${isSkipped ? "border-gray-200 bg-gray-50" : isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0">{isSkipped ? "⬜" : isCorrect ? "✅" : "❌"}</span>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900 mb-2">{i + 1}. {q.question}</p>
-                        <p className="text-xs text-gray-600">
-                          <span className="font-medium">Correct: </span>
-                          <span className="text-green-700 font-semibold">{q.options[q.correct]}</span>
-                          {!isSkipped && !isCorrect && (
-                            <span className="ml-2 text-red-600">| Your answer: {q.options[userAnswer]}</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1 italic">💡 {q.explanation}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+           {/* Answer Review */}
+<div className="space-y-4">
+  {questions.map((q, i) => {
+    const userAnswer = answers[i];
+    const isCorrect = userAnswer === q.correct;
+    const isSkipped = userAnswer === undefined;
+    return (
+      <div key={q.id} className={`p-4 rounded-xl border ${isSkipped ? "border-gray-200 bg-gray-50" : isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
+        <div className="flex items-start gap-3">
+          <span className="text-lg flex-shrink-0">{isSkipped ? "⬜" : isCorrect ? "✅" : "❌"}</span>
+          <div className="flex-1">
+            {/* প্রশ্ন */}
+            <div className="text-sm font-semibold text-gray-900 mb-2">
+              {i + 1}. <MarkdownRenderer content={q.question} />
             </div>
+            
+            <div className="text-xs text-gray-600">
+              <span className="font-medium">Correct: </span>
+              {/* সঠিক অপশন */}
+              <span className="text-green-700 font-semibold inline-block">
+                <MarkdownRenderer content={q.options[q.correct]} />
+              </span>
+              
+              {!isSkipped && !isCorrect && (
+                <div className="mt-1 text-red-600">
+                  | Your answer: <MarkdownRenderer content={q.options[userAnswer]} />
+                </div>
+              )}
+            </div>
+            
+            {/* ব্যাখ্যা */}
+            <div className="text-xs text-gray-500 mt-2 italic border-t pt-2 border-gray-100">
+              💡 <strong>Explanation:</strong> <MarkdownRenderer content={q.explanation} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
           </div>
 
           <div className="flex gap-3">
@@ -178,7 +205,7 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
               onClick={() => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setTimeLeft(exam.duration); setFlagged(new Set()); }}
               className="flex-1 py-3 rounded-xl border-2 border-green-500 text-green-700 font-bold hover:bg-green-50 transition"
             >
-              🔁 Retry Exam
+            Retry
             </button>
             <button
               onClick={() => setCurrentPage("exams")}
@@ -243,29 +270,38 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
                 🚩
               </button>
             </div>
-            <p className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">{q.question}</p>
+     <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
+  <MarkdownRenderer content={q.question} />
+</div>
 
-            <div className="space-y-3">
-              {q.options.map((opt, i) => {
-                const selected = answers[currentQ] === i;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleAnswer(i)}
-                    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base ${
-                      selected
-                        ? "border-green-500 bg-green-50 text-green-800"
-                        : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
-                    }`}
-                  >
-                    <span className={`inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 ${selected ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"}`}>
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="space-y-3">
+  {q.options.map((opt, i) => {
+    const selected = answers[currentQ] === i;
+    return (
+      <button
+        key={i}
+        onClick={() => handleAnswer(i)}
+        className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${
+          selected
+            ? "border-green-500 bg-green-50 text-green-800"
+            : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
+        }`}
+      >
+        {/* অপশন লেটার (A, B, C...) */}
+        <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
+          selected ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"
+        }`}>
+          {String.fromCharCode(65 + i)}
+        </span>
+
+        {/* এখানে LaTeX রেন্ডার হবে */}
+        <div className="flex-1 overflow-hidden">
+          <MarkdownRenderer content={opt} />
+        </div>
+      </button>
+    );
+  })}
+</div>
 
            {/* {answers[currentQ] !== undefined && (
               <button
@@ -275,13 +311,17 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
                 💡 {showExplanation ? "Hide" : "Show"} Explanation
               </button>
             )}*/}
+            
 
-            {showExplanation && (
-              <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
-                <p className="font-semibold mb-1">Explanation:</p>
-                <p>{q.explanation}</p>
-              </div>
-            )}
+           {showExplanation && (
+  <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+    <p className="font-semibold mb-1">Explanation:</p>
+    {/* এখানে পরিবর্তন করা হয়েছে: সাধারণ <p> এর বদলে MarkdownRenderer */}
+    <div className="leading-relaxed">
+      <MarkdownRenderer content={q.explanation} />
+    </div>
+  </div>
+)}
           </div>
 
           {/* Navigation */}
@@ -299,7 +339,7 @@ const [timeLeft, setTimeLeft] = useState(initialTime);
                 onClick={finishExam}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow hover:from-green-600 transition"
               >
-                Submit Exam ✅
+                Submit → 
               </button>
             ) : (
               <button
