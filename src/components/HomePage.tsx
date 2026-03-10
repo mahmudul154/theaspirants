@@ -1,4 +1,8 @@
 import { categories, examSets, leaderboard } from "../data/examData";
+import { supabase } from "../lib/supabase"; // 'supabaseClient' এর বদলে শুধু 'supabase' লিখুন
+import { useNavigate } from 'react-router-dom';
+
+
 
 
 interface HomePageProps {
@@ -13,6 +17,7 @@ const difficultyColor: Record<string, string> = {
 };
 
 export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
+    
   const handleStartExam = (id: number) => {
     setSelectedExam(id);
     setCurrentPage("exam");
@@ -110,11 +115,11 @@ Edtech
         {/* Stats Grid - Light Dashboard Style */}
         <div className="grid grid-cols-2 gap-4 relative z-10">
           <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-6 text-center hover:bg-white hover:shadow-xl hover:border-[#22C55E]/20 transition-all group/stat">
-            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">5000+</p>
+            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">20K+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">200+</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">2K+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>
@@ -132,6 +137,8 @@ Edtech
 
   </div>
 </section>
+
+
       {/* Stats */}
        {/*<section className="py-10 bg-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -151,7 +158,7 @@ Edtech
 
 
 
-     {/* Modern Compact Categories */}
+     {/*-------------------------------------------------------------------------- Modern Compact Categories ------------------------------------------------------------------*/}
 <section className="py-12 bg-white">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {/* Section Header */}
@@ -207,23 +214,28 @@ Edtech
 
 
 
- {/* Unique Live Battle Arena Section with Functionality */}
+
+
+ {/* ------------------------------------------------------------------------Unique Live Battle Arena Section with Functionality ----------------------------------------------*/}
 <section className="py-20 bg-white">
   <div className="max-w-7xl mx-auto px-6">
     <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
       <div>
         <span className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] bg-red-50 px-3 py-1 rounded-full border border-red-100 mb-3 inline-block animate-pulse">Live Arena</span>
-        <h2 className="text-4xl font-black text-gray-900 tracking-tighter">Current <span className="italic">Challenges</span></h2>
+        <h2 className="text-3xl font-black text-green-800 tracking-tighter">Current <span className="">Challenges</span></h2>
       </div>
-      <button onClick={() => setCurrentPage("exams")} className="h-12 px-6 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 transition-all active:scale-95 shadow-xl shadow-gray-200">
+      <button 
+        onClick={() => setCurrentPage("exams")} 
+        className="h-12 px-6 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 transition-all active:scale-95 shadow-xl shadow-gray-200"
+      >
         View Full Arena →
       </button>
     </div>
 
     <div className="flex flex-col lg:flex-row gap-6">
-      {/* 1. Feature Highlight Card - বড় কার্ডটি এখন ফাংশনাল */}
+      {/* 1. Feature Highlight Card - Today's Live Exam */}
       <div 
-        onClick={() => handleStartExam(examSets[0]?.id)} // প্রথম এক্সাম শুরু করবে
+        onClick={() => examSets[0] && handleStartExam(examSets[0].category)} 
         className="lg:w-2/5 p-1 bg-gradient-to-br from-green-500 via-emerald-600 to-teal-700 rounded-[3rem] shadow-2xl shadow-green-200 group cursor-pointer active:scale-[0.98] transition-all"
       >
         <div className="bg-gray-950 h-full w-full rounded-[2.8rem] p-10 flex flex-col justify-between relative overflow-hidden">
@@ -234,19 +246,20 @@ Edtech
           </div>
           
           <div className="relative z-10 w-full py-4 bg-green-500 text-white text-center font-black rounded-2xl text-xs uppercase tracking-widest group-hover:bg-white group-hover:text-green-600 transition-all mt-10">
-            Start
+            {examSets[0] ? `Start ${examSets[0].category.toUpperCase()}` : "Loading..."}
           </div>
           
           <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
         </div>
       </div>
 
-      {/* 2. Side Mini Cards - প্রতিটি কার্ড এখন ক্লিক করলে এক্সাম স্টার্ট হবে */}
+      {/* 2. Side Mini Cards */}
       <div className="lg:w-3/5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {examSets.slice(0, 4).map((exam) => (
+        {/* Optional Chaining ব্যবহার করা হয়েছে যাতে ডাটা না থাকলে Blank না আসে */}
+        {(examSets || []).slice(0, 4).map((exam) => (
           <div 
             key={exam.id} 
-            onClick={() => handleStartExam(exam.id)} // এখানে ক্লিক অ্যাকশন যোগ করা হয়েছে
+            onClick={() => handleStartExam(exam.category)} 
             className="p-6 bg-gray-50 rounded-[2.5rem] border border-gray-100 flex flex-col justify-between hover:bg-white hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer active:scale-95"
           >
             <div className="flex justify-between items-center mb-4">
@@ -270,9 +283,8 @@ Edtech
                 <span>⏱️ {exam.duration}m</span>
               </div>
               
-              {/* ছোট একটি ইন্ডিকেটর বাটন */}
               <span className="text-[10px] font-black text-green-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                START →
+                Start →
               </span>
             </div>
           </div>
@@ -281,6 +293,90 @@ Edtech
     </div>
   </div>
 </section>
+
+
+
+
+
+
+{/* ------------------------------------------------------------------------Custom Quiz Section - Compact Green Bento----------------------------------------------------- */}
+
+
+<section className="mt-8 px-6"> {/* ml-6 সরিয়ে px-6 দেওয়া হয়েছে ব্যালেন্স ঠিক করতে */}
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-3xl font-black  tracking-tighter text-green-800">
+      Custom Quiz
+    </h2>
+    <span className="px-2 py-0.5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">
+      Popular Feature
+    </span>
+  </div>
+
+  {/* গ্রিড কন্টেইনার */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 h-auto md:h-[300px]">
+    
+{/* Large Card: Mixed Subject Exam */}
+<div 
+  onClick={() => {
+    console.log("Click working!"); // চেক করার জন্য
+    setCurrentPage("mixed-setup");
+  }}
+  className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-green-600 to-emerald-800 rounded-[1.5rem] p-6 text-white relative overflow-hidden group cursor-pointer shadow-lg"
+>
+  <div className="relative z-10 h-full flex flex-col justify-between">
+    <div>
+      <div className="bg-white/20 w-fit px-2 py-1 rounded-lg text-[10px] mb-2 font-bold backdrop-blur-md">
+        RECOMMENDED
+      </div>
+      <h3 className="text-2xl font-black mb-1 leading-tight">Mixed Subject <br/> Marathon</h3>
+      <p className="text-green-50 text-[12px] max-w-[200px] opacity-90">
+        Create your own exam with multiple subjects.
+      </p>
+    </div>
+    <button 
+      onClick={(e) => {
+        e.stopPropagation();
+        setCurrentPage("mixed-setup");
+      }}
+      className="bg-white text-green-700 font-bold text-sm py-2 px-5 rounded-xl w-fit group-hover:scale-105 transition-transform shadow-md"
+    >
+      Create Now
+    </button>
+  </div>
+
+  
+  {/* Background Icon */}
+  <div className="absolute right-[-15px] bottom-[-15px] opacity-10 group-hover:rotate-12 transition-transform">
+    <svg width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+  </div>
+</div>
+
+    {/* Small Card 1: Quick Practice */}
+    <div className="bg-white border-2 border-gray-50 rounded-[1.5rem] p-4 hover:border-green-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-center">
+      <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+          <span className="text-xl">⚡</span>
+      </div>
+      <h4 className="text-md font-bold text-gray-800 leading-none">Quick 10</h4>
+      <p className="text-gray-400 text-[10px] mt-1 italic">10 min preparation.</p>
+    </div>
+
+    {/* Small Card 2: Weak Topics */}
+    <div className="bg-white border-2 border-gray-50 rounded-[1.5rem] p-4 hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-center">
+      <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+          <span className="text-xl">🎯</span>
+      </div>
+      <h4 className="text-md font-bold text-gray-800 leading-none">Weak Points</h4>
+      <p className="text-gray-400 text-[10px] mt-1 italic">Review mistakes.</p>
+    </div>
+
+  </div>
+</section>
+
+
+
+
 
 
 {/* Subject Selection Grid */}
@@ -377,7 +473,7 @@ Edtech
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <div className="mb-16">
-        <h2 className="text-3xl font-black text-green-800 tracking-tighter">Why <span className="">Aspirants?</span></h2>
+        <h2 className="text-3xl font-black text-green-800 tracking-tighter"> <span className=""></span></h2>
     </div>
 
     {/* Bento Grid Layout */}
@@ -409,7 +505,7 @@ Edtech
               <span className="text-7xl">🏆</span>
             </div>
             <div className="absolute -bottom-4 -right-4 bg-white text-green-600 p-4 rounded-3xl shadow-xl font-black text-xl rotate-12">
-              #200+ USERS
+              #2K+ USERS
             </div>
           </div>
         </div>
@@ -418,7 +514,7 @@ Edtech
       {/* --- Other Feature Cards --- */}
        {/* Questions (Small Highlight Card) */}
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <h3 className="text-xl font-black text-green-800">5000+ <br />Verified Questions</h3>
+        <h3 className="text-xl font-black text-green-800">20K+ <br />Verified Questions</h3>
         <div className="flex items-end justify-between">
            <p className="text-green-600/60 text-[10px] font-black tracking-tighter">HSC • BCS • BANK</p>
            <div className="text-4xl opacity-30]">💡</div>
@@ -456,25 +552,23 @@ Edtech
 </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-10">
+      <footer className="bg-gray-900 text-gray-400 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <button
+             <button
             onClick={() => setCurrentPage("home")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer mb-30"
           >
-            <img src="/logo.png" alt="" className="w-25 h-25 object-contain" /> 
+            <img src="/logo.png" alt="" className="w-6 h-7 object-contain " />
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-extrabold text-white tracking-tight">
-                
-              </span>
-              <span className="text-[10px] text-green-600 font-semibold tracking-wider uppercase">
+                Aspirants
               </span>
             </div>
           </button>
             {[
-              { title: "Exams", links: ["HSC","BCS", "Bank Jobs", "NTRCA", "Primary", "Defense"] },
-              { title: "Resources", links: ["Question Bank", "Previous Papers", "Study Notes", "Live Tests"] },
+              { title: "Exams", links: ["HSC","BCS", "Bank Jobs"] },
+              { title: "Resources", links: ["Study Notes", "Live Tests"] },
               { title: "Company", links: ["About Us", "Blog", "Privacy Policy", "Contact"] },
             ].map((col) => (
               <div key={col.title}>

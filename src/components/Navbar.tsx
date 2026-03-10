@@ -3,10 +3,11 @@ import { useState } from "react";
 interface NavbarProps {
   currentPage: string;
   setCurrentPage: (page: string) => void;
-  user: any; // ✅ user state
+  setSelectedExam: (examId: string) => void; // ✅ এটি যোগ করা হয়েছে
+  user: any;
 }
 
-export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
+export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
@@ -16,8 +17,15 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
     { id: "about", label: "About" },
   ];
 
+  // Custom Quiz হ্যান্ডলার
+  const handleCustomQuiz = () => {
+    setSelectedExam("mixed");
+    setCurrentPage("exam");
+    setMenuOpen(false);
+  };
+
   return (
-    <nav className=" fixed top-0 left-0 right-0 z-50  backdrop-blur  bg-white/95 border-b border-gray-100/0 shadow-sm ">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur bg-white/95 border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -25,12 +33,10 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
             onClick={() => setCurrentPage("home")}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <img src="/logo.png" alt="" className="w-7 h-7 object-contain" />
+            <img src="/logo.png" alt="" className="w-6 h-7 object-contain" />
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-extrabold text-green-800 tracking-tight">
                 Aspirants
-              </span>
-              <span className="text-[10px] text-green-600 font-semibold tracking-wider uppercase">
               </span>
             </div>
           </button>
@@ -50,8 +56,21 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
                 {link.label}
               </button>
             ))}
-          </div>
 
+            {/* ✅ Custom Quiz Desktop Option */}
+           <button 
+      onClick={(e) => {
+        e.stopPropagation();
+        setCurrentPage("mixed-setup");
+      }}
+              className="ml-2 px-4 py-2 rounded-lg text-sm font-bold text-orange-600 hover:bg-orange-50 transition-all flex items-center gap-1.5 group"
+            >
+              <span className="group-hover:animate-bounce">🛠</span>
+              Custom Quiz
+            </button>
+          </div>
+          
+ 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
@@ -85,21 +104,9 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <div className="space-y-1.5">
-              <span
-                className={`block w-6 h-0.5 bg-gray-700 transition-all ${
-                  menuOpen ? "rotate-45 translate-y-2" : ""
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-gray-700 transition-all ${
-                  menuOpen ? "opacity-0" : ""
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-gray-700 transition-all ${
-                  menuOpen ? "-rotate-45 -translate-y-2" : ""
-                }`}
-              ></span>
+              <span className={`block w-6 h-0.5 bg-gray-700 transition-all ${menuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
+              <span className={`block w-6 h-0.5 bg-gray-700 transition-all ${menuOpen ? "opacity-0" : ""}`}></span>
+              <span className={`block w-6 h-0.5 bg-gray-700 transition-all ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
             </div>
           </button>
         </div>
@@ -115,21 +122,28 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
                   setMenuOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium ${
-                  currentPage === link.id
-                    ? "bg-green-50 text-green-700"
-                    : "text-gray-600 hover:bg-gray-50"
+                  currentPage === link.id ? "bg-green-50 text-green-700" : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 {link.label}
               </button>
             ))}
+            
+            {/* ✅ Custom Quiz Mobile Option */}
+             <button 
+      onClick={(e) => {
+        e.stopPropagation();
+        setCurrentPage("mixed-setup");
+      }}
+              className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold text-orange-600 hover:bg-orange-50 flex items-center gap-2"
+            >
+              <span>🛠</span> Custom Quiz
+            </button>
+
             <div className="flex gap-2 mt-2 px-2">
               {user ? (
                 <button
-                  onClick={() => {
-                    setCurrentPage("profile");
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => { setCurrentPage("profile"); setMenuOpen(false); }}
                   className="flex-1 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow"
                 >
                   Profile
@@ -137,19 +151,13 @@ export function Navbar({ currentPage, setCurrentPage, user }: NavbarProps) {
               ) : (
                 <>
                   <button
-                    onClick={() => {
-                      setCurrentPage("login");
-                      setMenuOpen(false);
-                    }}
-                    className="flex-1 py-2 text-sm font-semibold text-green-700 border border-green-600 rounded-lg hover:bg-green-50"
+                    onClick={() => { setCurrentPage("login"); setMenuOpen(false); }}
+                    className="flex-1 py-2 text-sm font-semibold text-green-700 border border-green-600 rounded-lg"
                   >
                     Login
                   </button>
                   <button
-                    onClick={() => {
-                      setCurrentPage("signup");
-                      setMenuOpen(false);
-                    }}
+                    onClick={() => { setCurrentPage("signup"); setMenuOpen(false); }}
                     className="flex-1 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow"
                   >
                     Sign Up

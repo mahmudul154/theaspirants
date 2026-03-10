@@ -6,10 +6,11 @@ import { ExamPage } from "./components/ExamPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AboutPage } from "./components/AboutPage";
 import { AuthPage } from "./components/AuthPage";
+import { MixedExamSetup } from "./components/MixedExamSetup"; // ✅ ইম্পোর্ট করুন
 
 export function App() {
   const [currentPage, setCurrentPage] = useState("home");
-  const [selectedExam, setSelectedExam] = useState(1);
+  const [selectedExam, setSelectedExam] = useState<any>("hsc2"); // string/number/object সব নিতে পারবে
 
   const showNavbar = currentPage !== "exam";
 
@@ -19,8 +20,14 @@ export function App() {
         return <HomePage setCurrentPage={setCurrentPage} setSelectedExam={setSelectedExam} />;
       case "exams":
         return <ExamsPage setCurrentPage={setCurrentPage} setSelectedExam={setSelectedExam} />;
+      
+      // ✅ নতুন Mixed Setup পেজ
+      case "mixed-setup":
+        return <MixedExamSetup setCurrentPage={setCurrentPage} setSelectedExam={setSelectedExam} />;
+      
       case "exam":
         return <ExamPage examId={selectedExam} setCurrentPage={setCurrentPage} />;
+      
       case "leaderboard":
         return <LeaderboardPage />;
       case "about":
@@ -37,7 +44,12 @@ export function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {showNavbar && (
-        <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        <Navbar 
+          currentPage={currentPage} 
+          setCurrentPage={setCurrentPage} 
+          setSelectedExam={setSelectedExam} // ✅ এটি পাস করুন যাতে Navbar থেকে মিক্সড সেটআপে যাওয়া যায়
+          user={null} // আপনার ইউজার স্টেট থাকলে সেটি দিন
+        />
       )}
       {renderPage()}
     </div>
