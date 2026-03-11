@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navbar } from "./components/Navbar";
 import { HomePage } from "./components/HomePage";
-import { ExamsPage } from "./components/ExamsPage";
+//import { ExamsPage } from "./components/ExamsPage";
 import { ExamPage } from "./components/ExamPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { AboutPage } from "./components/AboutPage";

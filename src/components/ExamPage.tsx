@@ -10,6 +10,8 @@ interface ExamPageProps {
   setCurrentPage: (page: string) => void;
 }
 
+
+
 const MarkdownRenderer = ({ content }: { content: string }) => (
   <ReactMarkdown 
     remarkPlugins={[remarkMath]} 
@@ -19,6 +21,10 @@ const MarkdownRenderer = ({ content }: { content: string }) => (
   </ReactMarkdown>
 );
 
+
+
+
+ 
 export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
   // --- States ---
   const [questions, setQuestions] = useState<any[]>([]);
@@ -36,59 +42,71 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
   }, []);
 
   useEffect(() => {
-    async function fetchQuestions() {
-      if (!examId) return;
-      setLoading(true);
+  async function fetchQuestions() {
+    if (!examId) return;
+    setLoading(true);
+    
+    try {
+      let query = supabase.from("mcq_questions_job").select("*");
+
+      const isMixed = typeof examId === 'object' && examId !== null && examId.type === 'mixed';
       
-      try {
-        let query = supabase.from("mcq_questions_job").select("*");
+      if (isMixed) {
+        const { category, subjects, topics, limit, time } = examId;
+        const dbTag = category;
 
-        // ১. টাইপ চেকিং এবং ডাটা এক্সট্রাকশন
-        const isMixed = typeof examId === 'object' && examId !== null && examId.type === 'mixed';
-        
-        if (isMixed) {
-          const { category, subjects, topics, limit, time } = examId;
-          const dbTag = category ;
-
-          // কন্ডিশনাল ফিল্টারিং (টাইপ কাস্টিং সহ)
-          if (topics && (topics as string[]).length > 0) {
-            query = query.in("topic", topics);
-          } else if (subjects && (subjects as string[]).length > 0) {
-            query = query.in("subject", subjects);
-          }
-
-          query = query.eq("exam_tag", dbTag);
-
-          const { data, error } = await query;
-          if (error) throw error;
-
-          if (data && data.length > 0) {
-            const shuffled = [...data].sort(() => Math.random() - 0.5);
-            setQuestions(shuffled.slice(0, limit || 25));
-            if (time) setTimeLeft(time);
-          }
-        } 
-        else {
-          // নরমাল এক্সাম লজিক
-          const { data, error } = await supabase
-            .from("mcq_questions_job")
-            .select("*")
-            .eq("exam_tag", String(examId).toLowerCase());
-          
-          if (error) throw error;
-          if (data) {
-            setQuestions(data);
-            setTimeLeft(data.length * 40);
-          }
+        if (topics && (topics as string[]).length > 0) {
+          query = query.in("topic", topics);
+        } else if (subjects && (subjects as string[]).length > 0) {
+          query = query.in("subject", subjects);
         }
-      } catch (err) {
-        console.error("Fetch Error:", err);
-      } finally {
-        setLoading(false);
+
+        query = query.eq("exam_tag", dbTag);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          // ১. প্রশ্নের সেটটি শাফল করা
+          const shuffledData = [...data].sort(() => Math.random() - 0.5);
+          
+          // ২. প্রতিটি প্রশ্নের অপশনগুলোকেও ডাটা আসার সাথে সাথে শাফল করে নেওয়া
+          const questionsWithShuffledOptions = shuffledData.slice(0, limit || 25).map(q => ({
+            ...q,
+            options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
+          }));
+
+          setQuestions(questionsWithShuffledOptions);
+          if (time) setTimeLeft(time);
+        }
+      } 
+      else {
+        // নরমাল এক্সাম লজিক
+        const { data, error } = await supabase
+          .from("mcq_questions_job")
+          .select("*")
+          .eq("exam_tag", String(examId).toLowerCase());
+        
+        if (error) throw error;
+        if (data) {
+          // ৩. নরমাল এক্সামেও অপশনগুলো শাফল করে নেওয়া
+          const questionsWithShuffledOptions = data.map(q => ({
+            ...q,
+            options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
+          }));
+
+          setQuestions(questionsWithShuffledOptions);
+          setTimeLeft(data.length * 40);
+        }
       }
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
     }
-    fetchQuestions();
-  }, [examId]);
+  }
+  fetchQuestions();
+}, [examId]);
 
   // ২. টাইমার লজিক
   useEffect(() => {
@@ -256,6 +274,33 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
               <p className="text-xs text-gray-500 font-medium">Skipped</p>
             </div>
           </div>
+            {/* --- Result View এর গ্রিড বক্সগুলোর ঠিক নিচে এই ব্লকটি বসান --- */}
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+  <h3 className="font-bold text-gray-900 text-lg mb-4 text-left">🎯 বিষয়ভিত্তিক পারফরম্যান্স</h3>
+  <div className="space-y-4 text-left">
+    {Object.entries(subTopicAnalysis || {}).map(([name, stat]: any) => {
+      const per = Math.round((stat.correct / stat.total) * 100);
+      return (
+        <div key={name}>
+          <div className="flex justify-between text-sm mb-1">
+            <span className="font-semibold text-gray-700">{name}</span>
+            <span className="text-gray-500 font-bold">{stat.correct}/{stat.total}</span>
+          </div>
+          <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-700 ${
+                per < 50 ? 'bg-red-500' : 
+                per < 80 ? 'bg-amber-400' : 
+                'bg-emerald-500'
+              }`} 
+              style={{ width: `${per}%` }}
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h3 className="font-bold text-gray-900 text-lg mb-4">📋 Answer Review</h3>
@@ -289,34 +334,8 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
               })}
             </div>
           </div>
-          {/* --- Result View এর গ্রিড বক্সগুলোর ঠিক নিচে এই ব্লকটি বসান --- */}
-<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-  <h3 className="font-bold text-gray-900 text-lg mb-4 text-left">🎯 বিষয়ভিত্তিক পারফরম্যান্স</h3>
-  <div className="space-y-4 text-left">
-    {Object.entries(subTopicAnalysis || {}).map(([name, stat]: any) => {
-      const per = Math.round((stat.correct / stat.total) * 100);
-      return (
-        <div key={name}>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="font-semibold text-gray-700">{name}</span>
-            <span className="text-gray-500 font-bold">{stat.correct}/{stat.total}</span>
-          </div>
-          <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-700 ${
-                per < 50 ? 'bg-red-500' : 
-                per < 80 ? 'bg-amber-400' : 
-                'bg-emerald-500'
-              }`} 
-              style={{ width: `${per}%` }}
-            />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
-          <button onClick={() => setCurrentPage("home")} className="w-full py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow hover:from-green-600 transition">Browse Exams</button>
+        
+          <button onClick={() => setCurrentPage("mixed-setup")} className="w-full py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow hover:from-green-600 transition">Browse Exams</button>
         </div>
       </div>
     );
@@ -330,69 +349,215 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
 
 
 
+{/*const timerDanger = timeLeft < 60;
 
-  // --- --------------------------------------------------------------------Exam View ---
-  const q = questions[currentQ];
-  const timerDanger = timeLeft < 60;
+return (
+  <div className="pt-16 min-h-screen bg-gray-50 flex flex-col">
+    {/* ফিক্সড হেডার (টাইমার এবং প্রগ্রেস বারসহ) 
+    <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="flex-1 hidden sm:block font-bold text-gray-600 uppercase">{displayTitle}</div>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg ${timerDanger ? "bg-red-100 text-red-600 animate-pulse" : "bg-green-100 text-green-700"}`}>
+          ⏱️ {formatTime(timeLeft)}
+        </div>
+        <div className="text-sm text-gray-600 font-semibold">{Object.keys(answers).length} / {questions.length} Answered</div>
+        <button onClick={finishExam} className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-xl hover:bg-red-600 transition">Submit</button>
+      </div>
+     
+      <div className="h-1.5 bg-gray-100">
+        <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all" style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}></div>
+      </div>
+    </div>
+
+ 
+    <div className="max-w-3xl mx-auto px-4 py-8 w-full">
+      <div className="space-y-6">
+        {questions.map((q, i) => {
+          const isAnswered = answers[i] !== undefined;
+          
+          return (
+            <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
+              <div className="flex items-center justify-between mb-4">
+                <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
+                <button 
+                  onClick={() => {
+                    setFlagged((prev) => {
+                      const next = new Set(prev);
+                      next.has(i) ? next.delete(i) : next.add(i);
+                      return next;
+                    });
+                  }} 
+                  className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
+                >
+                  🚩
+                </button>
+              </div>
+
+              <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
+                <MarkdownRenderer content={q?.question} />
+              </div>
+
+              <div className="space-y-3">
+                {q?.options?.map((opt: string, optIdx: number) => (
+                  <button 
+                    key={optIdx} 
+                    onClick={() => setAnswers(prev => ({ ...prev, [i]: opt }))} 
+                    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${
+                      answers[i] === opt 
+                        ? "border-green-500 bg-green-50 text-green-800" 
+                        : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
+                    }`}
+                  >
+                    <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
+                      answers[i] === opt ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {String.fromCharCode(65 + optIdx)}
+                    </span>
+                    <div className="flex-1 overflow-hidden">
+                      <MarkdownRenderer content={opt} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+  
+      <div className="mt-10 mb-20 text-center">
+        <button 
+          onClick={finishExam} 
+          className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg hover:from-green-600 transition active:scale-95"
+        >
+          Final Submit
+        </button>
+      </div>
+    </div>
+  </div>
+); */}
+const timerDanger = timeLeft < 60;
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 z-30">
+    <div className="pt-16 min-h-screen bg-gray-50 flex flex-col">
+      {/* ফিক্সড হেডার: প্রগ্রেস এবং টাইমার */}
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex-1 hidden sm:block font-bold text-gray-600 uppercase">{displayTitle}</div>
+          <div className="flex-1 hidden sm:block font-bold text-gray-600 uppercase tracking-tight">{displayTitle}</div>
           <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg ${timerDanger ? "bg-red-100 text-red-600 animate-pulse" : "bg-green-100 text-green-700"}`}>
             ⏱️ {formatTime(timeLeft)}
           </div>
-          <div className="text-sm text-gray-600 font-semibold">{currentQ + 1} / {questions.length}</div>
-          <button onClick={finishExam} className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-xl hover:bg-red-600 transition">Submit</button>
+          <div className="text-sm text-gray-600 font-semibold">
+            {Object.keys(answers).length} / {questions.length} Answered
+          </div>
+          <button onClick={finishExam} className="px-5 py-2.5 text-sm font-bold bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow-sm active:scale-95">Submit</button>
         </div>
-        <div className="h-1.5 bg-gray-100">
-          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all" style={{ width: `${((currentQ + 1) / questions.length) * 100}%` }}></div>
+        <div className="h-1.5 bg-gray-100 w-full">
+          <div 
+            className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500" 
+            style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
+          ></div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
-        <div className="flex-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{currentQ + 1}</span>
-              <button onClick={toggleFlag} className={`text-xl transition ${flagged.has(currentQ) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}>🚩</button>
-            </div>
-            <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
-              <MarkdownRenderer content={q?.question} />
-            </div>
-            <div className="space-y-3">
-              {q?.options?.map((opt: string, i: number) => (
-                <button key={i} onClick={() => handleAnswer(opt)} className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${answers[currentQ] === opt ? "border-green-500 bg-green-50 text-green-800" : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"}`}>
-                  <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${answers[currentQ] === opt ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"}`}>{String.fromCharCode(65 + i)}</span>
-                  <div className="flex-1 overflow-hidden"><MarkdownRenderer content={opt} /></div>
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* মেইন কন্টেন্ট: স্ক্রলযোগ্য প্রশ্ন তালিকা */}
+      <div className="max-w-3xl mx-auto px-4 py-8 w-full">
+        <div className="space-y-8">
+          {questions.map((q: any, i: number) => {
+            const hasAnswered = answers[i] !== undefined;
 
-          <div className="flex justify-between items-center">
-            <button onClick={() => setCurrentQ((q) => Math.max(0, q - 1))} disabled={currentQ === 0} className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-bold hover:border-green-400 hover:text-green-700 disabled:opacity-40 transition">← Previous</button>
-            <span className="text-sm text-gray-500">{Object.keys(answers).length} answered</span>
-            <button onClick={() => currentQ === questions.length - 1 ? finishExam() : setCurrentQ(q => q + 1)} className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow hover:from-green-600 transition">
-              {currentQ === questions.length - 1 ? "Submit →" : "Next →"}
-            </button>
-          </div>
+            return (
+              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
+                  <button 
+                    onClick={() => {
+                      setFlagged((prev: Set<number>) => {
+                        const next = new Set(prev);
+                        next.has(i) ? next.delete(i) : next.add(i);
+                        return next;
+                      });
+                    }} 
+                    className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
+                  >
+                    🚩
+                  </button>
+                </div>
+
+                <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
+                  <MarkdownRenderer content={q?.question} />
+                </div>
+
+                <div className="space-y-3">
+              {q?.options?.map((opt: string, optIdx: number) => {
+  const isSelected = answers[i] === opt;
+  // নিশ্চিত করুন আপনার DB তে কলামের নাম 'correct_answer' ই আছে
+  const isCorrect = q.correct_answer === opt;
+  const hasAnswered = answers[i] !== undefined;
+
+  return (
+    <button 
+      key={optIdx} 
+      disabled={hasAnswered}
+      onClick={() => setAnswers((prev: any) => ({ ...prev, [i]: opt }))} 
+    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${
+  hasAnswered
+    ? isCorrect
+      ? "border-green-500 bg-green-50 text-green-800" // ১. যদি অপশনটি সঠিক হয়, তবে সব সময় সবুজ।
+      : isSelected
+        ? "border-red-500 bg-red-50 text-red-800" // ২. যদি সঠিক না হয় কিন্তু ইউজার সিলেক্ট করে থাকে, তবে লাল।
+        : "border-gray-100 opacity-60" // ৩. বাকিগুলো হালকা ঝাপসা।
+    : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
+}`}
+    >
+      <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
+        hasAnswered && isCorrect ? "bg-green-500 text-white" : 
+        hasAnswered && isSelected && !isCorrect ? "bg-red-500 text-white" :
+        "bg-gray-100 text-gray-600"
+      }`}>
+        {String.fromCharCode(65 + optIdx)}
+      </span>
+      <div className="flex-1 overflow-hidden">
+        <MarkdownRenderer content={opt} />
+      </div>
+      
+      {/* আইকন ফিডব্যাক */}
+      {hasAnswered && isCorrect && <span className="ml-2">✅</span>}
+      {hasAnswered && isSelected && !isCorrect && <span className="ml-2">❌</span>}
+    </button>
+  );
+})}
+                </div>
+
+                {/* ব্যাখ্যা সেকশন */}
+                {hasAnswered && q.explanation && (
+                  <div className="mt-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center gap-2 mb-2 text-blue-800 font-bold uppercase text-xs tracking-wider">
+                      <span className="text-lg">💡</span> Explanation
+                    </div>
+                    <div className="text-gray-700 text-sm md:text-base leading-relaxed overflow-hidden">
+                      <MarkdownRenderer content={q.explanation} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        <div className="lg:w-60 xl:w-72">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-36">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">Question Palette</h3>
-            <div className="grid grid-cols-5 gap-2 mb-4">
-              {questions.map((_, i) => (
-                <button key={i} onClick={() => setCurrentQ(i)} className={`w-9 h-9 rounded-lg text-xs font-bold transition-all border-2 ${currentQ === i ? "border-green-500 bg-green-500 text-white scale-110 shadow" : flagged.has(i) ? "border-yellow-400 bg-yellow-100 text-yellow-700" : answers[i] ? "border-green-400 bg-green-100 text-green-700" : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-400"}`}>
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* ফাইনাল সাবমিট বাটন */}
+        <div className="mt-12 mb-24">
+          <button 
+            onClick={finishExam} 
+            className="w-full py-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-[0.98] text-lg flex items-center justify-center gap-3"
+          >
+            Finish Exam & See Result <span className="text-xl">🚀</span>
+          </button>
         </div>
       </div>
     </div>
-  ); 
+  );
+
+
+
 }

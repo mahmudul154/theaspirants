@@ -24,7 +24,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         "Physics": [ "Vector", "Thermodynamics", "Static Electricity"],
         "Chemistry 2nd Paper": [ "Organic Chemistry", "Quantitative Chemistry"],
         "Math": ["Calculus", "Matrix", "Trigonometry"],
-        "Biology": ["Genetics", "Cell Biology"],
+        "Zoology": ["বর্জ্য ও নিষ্কাশন","সমন্বয় ও নিয়ন্ত্রণ","জিনতত্ত্ব ও বিবর্তন"],
         
         // General/Job Topics
         "English": ["Proverb","Idioms & Phrases","Spelling","Voice,Narration and One Word"], 
@@ -133,6 +133,9 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
           </div>
         )}
 
+
+
+
         {/* Step 4: Limits */}
         {step === 4 && (
           <div className="animate-in slide-in-from-right-4">
@@ -153,7 +156,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
                   <span>Time (Min)</span>
                   <span className="text-green-600">{examTime}</span>
                 </div>
-                <input type="range" min="5" max="60" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="600" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
             <button onClick={handleStartExam} className="w-full mt-10 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">

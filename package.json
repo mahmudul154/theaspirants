@@ -11,7 +11,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "clsx": "2.1.1",
-    "katex": "^0.16.33",
+    "katex": "^0.16.38",
     "lucide-react": "^0.577.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
