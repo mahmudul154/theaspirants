@@ -5,6 +5,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 
+
+
 interface ExamPageProps {
   examId: any; // অবজেক্ট সাপোর্ট করার জন্য any রাখা হয়েছে
   setCurrentPage: (page: string) => void;
@@ -462,88 +464,86 @@ const timerDanger = timeLeft < 60;
 
       {/* মেইন কন্টেন্ট: স্ক্রলযোগ্য প্রশ্ন তালিকা */}
       <div className="max-w-3xl mx-auto px-4 py-8 w-full">
-        <div className="space-y-8">
-          {questions.map((q: any, i: number) => {
-            const hasAnswered = answers[i] !== undefined;
+       <div className="space-y-8">
+  {questions.map((q: any, i: number) => {
+    const hasAnswered = answers[i] !== undefined;
+
+    return (
+      <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
+        <div className="flex items-center justify-between mb-4">
+          <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
+          <button 
+            onClick={() => {
+              setFlagged((prev: Set<number>) => {
+                const next = new Set(prev);
+                next.has(i) ? next.delete(i) : next.add(i);
+                return next;
+              });
+            }} 
+            className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
+          >
+            🚩
+          </button>
+        </div>
+
+        <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
+          <MarkdownRenderer content={q?.question} />
+        </div>
+
+        <div className="space-y-3">
+          {q?.options?.map((opt: string, optIdx: number) => {
+            const isCorrect = opt === q.answer;       // supabase e column name = answer
+            const isSelected = answers[i] === opt;
+
+            // bgClass instant recalc
+            let bgClass = "border-gray-200 text-gray-700 bg-white"; 
+            if (hasAnswered) {
+              if (isSelected && isCorrect) bgClass = "border-green-500 text-green-800 bg-green-50";
+              else if (isSelected && !isCorrect) bgClass = "border-red-500 text-red-800 bg-red-50";
+              else if (isCorrect) bgClass = "border-green-500 text-green-800 bg-green-50";
+              else bgClass = "border-gray-100 text-gray-400 opacity-60";
+            }
 
             return (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
-                  <button 
-                    onClick={() => {
-                      setFlagged((prev: Set<number>) => {
-                        const next = new Set(prev);
-                        next.has(i) ? next.delete(i) : next.add(i);
-                        return next;
-                      });
-                    }} 
-                    className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
-                  >
-                    🚩
-                  </button>
+              <button
+                key={optIdx}
+                onClick={() => setAnswers((prev) => ({ ...prev, [i]: opt }))} 
+                disabled={false} // disabled পরে লাগানো হলে delay হবে, এখন instant
+                className={`w-full text-left px-5 py-4 rounded-xl border-2 font-medium text-sm md:text-base flex items-start transition ${bgClass}`}
+              >
+                <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
+                  hasAnswered && isCorrect ? "bg-green-500 text-white" : 
+                  hasAnswered && isSelected && !isCorrect ? "bg-red-500 text-white" :
+                  "bg-gray-100 text-gray-600"
+                }`}>
+                  {String.fromCharCode(65 + optIdx)}
+                </span>
+
+                <div className="flex-1 overflow-hidden">
+                  <MarkdownRenderer content={opt} />
                 </div>
 
-                <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
-                  <MarkdownRenderer content={q?.question} />
-                </div>
-
-                <div className="space-y-3">
-              {q?.options?.map((opt: string, optIdx: number) => {
-  const isSelected = answers[i] === opt;
-  // নিশ্চিত করুন আপনার DB তে কলামের নাম 'correct_answer' ই আছে
-  const isCorrect = q.correct_answer === opt;
-  const hasAnswered = answers[i] !== undefined;
-
-  return (
-    <button 
-      key={optIdx} 
-      disabled={hasAnswered}
-      onClick={() => setAnswers((prev: any) => ({ ...prev, [i]: opt }))} 
-    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${
-  hasAnswered
-    ? isCorrect
-      ? "border-green-500 bg-green-50 text-green-800" // ১. যদি অপশনটি সঠিক হয়, তবে সব সময় সবুজ।
-      : isSelected
-        ? "border-red-500 bg-red-50 text-red-800" // ২. যদি সঠিক না হয় কিন্তু ইউজার সিলেক্ট করে থাকে, তবে লাল।
-        : "border-gray-100 opacity-60" // ৩. বাকিগুলো হালকা ঝাপসা।
-    : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
-}`}
-    >
-      <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
-        hasAnswered && isCorrect ? "bg-green-500 text-white" : 
-        hasAnswered && isSelected && !isCorrect ? "bg-red-500 text-white" :
-        "bg-gray-100 text-gray-600"
-      }`}>
-        {String.fromCharCode(65 + optIdx)}
-      </span>
-      <div className="flex-1 overflow-hidden">
-        <MarkdownRenderer content={opt} />
-      </div>
-      
-      {/* আইকন ফিডব্যাক */}
-      {hasAnswered && isCorrect && <span className="ml-2">✅</span>}
-      {hasAnswered && isSelected && !isCorrect && <span className="ml-2">❌</span>}
-    </button>
-  );
-})}
-                </div>
-
-                {/* ব্যাখ্যা সেকশন */}
-                {hasAnswered && q.explanation && (
-                  <div className="mt-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl animate-in slide-in-from-top-2 duration-300">
-                    <div className="flex items-center gap-2 mb-2 text-blue-800 font-bold uppercase text-xs tracking-wider">
-                      <span className="text-lg">💡</span> Explanation
-                    </div>
-                    <div className="text-gray-700 text-sm md:text-base leading-relaxed overflow-hidden">
-                      <MarkdownRenderer content={q.explanation} />
-                    </div>
-                  </div>
-                )}
-              </div>
+                {hasAnswered && isCorrect && <span className="ml-2">✅</span>}
+                {hasAnswered && isSelected && !isCorrect && <span className="ml-2">❌</span>}
+              </button>
             );
           })}
         </div>
+
+        {hasAnswered && q.explanation && (
+          <div className="mt-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2 mb-2 text-blue-800 font-bold uppercase text-xs tracking-wider">
+              <span className="text-lg">💡</span> Explanation
+            </div>
+            <div className="text-gray-700 text-sm md:text-base leading-relaxed overflow-hidden">
+              <MarkdownRenderer content={q.explanation} />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  })}
+</div>
 
         {/* ফাইনাল সাবমিট বাটন */}
         <div className="mt-12 mb-24">
