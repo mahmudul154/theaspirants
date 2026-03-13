@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
+import remarkGfm from 'remark-gfm'; //
 
 
 
@@ -14,16 +15,24 @@ interface ExamPageProps {
 
 
 
-const MarkdownRenderer = ({ content }: { content: string }) => (
-  <ReactMarkdown 
-    remarkPlugins={[remarkMath]} 
-    rehypePlugins={[rehypeKatex]}
-  >
-    {content || ""}
-  </ReactMarkdown>
-);
+const MarkdownRenderer = ({ content }: { content: string }) => {
+  if (!content) return null;
 
+  const processedContent = content
+    .replace(/\\n/g, '\n') // ডাটাবেস থেকে আসা \n কে আসল নিউলাইনে রূপান্তর
+    .replace(/\\\\/g, '\\');
 
+  return (
+    <div className="prose prose-sm max-w-none prose-table:border-collapse prose-th:border prose-td:border">
+      <ReactMarkdown 
+        remarkPlugins={[remarkMath, remarkGfm]} // remarkGfm অবশ্যই দিবেন
+        rehypePlugins={[rehypeKatex]}
+      >
+        {processedContent}
+      </ReactMarkdown>
+    </div>
+  );
+};
 
 
  

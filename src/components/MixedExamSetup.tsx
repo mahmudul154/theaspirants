@@ -30,7 +30,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         "English": ["Proverb","Idioms & Phrases","Spelling","Voice,Narration and One Word"], 
         "Bangla": ["সমাস", "কারক", "সন্ধি"], 
         "ICT": ["Networking", "HTML", "Digital Device", "Programming"],
-        "Science": ["ভৌত বিজ্ঞান", "জীব বিজ্ঞান"],
+        "Science": ["ভৌত বিজ্ঞান", "জীববিজ্ঞান"],
         "Bangladesh": ["ইতিহাস", "সংবিধান"],
         "International": ["প্রণালী", "সংস্থা"]
       };
