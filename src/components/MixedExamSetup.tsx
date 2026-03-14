@@ -149,14 +149,14 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
                   <span>Questions</span>
                   <span className="text-green-600">{qCount}</span>
                 </div>
-                <input type="range" min="10" max="1000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="10" max="2000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between font-black text-[10px] text-gray-400">
                   <span>Time (Min)</span>
                   <span className="text-green-600">{examTime}</span>
                 </div>
-                <input type="range" min="5" max="600" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="1200" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
             <button onClick={handleStartExam} className="w-full mt-10 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">
