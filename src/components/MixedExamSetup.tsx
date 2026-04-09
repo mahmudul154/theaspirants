@@ -28,11 +28,12 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         
         // General/Job Topics
         "English": ["Proverb","Idioms & Phrases","Spelling","Voice,Narration and One Word"], 
-        "Bangla": ["সমাস", "কারক", "সন্ধি"], 
-        "ICT": ["Networking", "HTML", "Digital Device", "Programming"],
+        "Bangla": ["বাংলা সাহিত্য", "সমাস", "কারক", "সন্ধি","পারিভাষিক শব্দ"], 
+        "Computer": ["তথ্য প্রযুক্তি"],
         "Science": ["ভৌত বিজ্ঞান", "জীববিজ্ঞান"],
-        "Bangladesh": ["ইতিহাস", "সংবিধান"],
-        "International": ["প্রণালী", "সংস্থা"]
+        "Bangladesh Affairs": ["সংবিধান","বিখ্যাত ব্যক্তি","উপজাতি ও নৃ-গোষ্ঠী","বাংলাদেশের সম্পদ","বাংলাদেশের অর্থনীতি","পরিবহন ও যোগাযোগ","বাংলাদেশের সম্পদ"],
+        "International": ["প্রণালী", "সংস্থা"],
+        "মানসিক দক্ষতা":["গাণিতিক যুক্তি","যৌক্তিক বিশ্লেষণ","স্থানাঙ্ক সম্পর্ক","কোডিং ও ডিকোডিং","সংখ্যাগত ক্ষমতা","সমস্যা সমাধান","বানান ও ভাষা"]
       };
 
       let combinedTopics: string[] = [];
@@ -67,7 +68,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
     if (tempCategory === "hsc") {
       return ["English 1st Paper","English 2nd Paper",  "Bangla 1st Paper","Bangla 2nd Paper", "ICT", "Physics 1st Paper","Physics 2nd Paper", "Chemistry 1st Paper", "Chemistry 2nd Paper", "Botani", "Zoology", "Math 1st Paper" ,"Math 1st Paper"];
     }
-    return ["English", "Bangla", "ICT", "Science", "Math", "Analytical", "Bangladesh", "International"];
+    return ["English", "Bangla", "Computer", "Science", "Math", "মানসিক দক্ষতা", "Bangladesh Affairs", "International Affairs"];
   };
 
   return (
