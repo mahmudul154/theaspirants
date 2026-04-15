@@ -21,17 +21,15 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
       // টপিক ম্যাপিং: HSC এবং অন্যান্য ক্যাটাগরির জন্য
       const topicMap: { [key: string]: string[] } = {
         // HSC Specific Topics
-        "Physics": [ "Vector", "Thermodynamics", "Static Electricity"],
-        "Chemistry 2nd Paper": [ "Organic Chemistry", "Quantitative Chemistry"],
-        "Math": ["Calculus", "Matrix", "Trigonometry"],
-        "Zoology": ["বর্জ্য ও নিষ্কাশন","সমন্বয় ও নিয়ন্ত্রণ","জিনতত্ত্ব ও বিবর্তন"],
+       //power topic
+       "Microcontroller":["Arduino Basics","Digital read","Digital write","Arduino+port language"],
         
         // General/Job Topics
         "English": ["Proverb","Idioms & Phrases","Spelling","Voice,Narration and One Word"], 
         "Bangla": ["বাংলা সাহিত্য", "সমাস", "কারক", "সন্ধি","পারিভাষিক শব্দ"], 
         "Computer": ["তথ্য প্রযুক্তি"],
         "Science": ["ভৌত বিজ্ঞান", "জীববিজ্ঞান"],
-        "Bangladesh Affairs": ["সংবিধান","বিখ্যাত ব্যক্তি","উপজাতি ও নৃ-গোষ্ঠী","বাংলাদেশের সম্পদ","বাংলাদেশের অর্থনীতি","পরিবহন ও যোগাযোগ","বাংলাদেশের সম্পদ"],
+        "Bangladesh Affairs": ["সংবিধান","বিখ্যাত ব্যক্তি","উপজাতি ও নৃ-গোষ্ঠী","বাংলাদেশের অর্থনীতি","পরিবহন ও যোগাযোগ","বাংলাদেশের সম্পদ"],
         "International": ["প্রণালী", "সংস্থা"],
         "মানসিক দক্ষতা":["গাণিতিক যুক্তি","যৌক্তিক বিশ্লেষণ","স্থানাঙ্ক সম্পর্ক","কোডিং ও ডিকোডিং","সংখ্যাগত ক্ষমতা","সমস্যা সমাধান","বানান ও ভাষা"]
       };
@@ -65,12 +63,14 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
   // ক্যাটাগরি অনুযায়ী সাবজেক্ট লিস্ট নির্ধারণ
   const getAvailableSubjects = () => {
-    if (tempCategory === "hsc") {
-      return ["English 1st Paper","English 2nd Paper",  "Bangla 1st Paper","Bangla 2nd Paper", "ICT", "Physics 1st Paper","Physics 2nd Paper", "Chemistry 1st Paper", "Chemistry 2nd Paper", "Botani", "Zoology", "Math 1st Paper" ,"Math 1st Paper"];
-    }
-    return ["English", "Bangla", "Computer", "Science", "Math", "মানসিক দক্ষতা", "Bangladesh Affairs", "International Affairs"];
-  };
-
+  const category = tempCategory ? tempCategory.trim().toLowerCase() : "";
+  
+  if (category === "power") {
+    return ["Microcontroller"];
+  }
+  
+  return ["English", "Bangla", "Computer", "Science", "Math", "মানসিক দক্ষতা", "Bangladesh Affairs", "International Affairs"];
+};
   return (
     <div className="min-h-screen bg-[#FDFDFD] pt-20 px-4 pb-10 font-sans">
       <div className="max-w-md mx-auto">
@@ -87,7 +87,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
           <div className="animate-in fade-in slide-in-from-bottom-2">
             <h2 className="text-2xl font-black text-gray-800 mb-6 tracking-tight">Select <span className="text-green-600">Goal</span></h2>
             <div className="grid grid-cols-2 gap-3">
-              {["bcs", "hsc", "admission", "bank"].map(id => (
+              {["bcs", "power", "admission", "bank"].map(id => (
                 <button key={id} onClick={() => {setTempCategory(id); setStep(2)}} className="bg-white border border-gray-100 p-6 rounded-3xl font-bold uppercase text-xs tracking-widest text-gray-600 hover:border-green-400 hover:text-green-600 transition-all shadow-sm active:scale-95">
                   {id}
                 </button>
@@ -150,14 +150,14 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
                   <span>Questions</span>
                   <span className="text-green-600">{qCount}</span>
                 </div>
-                <input type="range" min="10" max="200" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="200" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between font-black text-[10px] text-gray-400">
                   <span>Time (Min)</span>
                   <span className="text-green-600">{examTime}</span>
                 </div>
-                <input type="range" min="5" max="120" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="200" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
             <button onClick={handleStartExam} className="w-full mt-10 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">
