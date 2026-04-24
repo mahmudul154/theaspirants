@@ -115,11 +115,11 @@ Edtech
         {/* Stats Grid - Light Dashboard Style */}
         <div className="grid grid-cols-2 gap-4 relative z-10">
           <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-6 text-center hover:bg-white hover:shadow-xl hover:border-[#22C55E]/20 transition-all group/stat">
-            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">20K+</p>
+            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">60K+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">2K+</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">20K+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>
@@ -489,7 +489,7 @@ Edtech
           <div className="text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">Ready to <br/>test your skills?</h2>
             <p className="text-green-100 mb-8 text-base md:text-lg max-w-md font-medium">
-              Join <span className="text-yellow-400 font-black">200+ aspirants</span> who trust us for their victory.
+              Join <span className="text-yellow-400 font-black">20k+ aspirants</span> who trust us for their victory.
             </p>
             <button
               onClick={() => setCurrentPage("signup")}
@@ -505,7 +505,7 @@ Edtech
               <span className="text-7xl">🏆</span>
             </div>
             <div className="absolute -bottom-4 -right-4 bg-white text-green-600 p-4 rounded-3xl shadow-xl font-black text-xl rotate-12">
-              #2K+ USERS
+              #20K+ USERS
             </div>
           </div>
         </div>
@@ -514,7 +514,7 @@ Edtech
       {/* --- Other Feature Cards --- */}
        {/* Questions (Small Highlight Card) */}
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <h3 className="text-xl font-black text-green-800">20K+ <br />Verified Questions</h3>
+        <h3 className="text-xl font-black text-green-800">60K+ <br />Verified Questions</h3>
         <div className="flex items-end justify-between">
            <p className="text-green-600/60 text-[10px] font-black tracking-tighter">HSC • BCS • BANK</p>
            <div className="text-4xl opacity-30]">💡</div>
