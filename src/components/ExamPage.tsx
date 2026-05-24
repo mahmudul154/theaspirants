@@ -532,23 +532,12 @@ const timerDanger = timeLeft < 60;
                   <MarkdownRenderer content={opt} />
                 </div>
 
-                {hasAnswered && isCorrect && <span className="ml-2">✅</span>}
-                {hasAnswered && isSelected && !isCorrect && <span className="ml-2">❌</span>}
               </button>
             );
           })}
         </div>
 
-        {hasAnswered && q.explanation && (
-          <div className="mt-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl animate-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-2 mb-2 text-blue-800 font-bold uppercase text-xs tracking-wider">
-              <span className="text-lg">💡</span> Explanation
-            </div>
-            <div className="text-gray-700 text-sm md:text-base leading-relaxed overflow-hidden">
-              <MarkdownRenderer content={q.explanation} />
-            </div>
-          </div>
-        )}
+       
       </div>
     );
   })}
