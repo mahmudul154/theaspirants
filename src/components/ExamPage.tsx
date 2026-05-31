@@ -52,72 +52,107 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
-  async function fetchQuestions() {
-    if (!examId) return;
-    setLoading(true);
-    
-    try {
-      let query = supabase.from("mcq_questions_job").select("*");
+ useEffect(() => {
+    // হেল্পার ফাংশন: টপিক অনুযায়ী প্রশ্নগুলো ভাগ করে রাউন্ড-রবিন স্টাইলে সাজানো
+    const organizeQuestionsRoundRobin = (allData: any[], maxLimit?: number) => {
+      // ১. টপিক অনুযায়ী গ্রুপ করা
+      const grouped: Record<string, any[]> = {};
+      allData.forEach(q => {
+        const topicName = q.topic || "Others"; // যদি topic না থাকে
+        if (!grouped[topicName]) grouped[topicName] = [];
+        grouped[topicName].push(q);
+      });
 
-      const isMixed = typeof examId === 'object' && examId !== null && examId.type === 'mixed';
-      
-      if (isMixed) {
-        const { category, subjects, topics, limit, time } = examId;
-        const dbTag = category;
+      // ২. প্রতিটি গ্রুপের প্রশ্নগুলো নিজেদের মধ্যে শাফল করা
+      Object.keys(grouped).forEach(key => {
+        grouped[key].sort(() => Math.random() - 0.5);
+      });
 
-        if (topics && (topics as string[]).length > 0) {
-          query = query.in("topic", topics);
-        } else if (subjects && (subjects as string[]).length > 0) {
-          query = query.in("subject", subjects);
-        }
+      const selected: any[] = [];
+      const topics = Object.keys(grouped);
+      // টপিকগুলোও শাফল করা যাতে সবসময় একই টপিক দিয়ে এক্সাম শুরু না হয়
+      topics.sort(() => Math.random() - 0.5);
 
-        query = query.eq("exam_tag", dbTag);
+      const limitCount = maxLimit ? Math.min(maxLimit, allData.length) : allData.length;
 
-        const { data, error } = await query;
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          // ১. প্রশ্নের সেটটি শাফল করা
-          const shuffledData = [...data].sort(() => Math.random() - 0.5);
+      // ৩. রাউন্ড-রবিন লুপ: প্রতিটি টপিক থেকে ১টি করে প্রশ্ন নেওয়া
+      while (selected.length < limitCount) {
+        let addedInThisRound = false;
+        for (let i = 0; i < topics.length; i++) {
+          if (selected.length >= limitCount) break;
           
-          // ২. প্রতিটি প্রশ্নের অপশনগুলোকেও ডাটা আসার সাথে সাথে শাফল করে নেওয়া
-          const questionsWithShuffledOptions = shuffledData.slice(0, limit || 25).map(q => ({
-            ...q,
-            options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
-          }));
-
-          setQuestions(questionsWithShuffledOptions);
-          if (time) setTimeLeft(time);
+          const currentTopic = topics[i];
+          if (grouped[currentTopic].length > 0) {
+            selected.push(grouped[currentTopic].shift()); // প্রথম প্রশ্নটি তুলে নেওয়া
+            addedInThisRound = true;
+          }
         }
-      } 
-      else {
-        // নরমাল এক্সাম লজিক
-        const { data, error } = await supabase
-          .from("mcq_questions_job")
-          .select("*")
-          .eq("exam_tag", String(examId).toLowerCase());
-        
-        if (error) throw error;
-        if (data) {
-          // ৩. নরমাল এক্সামেও অপশনগুলো শাফল করে নেওয়া
-          const questionsWithShuffledOptions = data.map(q => ({
-            ...q,
-            options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
-          }));
-
-          setQuestions(questionsWithShuffledOptions);
-          setTimeLeft(data.length * 40);
-        }
+        // যদি কোনো টপিকেই আর প্রশ্ন বাকি না থাকে, তাহলে লুপ ভেঙে যাবে
+        if (!addedInThisRound) break;
       }
-    } catch (err) {
-      console.error("Fetch Error:", err);
-    } finally {
-      setLoading(false);
+
+      // ৪. ফাইনালি নির্বাচিত প্রশ্নগুলোর অপশন শাফল করে রিটার্ন করা
+      return selected.map(q => ({
+        ...q,
+        options: q.options ? [...q.options].sort(() => Math.random() - 0.5) : []
+      }));
+    };
+
+    async function fetchQuestions() {
+      if (!examId) return;
+      setLoading(true);
+      
+      try {
+        let query = supabase.from("mcq_questions_job").select("*");
+        const isMixed = typeof examId === 'object' && examId !== null && examId.type === 'mixed';
+        
+        if (isMixed) {
+          const { category, subjects, topics, limit, time } = examId;
+          const dbTag = category;
+
+          if (topics && (topics as string[]).length > 0) {
+            query = query.in("topic", topics);
+          } else if (subjects && (subjects as string[]).length > 0) {
+            query = query.in("subject", subjects);
+          }
+
+          query = query.eq("exam_tag", dbTag);
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            // নতুন লজিক কল করা হলো
+            const processedQuestions = organizeQuestionsRoundRobin(data, limit || 25);
+            setQuestions(processedQuestions);
+            if (time) setTimeLeft(time);
+          }
+        } 
+        else {
+          // নরমাল এক্সাম লজিক
+          const { data, error } = await supabase
+            .from("mcq_questions_job")
+            .select("*")
+            .eq("exam_tag", String(examId).toLowerCase());
+          
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            // নরমাল এক্সামেও নতুন লজিক (লিমিট ছাড়া)
+            const processedQuestions = organizeQuestionsRoundRobin(data, data.length);
+            setQuestions(processedQuestions);
+            setTimeLeft(data.length * 40);
+          }
+        }
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
-  fetchQuestions();
-}, [examId]);
+
+    fetchQuestions();
+  }, [examId]);
 
   // ২. টাইমার লজিক
   useEffect(() => {
