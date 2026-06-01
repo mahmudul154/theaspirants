@@ -11,10 +11,10 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { id: "home", label: "Home" },
-    { id: "exams", label: "Exams" },
-    { id: "leaderboard", label: "Leaderboard" },
-    { id: "about", label: "About" },
+     { id: "home", label: "হোম" },
+  { id: "exams", label: "পরীক্ষা" },
+  { id: "leaderboard", label: "লিডারবোর্ড" },
+  { id: "about", label: "আমাদের সম্পর্কে" },
   ];
 
   // Custom Quiz হ্যান্ডলার
@@ -25,7 +25,8 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur bg-white/95 border-b border-gray-100 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur bg-white/95 border-b border-gray-100 shadow-sm"
+        style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -66,7 +67,7 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
               className="ml-2 px-4 py-2 rounded-lg text-sm font-bold text-orange-600 hover:bg-orange-50 transition-all flex items-center gap-1.5 group"
             >
               <span className="group-hover:animate-bounce">🛠</span>
-              Custom Quiz
+             কাস্টম কুইজ
             </button>
           </div>
           
@@ -137,7 +138,7 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
       }}
               className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold text-orange-600 hover:bg-orange-50 flex items-center gap-2"
             >
-              <span>🛠</span> Custom Quiz
+              <span>🛠</span>   কাস্টম কুইজ
             </button>
 
             <div className="flex gap-2 mt-2 px-2">
@@ -146,7 +147,7 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
                   onClick={() => { setCurrentPage("profile"); setMenuOpen(false); }}
                   className="flex-1 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow"
                 >
-                  Profile
+                  প্রোফাইল
                 </button>
               ) : (
                 <>
@@ -154,13 +155,14 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
                     onClick={() => { setCurrentPage("login"); setMenuOpen(false); }}
                     className="flex-1 py-2 text-sm font-semibold text-green-700 border border-green-600 rounded-lg"
                   >
-                    Login
+                   লগইন
                   </button>
                   <button
                     onClick={() => { setCurrentPage("signup"); setMenuOpen(false); }}
                     className="flex-1 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow"
                   >
-                    Sign Up
+                    সাইন আপ
+                   
                   </button>
                 </>
               )}

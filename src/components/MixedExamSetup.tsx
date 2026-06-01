@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase"; 
 
+
 interface MixedExamSetupProps {
   setCurrentPage: (page: string) => void;
   setSelectedExam: (examData: any) => void;
@@ -50,7 +51,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   // ========================================== H. English Literature ==========================================
   "Names of writers of literary pieces from Elizabethan period to the 21st Century", "Quotations from drama/poetry of different ages"
 ],
-      'Bangla': [
+      'বাংলা': [
   // ========================================== ব্যাকরণ (Grammar) ==========================================
   "ভাষা ও ব্যাকরণ", "ভাষার ইতিহাস ও ব্যাকরণ", "বাংলা ভাষা ও লিপি", "ধ্বনি ও বর্ণ", "বর্ণ", "ধ্বনির পরিবর্তন", "সন্ধি", "ণত্ব ও ষত্ব বিধান", "উপসর্গ প্রত্যয়", "প্রকৃতি ও প্রত্যয়", "শব্দ", "সংখ্যাবাচক শব্দ", "পুরুষ ও স্ত্রীবাচক শব্দ", "বিপরীত শব্দ", "সমোচ্চারিত ও ভিন্নার্থক শব্দ", "দ্বিরুক্তি শব্দ/শব্দদ্বিত্ব", "পদাশ্রিত নির্দেশক", "বচন", "কারক", "ক্রিয়ার কাল", "ধাতু", "পুরুষ", "বাচ্য", "বাক্য", "উক্তি", "বিরামচিহ্ন", "ভাষার প্রয়োগ অপপ্রয়োগ", "তৎপুরুষ সমাস", "কর্মধারয় সমাস", "দ্বিগু সমাস", "বহুব্রীহি সমাস", "ছন্দ প্রকরণ", "বাগধারা", "বাগধারা ও প্রবাদ প্রবচন", "এক কথায় প্রকাশ", "প্রশাসনিক", "ডাক ও খনার বচন",
 
@@ -259,11 +260,14 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   const getAvailableSubjects = () => {
   const category = tempCategory ? tempCategory.trim().toLowerCase() : "";
   
-  if (category === "power") {
-    return ["Microcontroller"];
+  if (category === "bcs") {
+    return ["English", "বাংলা", "বাংলাদেশ বিষয়াবলী", "আন্তর্জাতিক বিষয়াবলী", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা","নৈতিকতা, মূল্যবোধ ও সুশাসন" , "গাণিতিক যুক্তি","মানসিক দক্ষতা","কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান"];
+  }
+    else if (category === "bank") {
+    return ["English", "বাংলা", "গাণিতিক যুক্তি","মানসিক দক্ষতা","কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান"];
   }
   
-  return ["English", "Bangla", "বাংলাদেশ বিষয়াবলী", "International Affairs", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা", "কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান", "গাণিতিক যুক্তি", "মানসিক দক্ষতা", ];
+  return [];
 };
   return (
     <div className="min-h-screen bg-[#FDFDFD] pt-20 px-4 pb-10 font-sans">
@@ -276,28 +280,61 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
           ))}
         </div>
 
-        {/* Step 1: Category */}
-        {step === 1 && (
-          <div className="animate-in fade-in slide-in-from-bottom-2">
-            <h2 className="text-2xl font-black text-gray-800 mb-6 tracking-tight">Select <span className="text-green-600">Goal</span></h2>
-            <div className="grid grid-cols-2 gap-3">
-              {["bcs", "power", "admission", "bank"].map(id => (
-                <button key={id} onClick={() => {setTempCategory(id); setStep(2)}} className="bg-white border border-gray-100 p-6 rounded-3xl font-bold uppercase text-xs tracking-widest text-gray-600 hover:border-green-400 hover:text-green-600 transition-all shadow-sm active:scale-95">
-                  {id}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
+
+
+{/* Step 1: Category */}
+{step === 1 && (
+  <div className="animate-in fade-in slide-in-from-bottom-2">
+    <h2 
+      className="text-2xl font-bold text-gray-800 mb-8 tracking-tight" 
+      style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+    >
+      <span className="text-green-600"></span>
+    </h2>
+    
+    <div className="grid grid-cols-2 gap-4" style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
+      
+      {/* এখানেই সরাসরি ছবির নাম img: "..." এর ভেতরে দিয়ে দেওয়া হয়েছে */}
+      {[
+        { id: "bcs", name: "বিসিএস", img: "/bcs.png" },
+        { id: "bank", name: "ব্যাংক", img: "/bank1.png" }
+      ].map((goal) => (
+        <button
+          key={goal.id}
+          onClick={() => { setTempCategory(goal.id); setStep(2); }}
+          className=" rounded-2xl p-5 group flex flex-col items-center transition-all   active:scale-95"
+        >
+          {/* ছবির জায়গা - সবচেয়ে সহজভাবে img ট্যাগ বসানো হলো */}
+          <div className="w-full h-40 mb-4 rounded-2xl overflow-hidden">
+            <img 
+              src={goal.img} 
+              alt={goal.name} 
+              className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+            />
+          </div>
+
+          {/* টেক্সট */}
+          <span className="font-bold uppercase text-sm tracking-widest text-gray-600 group-hover:text-green-600 transition-colors">
+            {goal.name}
+          </span>
+        </button>
+      ))}
+      
+    </div>
+  </div>
+)}
         {/* Step 2 & 3: Selection */}
         {(step === 2 || step === 3) && (
-          <div className="animate-in slide-in-from-right-4">
+          <div className="animate-in slide-in-from-right-4"
+              style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
             <div className="flex justify-between items-end mb-6">
-              <h2 className="text-2xl font-black text-gray-800 tracking-tight">
-                Choose <span className="text-green-600">{step === 2 ? "Subjects" : "Topics"}</span>
+              <h2 className="text-lg ml-3 font-black text-gray-800 tracking-tight">
+                 <span className="text-green-600">{step === 2 ? "বিষয়" : "Topics"}
+                  
+                 </span>
               </h2>
-              <button onClick={() => {setStep(step - 1); if(step===2) setSelectedSubjects([])}} className="text-[10px] font-black  text-gray-400 hover:text-green-600 transition-colors">← Back</button>
+              <button onClick={() => {setStep(step - 1); if(step===2) setSelectedSubjects([])}} className="text-[10px] font-black  text-gray-400 hover:text-green-600 transition-colors">← পিছে </button>
             </div>
             
             <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
