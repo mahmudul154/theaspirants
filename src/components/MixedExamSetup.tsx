@@ -263,7 +263,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
     return ["Microcontroller"];
   }
   
-  return ["English", "Bangla", "বাংলাদেশ বিষয়াবলী", "International Affairs", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা", "কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান", "Math", "মানসিক দক্ষতা", ];
+  return ["English", "Bangla", "বাংলাদেশ বিষয়াবলী", "International Affairs", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা", "কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান", "গাণিতিক যুক্তি", "মানসিক দক্ষতা", ];
 };
   return (
     <div className="min-h-screen bg-[#FDFDFD] pt-20 px-4 pb-10 font-sans">
