@@ -303,7 +303,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         <button
           key={goal.id}
           onClick={() => { setTempCategory(goal.id); setStep(2); }}
-          className=" rounded-2xl p-5 group flex flex-col items-center transition-all   active:scale-95"
+          className=" rounded-2xl p-2 group flex flex-col items-center transition-all   active:scale-95"
         >
           {/* ছবির জায়গা - সবচেয়ে সহজভাবে img ট্যাগ বসানো হলো */}
           <div className="w-full h-40 mb-4 rounded-2xl overflow-hidden">
