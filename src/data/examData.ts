@@ -1,3 +1,5 @@
+
+
 export const categories = [
 
   { id: "bcs", label: "BCS", icon: "🏛️", color: "from-green-500 to-emerald-600" },

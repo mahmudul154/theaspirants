@@ -233,52 +233,92 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
     </div>
   );
 
-  // --- ----------------------------------------------------------------------Intro View ---
+// --- ----------------------------------------------------------------------Intro View ---
   if (phase === "intro") {
     return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-xl max-w-lg w-full p-8 text-center">
-          <div className="text-5xl mb-4">📝</div>
-          <h1 className="text-xl font-extrabold text-gray-900 mb-2 uppercase">{displayTitle} Exam</h1>
-          <p className="text-gray-500 mb-6">Read the instructions before starting</p>
+      <div 
+        className="pt-16 min-h-screen bg-slate-50 flex items-center justify-center p-4"
+        style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+      >
+        <div className="bg-white rounded-[2rem] shadow-2xl shadow-green-100/50 max-w-md w-full p-6 text-center border border-green-50 relative overflow-hidden">
           
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <div className="text-xl mb-1">❓</div>
-              <p className="text-xl font-bold text-gray-900">{questions.length}</p>
-              <p className="text-xs text-gray-500">Questions</p>
+     
+
+         
+
+          <h1 className="text-sm font-black text-green-600 justify- mb-1"> নিয়মাবলী : </h1>
+          <p className="text-gray-500 text-xs font-medium mb-6"></p>
+          
+          {/* Stats Grid - 3 items in one row */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            
+            <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-white transition-all hover:shadow-md hover:-translate-y-1">
+              <div className="text-xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">❓</div>
+              <div className="text-center">
+                <p className="text-lg font-black text-gray-800 leading-none mb-1">{questions.length}</p>
+                <p className="text-[10px] font-bold text-gray-500">মোট প্রশ্ন</p>
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <div className="text-xl mb-1">⏱️</div>
-              <p className="text-xl font-bold text-gray-900">{Math.floor(timeLeft / 60)} min</p>
-              <p className="text-xs text-gray-500">Duration</p>
+            
+            <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-white transition-all hover:shadow-md hover:-translate-y-1">
+              <div className="text-xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">⏱️</div>
+              <div className="text-center">
+                <p className="text-lg font-black text-gray-800 leading-none mb-1">{Math.floor(timeLeft / 60)}</p>
+                <p className="text-[10px] font-bold text-gray-500">মিনিট</p>
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <div className="text-xl mb-1">📊</div>
-              <p className="text-xl font-bold text-gray-900">{questions.length}</p>
-              <p className="text-xs text-gray-500">Total Marks</p>
+            
+            <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-white transition-all hover:shadow-md hover:-translate-y-1">
+              <div className="text-xl bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm">📊</div>
+              <div className="text-center">
+                <p className="text-lg font-black text-gray-800 leading-none mb-1">{questions.length}</p>
+                <p className="text-[10px] font-bold text-gray-500">পূর্ণমান</p>
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <div className="text-xl mb-1">⚡</div>
-              <p className="text-xl font-bold text-gray-900">Standard</p>
-              <p className="text-xs text-gray-500">Difficulty</p>
-            </div>
+
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-left">
-            <p className="text-sm font-bold text-amber-800 mb-2">📌 Instructions:</p>
-            <ul className="text-sm text-amber-700 space-y-1 list-disc pl-4">
-              <li>Each correct answer = +1 mark</li>
-              <li>Wrong answer = -0.5 mark (negative marking)</li>
-              <li>You can flag questions to revisit later</li>
-              <li>Timer starts immediately after clicking Start</li>
+          {/* Instructions - Unique & Minimal */}
+          <div className="bg-red-50/50 border border-red-100 rounded-2xl p-4 mb-6 text-left">
+            <p className="text-xs font-black text-red-600 mb-3 flex items-center gap-1.5">
+              <span className="animate-pulse">📌</span> নিয়মাবলী:
+            </p>
+            <ul className="text-[11px] font-medium text-gray-600 space-y-2 list-none">
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-[1px]">✔️</span> 
+                <span>প্রতিটি সঠিক উত্তরে <b>১ নম্বর</b> যোগ হবে।</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-red-400 mt-[1px]">❌</span> 
+                <span>প্রতিটি ভুল উত্তরে <b>০.৫ নম্বর</b> কাটা যাবে।</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-[1px]">🚩</span> 
+                <span>রিভিউ করার জন্য প্রশ্ন <b>ফ্ল্যাগ</b> করে রাখতে পারবেন।</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-[1px]">⏱️</span> 
+                <span>বাটনে ক্লিক করার সাথে সাথেই <b>সময় গণনা</b> শুরু হবে।</span>
+              </li>
             </ul>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex gap-3">
-            <button onClick={() => setCurrentPage("home")} className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition">Back</button>
-            <button onClick={() => setPhase("exam")} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold hover:from-green-600 hover:to-emerald-700 shadow transition">🚀 Start</button>
+            <button 
+              onClick={() => setCurrentPage("home")} 
+              className="w-1/3 py-3.5 rounded-xl border-2 border-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-95"
+            >
+              ফিরে যান
+            </button>
+            <button 
+              onClick={() => setPhase("exam")} 
+              className="w-2/3 py-3.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-black hover:shadow-lg hover:shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+            >
+              <span className="group-hover:animate-bounce">🚀</span> পরীক্ষা শুরু
+            </button>
           </div>
+          
         </div>
       </div>
     );
@@ -290,98 +330,224 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
 
 
 
-  // --- --------------------------------------------------------------------------------Result View ---
+// --- --------------------------------------------------------------------------------Result View ---
   if (phase === "result") {
+    const skippedCount = questions.length - Object.keys(answers).length;
+
     return (
-      <div className="pt-16 min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 py-10">
-          <div className={`rounded-3xl p-8 text-center text-white mb-6 shadow-xl ${
-            percentage >= 70 ? "bg-gradient-to-br from-green-500 to-emerald-600"
-            : percentage >= 50 ? "bg-gradient-to-br from-yellow-500 to-orange-500"
-            : "bg-gradient-to-br from-red-500 to-rose-600"
+      <div 
+        className="pt-10 min-h-screen bg-[#F8F9FA] pb-12"
+        style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+      >
+        <div className="max-w-4xl mx-auto px-4">
+          
+          {/* ---------------- Unique Dashboard Header (Glassmorphism) ---------------- */}
+          <div className={`relative rounded-[2.5rem] p-6 md:p-8 mb-8 shadow-xl overflow-hidden flex flex-col md:flex-row items-center gap-8 ${
+              percentage >= 70 ? "bg-gradient-to-br from-green-600 via-emerald-600 to-green-800 shadow-green-200/50"
+              : percentage >= 50 ? "bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 shadow-orange-200/50"
+              : "bg-gradient-to-br from-rose-500 via-red-500 to-red-700 shadow-rose-200/50"
           }`}>
-            <div className="text-6xl mb-3">{percentage >= 70 ? "🏆" : percentage >= 50 ? "👍" : "📖"}</div>
-            <h2 className="text-3xl font-extrabold mb-1">{percentage >= 70 ? "Excellent!" : percentage >= 50 ? "Good Job!" : "Keep Practicing!"}</h2>
-            <div className="text-7xl font-extrabold mb-2">{percentage}%</div>
-            <p className="text-white/80 text-lg">Score: {totalScore} / {questions.length}</p>
+            
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-10 w-40 h-40 bg-black/10 rounded-full blur-2xl translate-y-1/2 pointer-events-none"></div>
+
+            {/* Left Column: Verdict & Score */}
+            <div className="relative z-10 flex-1 text-center md:text-left w-full md:border-r border-white/20 md:pr-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-bold mb-4 shadow-sm border border-white/10">
+                {percentage >= 70 ? "🏆 অসাধারণ ফলাফল!" : percentage >= 50 ? "👍 খুব ভালো চেষ্টা!" : "📖 আরও অনুশীলন প্রয়োজন!"}
+              </div>
+              <div className="text-white/80 text-sm font-medium mb-1">আপনার মোট স্কোর</div>
+              <div className="text-6xl md:text-7xl font-black text-white mb-3 drop-shadow-md">{percentage}%</div>
+              <p className="text-green-50 text-sm bg-black/10 inline-block px-4 py-2 rounded-xl backdrop-blur-sm border border-black/5">
+                <span className="font-bold text-white">{questions.length}</span> টি প্রশ্নের মধ্যে <span className="font-bold text-white">{totalScore}</span> নম্বর পেয়েছেন
+              </p>
+            </div>
+
+            {/* Right Column: Unified Stats Grid (Glassmorphism) */}
+            <div className="relative z-10 w-full md:w-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+              <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center shadow-inner">
+                <div className="text-3xl font-black text-white mb-1">{correct}</div>
+                <div className="text-xs font-bold text-green-100">সঠিক উত্তর</div>
+              </div>
+              <div className="bg-rose-500/20 backdrop-blur-md border border-rose-400/30 rounded-2xl p-4 text-center shadow-inner">
+                <div className="text-3xl font-black text-white mb-1">{wrong}</div>
+                <div className="text-xs font-bold text-rose-100">ভুল উত্তর</div>
+              </div>
+              <div className="bg-black/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center col-span-2 sm:col-span-1 shadow-inner">
+                <div className="text-3xl font-black text-white mb-1">{skippedCount}</div>
+                <div className="text-xs font-bold text-slate-200">উত্তর দেননি</div>
+              </div>
+            </div>
+
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-              <p className="text-2xl font-extrabold text-green-600">{correct}</p>
-              <p className="text-xs text-gray-500 font-medium">Correct</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-              <p className="text-2xl font-extrabold text-red-500">{wrong}</p>
-              <p className="text-xs text-gray-500 font-medium">Wrong</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-              <p className="text-2xl font-extrabold text-gray-400">{questions.length - Object.keys(answers).length}</p>
-              <p className="text-xs text-gray-500 font-medium">Skipped</p>
-            </div>
-          </div>
-            {/* --- Result View এর গ্রিড বক্সগুলোর ঠিক নিচে এই ব্লকটি বসান --- */}
-<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-  <h3 className="font-bold text-gray-900 text-lg mb-4 text-left">🎯 বিষয়ভিত্তিক পারফরম্যান্স</h3>
-  <div className="space-y-4 text-left">
-    {Object.entries(subTopicAnalysis || {}).map(([name, stat]: any) => {
-      const per = Math.round((stat.correct / stat.total) * 100);
-      return (
-        <div key={name}>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="font-semibold text-gray-700">{name}</span>
-            <span className="text-gray-500 font-bold">{stat.correct}/{stat.total}</span>
-          </div>
-          <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-700 ${
-                per < 50 ? 'bg-red-500' : 
-                per < 80 ? 'bg-amber-400' : 
-                'bg-emerald-500'
-              }`} 
-              style={{ width: `${per}%` }}
-            />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 className="font-bold text-gray-900 text-lg mb-4">📋 Answer Review</h3>
-            <div className="space-y-4">
-              {questions.map((q, i) => {
-                const userAnswer = answers[i];
-                const isCorrect = userAnswer === q.answer;
-                const isSkipped = userAnswer === undefined;
-                return (
-                  <div key={q.id} className={`p-4 rounded-xl border ${isSkipped ? "border-gray-200 bg-gray-50" : isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0">{isSkipped ? "⬜" : isCorrect ? "✅" : "❌"}</span>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold text-gray-900 mb-2">{i + 1}. <MarkdownRenderer content={q.question} /></div>
-                        <div className="text-xs text-gray-600">
-                          <span className="font-medium">Correct: </span>
-                          <span className="text-green-700 font-semibold inline-block"><MarkdownRenderer content={q.answer} /></span>
-                          {!isSkipped && !isCorrect && (
-                            <div className="mt-1 text-red-600">| Your answer: <MarkdownRenderer content={userAnswer} /></div>
-                          )}
-                        </div>
-                        {q.explanation && (
-                          <div className="text-xs text-gray-500 mt-2 italic border-t pt-2 border-gray-100">
-                            💡 <strong>Explanation:</strong> <MarkdownRenderer content={q.explanation} />
-                          </div>
-                        )}
+          {/* ---------------- Subject-wise Performance ---------------- */}
+          {subTopicAnalysis && Object.keys(subTopicAnalysis).length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-8">
+              <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span className="text-green-600 bg-green-50 p-1.5 rounded-lg">🎯</span> বিষয়ভিত্তিক পারফরম্যান্স
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                {Object.entries(subTopicAnalysis).map(([name, stat]: any) => {
+                  const per = Math.round((stat.correct / stat.total) * 100);
+                  return (
+                    <div key={name}>
+                      <div className="flex justify-between text-sm mb-1.5">
+                        <span className="font-semibold text-slate-700 truncate mr-2">{name}</span>
+                        <span className="font-bold text-slate-800">{stat.correct}/{stat.total}</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${per < 50 ? 'bg-rose-400' : per < 80 ? 'bg-amber-400' : 'bg-green-500'}`} 
+                          style={{ width: `${per}%` }}
+                        />
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+          )}
+
+          {/* ---------------- Questions Review Section ---------------- */}
+          <div className="space-y-4">
+            {questions.map((q, i) => {
+              const userAnswer = answers[i];
+              const isCorrect = userAnswer === q.answer;
+              const isSkipped = userAnswer === undefined;
+              
+              const optionLetters = ['ক', 'খ', 'গ', 'ঘ', 'ঙ'];
+
+              return (
+                <div key={q.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6">
+                  
+                  {/* Status Badge */}
+                  <div className="mb-4">
+                    {isSkipped ? (
+                      <span className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-bold inline-flex items-center gap-1.5">
+                        <span className="text-slate-400">—</span> উত্তর দেননি
+                      </span>
+                    ) : isCorrect ? (
+                      <span className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg font-bold inline-flex items-center gap-1.5 border border-green-100">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg> সঠিক
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg font-bold inline-flex items-center gap-1.5 border border-rose-100">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg> ভুল
+                      </span>
+                    )}
+                  </div>
+
+                {/* Question Text */}
+<div className="text-base font-bold text-slate-800 mb-5 flex items-start gap-2">
+  <span className="text-slate-400">{i + 1}.</span> 
+  {/* Added specific markdown spacing classes here */}
+  <div className="flex-1 leading-relaxed [&>p]:mb-3 last:[&>p]:mb-0 [&_table]:w-full [&_td]:p-2 [&_th]:p-2 [&_th]:text-left [&_table]:mb-3">
+    <MarkdownRenderer content={q.question} />
+  </div>
+</div>
+                  
+                  {/* Options Layout */}
+                  {q.options && q.options.length > 0 ? (
+                    <div className="space-y-3 mb-5 md:ml-6">
+                      {q.options.map((opt, idx) => {
+                        const isThisCorrect = opt === q.answer;
+                        const isThisSelected = opt === userAnswer;
+                        
+                        let optionBoxClass = "border-slate-200 bg-white text-slate-700 hover:border-slate-300";
+                        let circleClass = "bg-slate-50 border-slate-200 text-slate-500";
+                        
+                        if (isThisCorrect) {
+                          optionBoxClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500 shadow-sm";
+                          circleClass = "bg-green-600 border-green-600 text-white";
+                        } else if (isThisSelected && !isCorrect) {
+                          optionBoxClass = "border-rose-400 bg-rose-50 text-rose-800 shadow-sm";
+                          circleClass = "bg-rose-500 border-rose-500 text-white";
+                        }
+
+                        return (
+                          <div key={idx} className={`text-sm p-3.5 rounded-xl border flex items-center gap-3 transition-all ${optionBoxClass}`}>
+                            <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold border shrink-0 ${circleClass}`}>
+                              {isThisCorrect && isThisSelected ? (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                              ) : isThisSelected && !isCorrect ? (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                              ) : (
+                                optionLetters[idx] || (idx + 1)
+                              )}
+                            </div>
+                            
+                            <span className={`flex-1 font-medium leading-relaxed ${isThisCorrect ? "font-bold" : ""}`}>
+                              <MarkdownRenderer content={opt} />
+                            </span>
+                            
+                            {isThisCorrect && (
+                              <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm bg-green-50 p-4 rounded-xl border border-green-200 mb-5 md:ml-6">
+                      <div className="flex items-start gap-2">
+                        <span className="font-bold text-green-700 shrink-0 w-20">সঠিক উত্তর:</span>
+                        <span className="text-green-700 font-bold flex-1 leading-relaxed"><MarkdownRenderer content={q.answer} /></span>
+                      </div>
+                      {!isSkipped && !isCorrect && (
+                        <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-200/60">
+                          <span className="font-bold text-slate-500 shrink-0 w-20">আপনার উত্তর:</span>
+                          <span className="text-rose-500 font-bold flex-1 leading-relaxed"><MarkdownRenderer content={userAnswer} /></span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                 {/* Explanation Box */}
+{q.explanation && (
+  <div className="mt-3 md:ml-6 bg-slate-50 p-4 md:p-6 rounded-xl border-l-4 border-green-600 text-sm shadow-sm">
+    
+    <div className="font-black text-green-700 mb-3 flex items-center gap-1.5 border-b border-green-200/60 pb-2.5">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      ব্যাখ্যা:
+    </div> 
+    
+    {/* ✨ ম্যাজিক ক্লাস: মার্কডাউনের ভেতরের সব এলিমেন্টকে সুন্দর স্পেসিং এবং বর্ডার দেওয়ার জন্য */}
+    <div className="leading-[1.8] text-[14px] md:text-[15px] text-slate-700 
+      [&>p]:mb-4 last:[&>p]:mb-0 
+      [&_table]:w-full [&_table]:mb-5 [&_table]:border-collapse [&_table]:bg-white [&_table]:rounded-lg [&_table]:overflow-hidden [&_table]:shadow-sm
+      [&_th]:text-left [&_th]:p-3 [&_th]:border-b-2 [&_th]:border-green-200 [&_th]:bg-green-50 [&_th]:font-bold [&_th]:text-green-800
+      [&_td]:p-3 [&_td]:border-b [&_td]:border-slate-100 [&_td]:align-top
+      [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-1.5
+      [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4
+      [&_strong]:text-slate-900 [&_strong]:font-black
+      [&_h1]:font-black [&_h1]:text-lg [&_h1]:mb-3 [&_h1]:mt-5
+      [&_h2]:font-bold [&_h2]:text-base [&_h2]:mb-2 [&_h2]:mt-4
+      [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-3"
+    >
+      <MarkdownRenderer content={q.explanation} />
+    </div>
+    
+  </div>
+)}
+
+                </div>
+              );
+            })}
           </div>
         
-          <button onClick={() => setCurrentPage("mixed-setup")} className="w-full py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold shadow hover:from-green-600 transition">Browse Exams</button>
+          {/* Bottom Button */}
+          <div className="mt-8">
+            <button 
+              onClick={() => setCurrentPage("mixed-setup")} 
+              className="w-full py-4 rounded-xl bg-green-600 text-white text-base font-black hover:bg-green-700 transition-all duration-300 shadow-lg shadow-green-200 flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              আরও পরীক্ষা দিন
+            </button>
+          </div>
+
         </div>
       </div>
     );
@@ -394,197 +560,161 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
 
 
 
-
-{/*const timerDanger = timeLeft < 60;
-
-return (
-  <div className="pt-16 min-h-screen bg-gray-50 flex flex-col">
-    {/* ফিক্সড হেডার (টাইমার এবং প্রগ্রেস বারসহ) 
-    <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex-1 hidden sm:block font-bold text-gray-600 uppercase">{displayTitle}</div>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg ${timerDanger ? "bg-red-100 text-red-600 animate-pulse" : "bg-green-100 text-green-700"}`}>
-          ⏱️ {formatTime(timeLeft)}
-        </div>
-        <div className="text-sm text-gray-600 font-semibold">{Object.keys(answers).length} / {questions.length} Answered</div>
-        <button onClick={finishExam} className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-xl hover:bg-red-600 transition">Submit</button>
-      </div>
-     
-      <div className="h-1.5 bg-gray-100">
-        <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all" style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}></div>
-      </div>
-    </div>
-
- 
-    <div className="max-w-3xl mx-auto px-4 py-8 w-full">
-      <div className="space-y-6">
-        {questions.map((q, i) => {
-          const isAnswered = answers[i] !== undefined;
-          
-          return (
-            <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
-              <div className="flex items-center justify-between mb-4">
-                <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
-                <button 
-                  onClick={() => {
-                    setFlagged((prev) => {
-                      const next = new Set(prev);
-                      next.has(i) ? next.delete(i) : next.add(i);
-                      return next;
-                    });
-                  }} 
-                  className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
-                >
-                  🚩
-                </button>
-              </div>
-
-              <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
-                <MarkdownRenderer content={q?.question} />
-              </div>
-
-              <div className="space-y-3">
-                {q?.options?.map((opt: string, optIdx: number) => (
-                  <button 
-                    key={optIdx} 
-                    onClick={() => setAnswers(prev => ({ ...prev, [i]: opt }))} 
-                    className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium text-sm md:text-base flex items-start ${
-                      answers[i] === opt 
-                        ? "border-green-500 bg-green-50 text-green-800" 
-                        : "border-gray-200 hover:border-green-300 hover:bg-green-50/50 text-gray-700"
-                    }`}
-                  >
-                    <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
-                      answers[i] === opt ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"
-                    }`}>
-                      {String.fromCharCode(65 + optIdx)}
-                    </span>
-                    <div className="flex-1 overflow-hidden">
-                      <MarkdownRenderer content={opt} />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-  
-      <div className="mt-10 mb-20 text-center">
-        <button 
-          onClick={finishExam} 
-          className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg hover:from-green-600 transition active:scale-95"
-        >
-          Final Submit
-        </button>
-      </div>
-    </div>
-  </div>
-); */}
 const timerDanger = timeLeft < 60;
+  // বাংলা অপশন লেটার
+  const optionLetters = ['ক', 'খ', 'গ', 'ঘ', 'ঙ'];
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 flex flex-col">
-      {/* ফিক্সড হেডার: প্রগ্রেস এবং টাইমার */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex-1 hidden sm:block font-bold text-gray-600 uppercase tracking-tight">{displayTitle}</div>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg ${timerDanger ? "bg-red-100 text-red-600 animate-pulse" : "bg-green-100 text-green-700"}`}>
-            ⏱️ {formatTime(timeLeft)}
+    <div 
+      className="pt-16 min-h-screen bg-[#F8F9FA] flex flex-col pb-12"
+      style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+    >
+      {/* ---------------- ফিক্সড হেডার: প্রগ্রেস এবং টাইমার ---------------- */}
+      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-4">
+          
+          {/* Topic Title */}
+          <div className="flex-1 hidden sm:block font-black text-slate-700 truncate text-base">
+            <span className="text-green-600 mr-1.5">বিষয়:</span>{displayTitle}
           </div>
-          <div className="text-sm text-gray-600 font-semibold">
-            {Object.keys(answers).length} / {questions.length} Answered
+          
+          {/* Timer */}
+          <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-sm md:text-base border transition-colors ${
+            timerDanger ? "bg-rose-50 text-rose-600 border-rose-200 animate-pulse" : "bg-green-50 text-green-700 border-green-100"
+          }`}>
+            ⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
           </div>
-          <button onClick={finishExam} className="px-5 py-2.5 text-sm font-bold bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow-sm active:scale-95">Submit</button>
+          
+          {/* Answered Count */}
+          <div className="text-xs md:text-sm text-slate-600 font-bold bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+            <span className="text-green-600">{Object.keys(answers).length}</span> / {questions.length} <span className="hidden sm:inline">উত্তর দিয়েছেন</span>
+          </div>
+          
+          {/* Submit Button (Header) */}
+          <button 
+            onClick={finishExam} 
+            className="px-4 md:px-6 py-2 text-xs md:text-sm font-black bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition shadow-sm shadow-rose-200 active:scale-95"
+          >
+            জমা দিন
+          </button>
         </div>
-        <div className="h-1.5 bg-gray-100 w-full">
+        
+        {/* Progress Bar */}
+        <div className="h-1.5 bg-slate-100 w-full">
           <div 
-            className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500" 
+            className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 rounded-r-full" 
             style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
           ></div>
         </div>
       </div>
 
-      {/* মেইন কন্টেন্ট: স্ক্রলযোগ্য প্রশ্ন তালিকা */}
-      <div className="max-w-3xl mx-auto px-4 py-8 w-full">
-       <div className="space-y-8">
-  {questions.map((q: any, i: number) => {
-    const hasAnswered = answers[i] !== undefined;
-
-    return (
-      <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-left">
-        <div className="flex items-center justify-between mb-4">
-          <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Q{i + 1}</span>
-          <button 
-            onClick={() => {
-              setFlagged((prev: Set<number>) => {
-                const next = new Set(prev);
-                next.has(i) ? next.delete(i) : next.add(i);
-                return next;
-              });
-            }} 
-            className={`text-xl transition ${flagged.has(i) ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"}`}
-          >
-            🚩
-          </button>
-        </div>
-
-        <div className="text-gray-900 font-semibold text-base md:text-lg mb-6 leading-relaxed">
-          <MarkdownRenderer content={q?.question} />
-        </div>
-
-        <div className="space-y-3">
-          {q?.options?.map((opt: string, optIdx: number) => {
-            const isCorrect = opt === q.answer;       // supabase e column name = answer
-            const isSelected = answers[i] === opt;
-
-            // bgClass instant recalc
-            let bgClass = "border-gray-200 text-gray-700 bg-white"; 
-            if (hasAnswered) {
-              if (isSelected && isCorrect) bgClass = "border-green-500 text-green-800 bg-green-50";
-              else if (isSelected && !isCorrect) bgClass = "border-red-500 text-red-800 bg-red-50";
-              else if (isCorrect) bgClass = "border-green-500 text-green-800 bg-green-50";
-              else bgClass = "border-gray-100 text-gray-400 opacity-60";
-            }
+      {/* ---------------- মেইন কন্টেন্ট: প্রশ্ন তালিকা ---------------- */}
+      <div className="max-w-4xl mx-auto px-4 py-8 w-full">
+        <div className="space-y-5">
+          {questions.map((q: any, i: number) => {
+            const hasAnswered = answers[i] !== undefined;
 
             return (
-              <button
-                key={optIdx}
-                onClick={() => setAnswers((prev) => ({ ...prev, [i]: opt }))} 
-                disabled={false} // disabled পরে লাগানো হলে delay হবে, এখন instant
-                className={`w-full text-left px-5 py-4 rounded-xl border-2 font-medium text-sm md:text-base flex items-start transition ${bgClass}`}
-              >
-                <span className={`flex-shrink-0 inline-flex w-7 h-7 rounded-full items-center justify-center text-xs font-bold mr-3 mt-0.5 ${
-                  hasAnswered && isCorrect ? "bg-green-500 text-white" : 
-                  hasAnswered && isSelected && !isCorrect ? "bg-red-500 text-white" :
-                  "bg-gray-100 text-gray-600"
-                }`}>
-                  {String.fromCharCode(65 + optIdx)}
-                </span>
-
-                <div className="flex-1 overflow-hidden">
-                  <MarkdownRenderer content={opt} />
+              <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6 transition-all hover:shadow-md">
+                
+                {/* Question Top Bar (Q Number & Flag) */}
+                <div className="flex items-center justify-between mb-5">
+                  <span className="bg-green-50 border border-green-100 text-green-700 text-xs font-black px-3 py-1.5 rounded-lg">
+                    প্রশ্ন {i + 1}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      setFlagged((prev: Set<number>) => {
+                        const next = new Set(prev);
+                        next.has(i) ? next.delete(i) : next.add(i);
+                        return next;
+                      });
+                    }} 
+                    className={`text-xl transition-all p-1.5 rounded-lg hover:bg-slate-50 ${
+                      flagged.has(i) ? "text-amber-500 scale-110" : "text-slate-300 hover:text-amber-400 grayscale hover:grayscale-0"
+                    }`}
+                    title="রিভিউয়ের জন্য মার্ক করুন"
+                  >
+                    🚩
+                  </button>
                 </div>
 
-              </button>
+                {/* Question Text */}
+                <div className="text-base font-bold text-slate-800 mb-5 leading-relaxed">
+                  <MarkdownRenderer content={q?.question} />
+                </div>
+
+                {/* Options List */}
+                <div className="space-y-3 md:ml-2">
+                  {q?.options?.map((opt: string, optIdx: number) => {
+                    const isCorrect = opt === q.answer; // supabase e column name = answer
+                    const isSelected = answers[i] === opt;
+
+                    // ডিফল্ট স্টাইল
+                    let optionBoxClass = "border-slate-200 bg-white text-slate-700 hover:border-green-300 hover:bg-green-50/30";
+                    let circleClass = "bg-slate-50 border-slate-200 text-slate-500";
+                    let iconRender: React.ReactNode = optionLetters[optIdx] || (optIdx + 1);
+
+                    // উত্তর দেওয়ার পরের স্টাইল লজিক
+                    if (hasAnswered) {
+                      if (isSelected && isCorrect) {
+                        optionBoxClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500 shadow-sm";
+                        circleClass = "bg-green-600 border-green-600 text-white";
+                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>;
+                      } else if (isSelected && !isCorrect) {
+                        optionBoxClass = "border-rose-400 bg-rose-50 text-rose-800 shadow-sm";
+                        circleClass = "bg-rose-500 border-rose-500 text-white";
+                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>;
+                      } else if (isCorrect) {
+                        optionBoxClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500 shadow-sm";
+                        circleClass = "bg-green-600 border-green-600 text-white";
+                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>;
+                      } else {
+                        // উত্তর দেওয়ার পর বাকি ভুল অপশনগুলো ফেড (Fade) হয়ে যাবে
+                        optionBoxClass = "border-slate-100 bg-white text-slate-400 opacity-60";
+                        circleClass = "bg-slate-50 border-slate-100 text-slate-400";
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={optIdx}
+                        onClick={() => setAnswers((prev) => ({ ...prev, [i]: opt }))} 
+                        disabled={false} // disabled পরে লাগানো হলে delay হবে, এখন instant
+                        className={`w-full text-left p-3.5 rounded-xl border flex items-center gap-3 transition-all ${optionBoxClass}`}
+                      >
+                        {/* Option Circle (Letter or Icon) */}
+                        <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold border shrink-0 transition-colors ${circleClass}`}>
+                          {iconRender}
+                        </div>
+
+                        {/* Option Text */}
+                        <div className={`flex-1 font-medium leading-relaxed ${hasAnswered && isCorrect ? "font-bold" : ""}`}>
+                          <MarkdownRenderer content={opt} />
+                        </div>
+                        
+                        {/* Right side checkmark for correct answer (Shows after answering) */}
+                        {hasAnswered && isCorrect && (
+                          <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+              </div>
             );
           })}
         </div>
 
-       
-      </div>
-    );
-  })}
-</div>
-
-        {/* ফাইনাল সাবমিট বাটন */}
-        <div className="mt-12 mb-24">
+        {/* ---------------- ফাইনাল সাবমিট বাটন (Bottom) ---------------- */}
+        <div className="mt-6 mb-16">
           <button 
             onClick={finishExam} 
-            className="w-full py-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-[0.98] text-lg flex items-center justify-center gap-3"
+            className="w-full py-4 bg-green-600 text-white font-black rounded-xl shadow-lg shadow-green-200 hover:bg-green-700 transition-all duration-300 active:scale-[0.98] text-base flex items-center justify-center gap-2 group"
           >
-            Finish Exam & See Result <span className="text-xl">🚀</span>
+            পরীক্ষা শেষ করুন
+            <span className="text-xl group-hover:translate-x-1 transition-transform"></span>
           </button>
         </div>
       </div>

@@ -24,6 +24,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
   };
 
   return (
+    
     <div className="pt-8 bg-gray-50 min-h-screen"
         style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
     {/* Premium Clean Dashboard Hero - Color Matched with Image */}
@@ -60,7 +61,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       <div className=" flex-col sm:flex-row gap-5 justify-center lg:justify-start">
         <button
           onClick={() => setCurrentPage("mixed-setup")}
-          className="group px-2 py-3 bg-[#22C55E] text-white font-black rounded-xl text-s tracking-widest hover:bg-[#16a34a] shadow-[0_20px_40px_-10px_rgba(34,197,94,0.3)] transition-all duration-300   justify-center gap-3 active:scale-95"
+          className="group px-2 py-3 bg-[#22C55E] text-white font-black rounded-xl text-s t hover:bg-[#16a34a] shadow-[0_20px_40px_-10px_rgba(34,197,94,0.3)] transition-all duration-300   justify-center gap-3 active:scale-95"
         >
           🚀 অনুশীলন করুন
           <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -117,7 +118,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২ লাখ</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২ লাখ+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>
@@ -219,7 +220,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 <section className="py-20 bg-white"
     style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
   <div className="max-w-7xl mx-auto px-6">
-    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+    <div className="flex flex-col ml-6 md:flex-row md:items-end justify-between mb-12 gap-4">
       <div>
         <span className="text-red-600 font-black text-[10px] uppercase  bg-red-50 px-3 py-1 rounded-full border border-red-100 mb-3 inline-block animate-pulse">লাইভ এরিনা</span>
         <h2 className="text-xl font-black text-green-800">চলমান<span className=""> পরীক্ষা</span></h2>
@@ -335,7 +336,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       <div className="bg-white/20 w-fit px-2 py-1 rounded-lg text-[10px] mb-2 font-bold backdrop-blur-md">
         RECOMMENDED
       </div>
-      <h3 className="text-2xl font-black mb-1 leading-tight">Mixed Subject <br/> Marathon</h3>
+      <h3 className="text-2xl font-black mb-1 leading-tight">বিষয়ভিত্তিক ম্যারাথন <br/> </h3>
       <p className="text-green-50 text-[12px] mb-4 max-w-[200px] opacity-90">
      একাধিক বিষয় নিয়ে তৈরি করুন আপনার নিজের পরীক্ষা।
       </p>
@@ -365,8 +366,8 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
           <span className="text-xl">⚡</span>
       </div>
-      <h4 className="text-md font-bold text-gray-800 leading-none">Quick 10</h4>
-      <p className="text-gray-400 text-[10px] mt-1 italic">10 min preparation.</p>
+      <h4 className="text-md font-bold text-gray-800 leading-none">ঝটপট প্রস্তুতি</h4>
+      <p className="text-gray-400 text-[10px] mt-1 ">১০ মিনিটের দ্রুত প্রস্তুতি।</p>
     </div>
 
     {/* Small Card 2: Weak Topics */}
@@ -375,11 +376,15 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           <span className="text-xl">🎯</span>
       </div>
       <h4 className="text-md font-bold text-gray-800 leading-none">Weak Points</h4>
-      <p className="text-gray-400 text-[10px] mt-1 italic">Review mistakes.</p>
+      <p className="text-gray-400 text-[10px] mt-1 ">ভুলগুলো পর্যালোচনা করুন।</p>
     </div>
 
   </div>
 </section>
+
+
+
+
 
 
 
@@ -391,7 +396,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="flex items-center gap-3 mb-8">
       <div className="w-1.5 h-6 bg-green-500 rounded-full"></div>
-      <h2 className="text-xl font-bold text-gray-800 tracking-tighter ">Subjects</h2>
+      <h2 className="text-xl font-bold text-gray-800 tracking-tighter ">বিষয়সমূহ</h2>
       
     </div>
 
@@ -431,7 +436,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
               {sub.label}
             </span>
             <span className="text-[10px] text-gray-400 font-medium  tracking-tighter">
-              Practice Now
+         🚀 অনুশীলন করুন →
             </span>
           </div>
         </button>
@@ -446,10 +451,10 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 tracking-tighter ">🏆 Top Aspirants</h2>
+              <h2 className="text-xl font-bold text-gray-900  ">🏆সেরা চাকরিপ্রার্থী</h2>
               <p className="text-gray-500 mt-1"></p>
             </div>
-            <button onClick={() => setCurrentPage("leaderboard")} className="text-green-600 font-semibold text-sm hover:text-green-700">View All →</button>
+            <button onClick={() => setCurrentPage("leaderboard")} className="text-green-600 font-semibold text-sm hover:text-green-700">  সম্পূর্ণ দেখুন →</button>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {leaderboard.map((user, i) => (
@@ -463,11 +468,11 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900 text-sm">{user.name}</p>
-                  <p className="text-xs text-gray-400">{user.exams} exams completed</p>
+                  <p className="text-xs text-gray-400">{user.exams} পরীক্ষা সম্পন্ন করেছে</p>
                 </div>
                 <div className="text-right">
                   <p className="font-extrabold text-green-600 text-lg">{user.score}%</p>
-                  <p className="text-xs text-gray-400">avg score</p>
+                  <p className="text-xs text-gray-400">গড় নম্বর</p>
                 </div>
               </div>
             ))}
@@ -475,106 +480,105 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         </div>
       </section>
 
-   {/*{/* Unique Bento-Style Features Section with Integrated CTA 
 <section className="py-24 bg-[#FAFAFA] overflow-hidden">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <div className="mb-16">
-        <h2 className="text-3xl font-black text-green-800 tracking-tighter"> <span className=""></span></h2>
+        {/* উপরের হেডিং (যদি থাকে) */}
+        <h2 className="text-3xl font-black text-green-800 tracking-tighter"></h2>
     </div>
 
-
-    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
- 
-      <div className="md:col-span-6 lg:col-span-4 p-12 bg-gradient-to-br from-green-600 to-emerald-800 rounded-[3.5rem] text-white relative overflow-hidden group shadow-2xl shadow-green-200 order-last lg:order-first">
-    
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-400/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
-
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 h-full">
-          <div className="text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">Ready to <br/>test your skills?</h2>
-            <p className="text-green-100 mb-8 text-base md:text-lg max-w-md font-medium">
-              Join <span className="text-yellow-400 font-black">20k+ aspirants</span> who trust us for their victory.
-            </p>
-            <button
-              onClick={() => setCurrentPage("signup")}
-              className="px-8 py-4 bg-yellow-400 text-green-900 font-black rounded-2xl text-base hover:bg-white hover:scale-105 transition-all shadow-xl active:scale-95 flex items-center gap-2 mx-auto md:mx-0"
-            >
-              🎓 Register Now – Free
-            </button>
-          </div>
-          
-
-          <div className="relative hidden md:block">
-            <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-sm ">
-              <span className="text-7xl">🏆</span>
-            </div>
-            <div className="absolute -bottom-4 -right-4 bg-white text-green-600 p-4 rounded-3xl shadow-xl font-black text-xl rotate-12">
-              #20K+ USERS
-            </div>
-          </div>
-        </div>
-      </div>
-
+    {/* Main Green Panel */}
+    <div className="w-full bg-gradient-to-br from-green-600 to-emerald-800 rounded-[3.5rem] text-white relative shadow-2xl shadow-green-200">
   
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <h3 className="text-xl font-black text-green-800">60K+ <br />Verified Questions</h3>
-        <div className="flex items-end justify-between">
-           <p className="text-green-600/60 text-[10px] font-black tracking-tighter">HSC • BCS • BANK</p>
-           <div className="text-4xl opacity-30]">💡</div>
+      {/* Background Glow/Decorations */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-400/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+
+      {/* Content Container */}
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between px-10 py-12 md:py-0 md:pl-16 min-h-[400px]">
+        
+        {/* Left Side: Text Content */}
+        <div className="text-center md:text-left flex-1 md:py-16">
+          <h2 className="text-3xl md:text-[2.75rem] font-black mb-6 leading-[1.3]">
+            নিজেকে যাচাই করার<br/> জন্য আপনি কি প্রস্তুত?
+          </h2>
+          <p className="text-green-100 mb-10 text-base md:text-lg max-w-md font-medium leading-relaxed">
+            <span className="text-yellow-400 font-black">২ লাখেরও </span> বেশি পরীক্ষার্থীর বিশ্বস্ত এই প্ল্যাটফর্মে আজই যুক্ত হোন আপনার বিজয়ের যাত্রায়।
+          </p>
+          <button
+            // onClick={() => setCurrentPage("signup")} // আপনার প্রয়োজন অনুযায়ী আনকমেন্ট করুন
+            className="px-8 py-4 bg-yellow-400 text-green-900 font-black rounded-2xl text-base hover:bg-white hover:scale-105 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 mx-auto md:mx-0 w-full md:w-auto"
+          >
+            🎓 বিনামূল্যে এখনই যুক্ত হোন ➝
+          </button>
         </div>
-      </div>
-      
-    
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <div className="w-12 h-12 bg-blue-50 text-white- rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🕓</div>
-        <h3 className="text-lg font-extrabold text-green-800 ">Timed Mock Test</h3>
-        <p className="text-green-600/60 text-[10px] leading-relaxed">Track your performance by Timed Mock Test.</p>
-      </div>
+        
+        {/* Right Side: Boy Image & Floating Elements */}
+        <div className="relative hidden md:flex flex-1 justify-end items-end w-full h-full pt-6 pr-10">
+          
+          {/* Floating Stars 
+          <div className="absolute top-1/4 left-10 animate-pulse">
+            <span className="text-white text-2xl">✦</span>
+          </div>
+          <div className="absolute bottom-1/3 right-1/4 animate-bounce delay-75">
+            <span className="text-yellow-400 text-xl">✦</span>
+          </div>*/}
 
-
-      
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📈</div>
-        <h3 className="text-lg font-extrabold text-green-800">Smart Analytics</h3>
-        <p className="text-green-600/60 text-[10px] leading-relaxed">Detailed subject-wise breakdown of your performance.</p>
-      </div>
-
-     
-
-    
-      <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
-        <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">📱</div>
-        <div>
-          <h3 className="text-lg font-extrabold text-green-800">Mobile Ready</h3>
-          <p className="text-green-600/60 text-[10px] leading-relaxed">Practice on any device.</p>
+          {/* Boy Image */}
+          {/* নিচের src তে আপনার ট্রান্সপারেন্ট ছবির লিংক দেবেন */}
+          <img 
+            src="/poster2.png" 
+            alt="Student with mobile" 
+            className="w-[85%] max-w-[380px] object-contain drop-shadow-2xl translate-y-2 relative z-20"
+          />
         </div>
+        
       </div>
-
     </div>
+
   </div>
-</section>*/}
+</section>
+
+
+
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-5">
+      <footer className="bg-gray-800 text-gray-400 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-4 md:grid-cols-4 gap-8 mb-8">
              <button
             onClick={() => setCurrentPage("home")}
-            className="flex items-center gap-2 cursor-pointer mb-30"
+            className="flex items-center gap-2 cursor-pointer mb-28"
           >
-            <img src="/logo.png" alt="" className="w-6 h-7 object-contain " />
+            <img src="/logo.png" alt="" className="w-5 h-7 object-contain " />
             <div className="flex flex-col leading-tight">
-              <span className="text-xl font-extrabold text-white tracking-tight">
+              <span className="text-lg font-extrabold text-gray-400 tracking-tight">
                 Aspirants
               </span>
             </div>
           </button>
             {[
-              { title: "Exams", links: ["HSC","BCS", "Bank Jobs"] },
-              { title: "Resources", links: ["Study Notes", "Live Tests"] },
-              { title: "Company", links: ["About Us", "Blog", "Privacy Policy", "Contact"] },
+              { title: "", links: ["বিসিএস", "ব্যাংক"] },
+             
+              { title: "", links: ["আমাদের সম্পর্কে", "ব্লগ", "প্রাইভেসি পলিসি", "যোগাযোগ"] },
+             { 
+    title: "", 
+    links: [
+      // Facebook SVG
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
+      
+      // YouTube SVG
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>,
+      
+      // LinkedIn SVG
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
+      
+      // Telegram SVG
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    ] 
+  },
+
             ].map((col) => (
               <div key={col.title}>
                 <h4 className="text-white font-semibold mb-3">{col.title}</h4>

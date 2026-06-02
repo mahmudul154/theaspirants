@@ -392,7 +392,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
                 <input type="range" min="5" max="1000" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
-            <button onClick={handleStartExam} className="w-45 mt-5 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">
+            <button onClick={handleStartExam} className="w-35 mt-5 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs   transition-all">
             🚀 অনুশীলন করুন →
             </button>
           </div>
