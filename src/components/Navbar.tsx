@@ -32,7 +32,8 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
           {/* Logo */}
           <button
             onClick={() => setCurrentPage("home")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2  cursor-pointer"
+                style={{ fontFamily: "'Anek Bangla', sans-serif" }}
           >
             <img src="/logo.png" alt="" className="w-6 h-7 object-contain" />
             <div className="flex flex-col leading-tight">

@@ -370,29 +370,30 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
         {/* Step 4: Limits */}
         {step === 4 && (
-          <div className="animate-in slide-in-from-right-4">
+          <div className="animate-in slide-in-from-right-4"
+              style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
              <div className="flex justify-between items-end mb-8">
-              <h2 className="text-2xl font-black text-gray-800 tracking-tight">Set <span className="text-green-600">Limits</span></h2>
-              <button onClick={() => setStep(3)} className="text-[10px] font-black uppercase text-gray-400">← Back</button>
+              <h2 className="text-lg ml-5 font-black text-gray-800 ">লিমিট  <span className="text-green-600">নির্ধারণ করুন </span></h2>
+              <button onClick={() => setStep(3)} className="text-[10px] font-black uppercase text-gray-400">← পিছে </button>
             </div>
             <div className="space-y-10 bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-sm">
               <div className="space-y-4">
                 <div className="flex justify-between font-black  text-[10px] text-gray-400">
-                  <span>Questions</span>
+                  <span>প্রশ্ন</span>
                   <span className="text-green-600">{qCount}</span>
                 </div>
                 <input type="range" min="5" max="1000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between font-black text-[10px] text-gray-400">
-                  <span>Time (Min)</span>
+                  <span>সময় (মিনিট)</span>
                   <span className="text-green-600">{examTime}</span>
                 </div>
                 <input type="range" min="5" max="1000" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
-            <button onClick={handleStartExam} className="w-full mt-10 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">
-              🚀 Start 
+            <button onClick={handleStartExam} className="w-45 mt-5 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs tracking-[0.2em]  transition-all">
+            🚀 অনুশীলন করুন →
             </button>
           </div>
         )}

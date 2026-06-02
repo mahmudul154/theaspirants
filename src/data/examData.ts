@@ -1,11 +1,8 @@
 export const categories = [
-  { id: "hsc", label: "HSC", icon: "🏫", color: "from-yellow-500 to-yellow-500" },
+
   { id: "bcs", label: "BCS", icon: "🏛️", color: "from-green-500 to-emerald-600" },
   { id: "bank", label: "Bank Jobs", icon: "🏦", color: "from-blue-500 to-indigo-600" },
-  { id: "ntrca", label: "NTRCA", icon: "📚", color: "from-purple-500 to-violet-600" },
-  { id: "primary", label: "Primary", icon: "🎓", color: "from-orange-500 to-amber-600" },
- 
-  { id: "defense", label: "Defense", icon: "🎖️", color: "from-red-500 to-rose-700" },
+
 ];
 
 export const examSets = [

@@ -45,15 +45,15 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
     <div className="flex-1 text-center lg:text-left">
      
       
-      <h1 className="text-4xl md:text-6xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-5 tracking-tighter">
-        যেকোনো পরীক্ষায় <br />
+      <h1 className="text-4xl md:text-6xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-5 ">
+         চাকরির পরীক্ষায় <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#22C55E] to-[#10B981]">
-        সফল হোন
+       নিশ্চিত  সাফল্য
         </span>
       </h1>
       
-      <p className="text-gray-500 text-lg mb-10 max-w-xl leading-relaxed font-medium">
-       বিগত বছরের প্রশ্নে অনুশীলন  এবং দেশজুড়ে হাজারো পরীক্ষার্থীর সাথে প্রতিযোগিতায় অংশ নিন। 
+      <p className="text-gray-500 text-sm mb-10 max-w-xl leading-relaxed font-medium">
+  ১.৫ লাখ+ প্রশ্নের বিশাল ডাটাবেজ থেকে দিন আনলিমিটেড কাস্টম কুইজ। বিসিএস ও ব্যাংকের সেরা প্রস্তুতিতে হাজারো পরীক্ষার্থীর মাঝে এগিয়ে থাকুন।
 
       </p>
       
@@ -117,7 +117,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২ লাখ+</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২ লাখ</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="absolute -bottom-4 -left-4 bg-white shadow-2xl rounded-2xl p-4 border border-gray-100 flex items-center gap-3 rotate-[-4deg] ">
            <div className="text-2xl">🏆</div>
            <div>
-             <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Top Scorer Today</p>
+             <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">আজকের সেরা স্কোরার</p>
              <p className="text-[10px] font-bold text-gray-900">Ariful Islam • 98%</p>
            </div>
         </div>
@@ -157,9 +157,9 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
 
      {/*-------------------------------------------------------------------------- Modern Compact Categories ------------------------------------------------------------------*/}
-<section className="py-12 bg-white">
+   {/*<section className="py-12 bg-white">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Section Header */}
+  
     <div className="flex items-center gap-3 mb-10 border-l-4 border-green-500 pl-4">
       <div>
         <h2 className="text-2xl font-black text-gray-800 tracking-tight uppercase"></h2>
@@ -167,7 +167,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       </div>
     </div>
     
-    {/* Compact Grid */}
+    
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {categories.map((cat) => (
         <button
@@ -175,10 +175,10 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           onClick={() => setCurrentPage("exams")}
           className="group relative flex flex-col items-center justify-center p-6 bg-gray-50/50 rounded-3xl border border-transparent hover:border-green-100 hover:bg-white hover:shadow-xl hover:shadow-green-500/5 hover:-translate-y-1.5 transition-all duration-300"
         >
-          {/* Subtle Background Glow on Hover */}
+        
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity"></div>
 
-          {/* Icon Box with Dynamic Color Fallback */}
+        
           <div 
             className={`relative w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm mb-4 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110`}
             style={{ 
@@ -188,23 +188,24 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
               color: 'white'
             }}
           >
-            {/* If Tailwind classes are used in cat.color, apply them here */}
+          
             <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${cat.color || ''}`}></div>
             <span className="relative z-10">{cat.icon}</span>
           </div>
           
-          {/* Label */}
+        
           <span className="relative z-10 text-xs font-black text-gray-600 group-hover:text-green-600 uppercase tracking-widest transition-colors">
             {cat.label}
           </span>
 
-          {/* Bottom Active Indicator */}
+          
           <div className="absolute bottom-3 w-1 h-1 bg-green-500 rounded-full scale-0 group-hover:scale-100 transition-transform"></div>
         </button>
       ))}
     </div>
   </div>
-</section>
+</section>  */}
+
 
 
 
@@ -215,18 +216,19 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
 
  {/* ------------------------------------------------------------------------Unique Live Battle Arena Section with Functionality ----------------------------------------------*/}
-<section className="py-20 bg-white">
+<section className="py-20 bg-white"
+    style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
   <div className="max-w-7xl mx-auto px-6">
     <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
       <div>
-        <span className="text-red-600 font-black text-[10px] uppercase tracking-[0.4em] bg-red-50 px-3 py-1 rounded-full border border-red-100 mb-3 inline-block animate-pulse">Live Arena</span>
-        <h2 className="text-3xl font-black text-green-800 tracking-tighter">Current <span className="">Challenges</span></h2>
+        <span className="text-red-600 font-black text-[10px] uppercase  bg-red-50 px-3 py-1 rounded-full border border-red-100 mb-3 inline-block animate-pulse">লাইভ এরিনা</span>
+        <h2 className="text-xl font-black text-green-800">চলমান<span className=""> পরীক্ষা</span></h2>
       </div>
       <button 
         onClick={() => setCurrentPage("exams")} 
         className="h-12 px-6 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 transition-all active:scale-95 shadow-xl shadow-gray-200"
       >
-        View Full Arena →
+       সম্পূর্ণ দেখুন → 
       </button>
     </div>
 
@@ -239,8 +241,8 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="bg-gray-950 h-full w-full rounded-[2.8rem] p-10 flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
             <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500">🎯</div>
-            <h3 className="text-3xl font-black text-white leading-tight">Today's Live <br/>Exam</h3>
-            <p className="text-gray-400 text-sm mt-4 max-w-[200px] leading-relaxed">Give up to date model test everyday.</p>
+            <h3 className="text-3xl font-black text-white leading-tight">আজকের লাইভ <br/>পরীক্ষা</h3>
+            <p className="text-gray-400 text-sm mt-4 max-w-[200px] leading-relaxed">প্রতিদিন অংশ নিন একদম সাম্প্রতিক মডেল টেস্টে।</p>
           </div>
           
           <div className="relative z-10 w-full py-4 bg-green-500 text-white text-center font-black rounded-2xl text-xs uppercase tracking-widest group-hover:bg-white group-hover:text-green-600 transition-all mt-10">
@@ -266,7 +268,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
               </div>
               <div className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span>
-                <span className="text-[10px] font-black text-green-600 italic">Active</span>
+                <span className="text-[10px] font-black text-green-600 italic"></span>
               </div>
             </div>
 
@@ -276,13 +278,13 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200/50">
               <div className="flex items-center gap-2 text-[9px] font-black text-gray-400 uppercase">
-                <span>📝 {exam.questions} Q</span>
+                <span>📝 {exam.questions} প্রশ্ন</span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>⏱️ {exam.duration}m</span>
+                <span>⏱️ {exam.duration} মিনিট</span>
               </div>
               
-              <span className="text-[10px] font-black text-green-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                Start →
+              <span className="text-[10px] font-black text-green-500 opacity- group-hover:opacity-100 transition-opacity">
+                  🚀 অনুশীলন করুন →
               </span>
             </div>
           </div>
@@ -302,11 +304,18 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
 <section className="mt-8 px-6"> {/* ml-6 সরিয়ে px-6 দেওয়া হয়েছে ব্যালেন্স ঠিক করতে */}
   <div className="flex items-center justify-between mb-4">
-    <h2 className="text-3xl font-black  tracking-tighter text-green-800">
-      Custom Quiz
-    </h2>
+     <button 
+      onClick={(e) => {
+        e.stopPropagation();
+        setCurrentPage("mixed-setup");
+      }}
+              className="px-4 py-2 rounded-lg text-lg font-bold text-orange-600 bg-orange-50 transition-all flex items-center gap-1.5 group"
+            >
+              <span className="group-hover:animate-bounce">🛠</span>
+             কাস্টম কুইজ
+            </button>
     <span className="px-2 py-0.5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">
-      Popular Feature
+     জনপ্রিয় ফিচার
     </span>
   </div>
 
@@ -327,8 +336,8 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         RECOMMENDED
       </div>
       <h3 className="text-2xl font-black mb-1 leading-tight">Mixed Subject <br/> Marathon</h3>
-      <p className="text-green-50 text-[12px] max-w-[200px] opacity-90">
-        Create your own exam with multiple subjects.
+      <p className="text-green-50 text-[12px] mb-4 max-w-[200px] opacity-90">
+     একাধিক বিষয় নিয়ে তৈরি করুন আপনার নিজের পরীক্ষা।
       </p>
     </div>
     <button 
@@ -338,7 +347,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       }}
       className="bg-white text-green-700 font-bold text-sm py-2 px-5 rounded-xl w-fit group-hover:scale-105 transition-transform shadow-md"
     >
-      Create Now
+     🛠 তৈরি করুন
     </button>
   </div>
 
@@ -466,7 +475,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         </div>
       </section>
 
-{/* Unique Bento-Style Features Section with Integrated CTA */}
+   {/*{/* Unique Bento-Style Features Section with Integrated CTA 
 <section className="py-24 bg-[#FAFAFA] overflow-hidden">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
@@ -474,12 +483,11 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <h2 className="text-3xl font-black text-green-800 tracking-tighter"> <span className=""></span></h2>
     </div>
 
-    {/* Bento Grid Layout */}
+
     <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-      
-      {/* --- CTA BANNER CARD (Integrated Uniquely) --- */}
+ 
       <div className="md:col-span-6 lg:col-span-4 p-12 bg-gradient-to-br from-green-600 to-emerald-800 rounded-[3.5rem] text-white relative overflow-hidden group shadow-2xl shadow-green-200 order-last lg:order-first">
-        {/* Background Decorative Circles */}
+    
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-400/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
 
@@ -497,7 +505,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             </button>
           </div>
           
-          {/* Visual Element for CTA */}
+
           <div className="relative hidden md:block">
             <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-sm ">
               <span className="text-7xl">🏆</span>
@@ -509,8 +517,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         </div>
       </div>
 
-      {/* --- Other Feature Cards --- */}
-       {/* Questions (Small Highlight Card) */}
+  
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <h3 className="text-xl font-black text-green-800">60K+ <br />Verified Questions</h3>
         <div className="flex items-end justify-between">
@@ -519,7 +526,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         </div>
       </div>
       
-     {/* Analytics (Small White Card) */}
+    
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-12 h-12 bg-blue-50 text-white- rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🕓</div>
         <h3 className="text-lg font-extrabold text-green-800 ">Timed Mock Test</h3>
@@ -527,7 +534,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       </div>
 
 
-      {/* Analytics (Small White Card) */}
+      
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📈</div>
         <h3 className="text-lg font-extrabold text-green-800">Smart Analytics</h3>
@@ -536,7 +543,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
      
 
-      {/* Mobile Ready (Long Card) */}
+    
       <div className="md:col-span-3 lg:col-span-2 p-8 bg-green-50 rounded-[3rem] flex flex-col justify-between border border-green-300 hover:bg-green-100/50 transition-colors">
         <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">📱</div>
         <div>
@@ -547,7 +554,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
     </div>
   </div>
-</section>
+</section>*/}
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-5">
