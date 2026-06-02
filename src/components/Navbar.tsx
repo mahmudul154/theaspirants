@@ -79,7 +79,7 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
                 onClick={() => setCurrentPage("profile")}
                 className="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition"
               >
-                Profile
+               প্রোফাইল
               </button>
             ) : (
               <>
@@ -87,13 +87,13 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
                   onClick={() => setCurrentPage("login")}
                   className="px-4 py-2 text-sm font-semibold text-green-700 border border-green-600 rounded-lg hover:bg-green-50 transition"
                 >
-                  Login
+                  লগইন
                 </button>
                 <button
                   onClick={() => setCurrentPage("signup")}
                   className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 shadow transition"
                 >
-                  Sign Up
+                 সাইন আপ
                 </button>
               </>
             )}

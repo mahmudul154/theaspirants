@@ -43,21 +43,18 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
     
     {/* Left Content: Focus on Typography and Actions */}
     <div className="flex-1 text-center lg:text-left">
-      <div className="inline-flex items-center gap-2 bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#166534] text-[10px] font-black  tracking-[0.3em] px-4 py-2 rounded-full mb-4 backdrop-blur-sm">
-        <span className
-        Edtech="w-2 h-2 bg-[#22C55E] rounded-full animate-pulse"></span>
-Edtech
-      </div>
+     
       
-      <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] mb-5 tracking-tighter">
-        Crack Any<br />
+      <h1 className="text-4xl md:text-6xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-5 tracking-tighter">
+        যেকোনো পরীক্ষায় <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#22C55E] to-[#10B981]">
-          Exams.
+        সফল হোন
         </span>
       </h1>
       
       <p className="text-gray-500 text-lg mb-10 max-w-xl leading-relaxed font-medium">
-        Practice with real exam questions and compete with thousands of aspirants across Bangladesh.
+       বিগত বছরের প্রশ্নে অনুশীলন  এবং দেশজুড়ে হাজারো পরীক্ষার্থীর সাথে প্রতিযোগিতায় অংশ নিন। 
+
       </p>
       
       <div className=" flex-col sm:flex-row gap-5 justify-center lg:justify-start">
@@ -92,13 +89,13 @@ Edtech
               🔥
             </div>
             <div>
-              <p className="text-gray-900 font-black text-xl tracking-tight">Live Battle Arena</p>
+              <p className="text-gray-900 font-black text-xl tracking-tight">লাইভ পরীক্ষা</p>
               <p className="text-[#22C55E] text-[10px] font-black  tracking-widest mt-1">Active</p>
             </div>
           </div>
           <div className="flex flex-col items-end">
              <div className="w-3 h-3 bg-red-500 rounded-full animate-ping mb-1"></div>
-             <span className="text-[8px] font-black text-red-600 uppercase">Live Now</span>
+             <span className="text-[8px] font-black text-red-600 uppercase">লাইভ</span>
           </div>
         </div>
 
@@ -116,11 +113,11 @@ Edtech
         {/* Stats Grid - Light Dashboard Style */}
         <div className="grid grid-cols-2 gap-4 relative z-10">
           <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-6 text-center hover:bg-white hover:shadow-xl hover:border-[#22C55E]/20 transition-all group/stat">
-            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">60K+</p>
+            <p className="text-gray-900 font-black text-3xl tracking-tighter mb-1 group-hover/stat:text-[#22C55E] transition-colors">১.৫ লাখ+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">20K+</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২০,000+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>

@@ -297,7 +297,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
       
       {/* এখানেই সরাসরি ছবির নাম img: "..." এর ভেতরে দিয়ে দেওয়া হয়েছে */}
       {[
-        { id: "bcs", name: "বিসিএস", img: "/bcs.png" },
+        { id: "bcs", name: "বিসিএস", img: "/bcs1.png" },
         { id: "bank", name: "ব্যাংক", img: "/bank1.png" }
       ].map((goal) => (
         <button
