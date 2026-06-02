@@ -117,7 +117,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Questions</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-[2rem] p-6 text-center shadow-xl group/stat">
-            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২০,000+</p>
+            <p className="text-[#22C55E] font-black text-3xl tracking-tighter mb-1 group-hover/stat:scale-110 transition-transform">২ লাখ+</p>
             <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest">Active Users</p>
           </div>
         </div>
