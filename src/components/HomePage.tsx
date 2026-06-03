@@ -44,7 +44,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       </h1>
       
       <p className="text-gray-600 text-sm max-w-lg mx-auto lg:mx-0 leading-relaxed">
-        বিসিএস ও ব্যাংক জবের হাজারো প্রশ্নের সমাধানে তৈরি করুন আপনার নিজের কাস্টম কুইজ। বিশ্লেষণ করুন আপনার দুর্বলতা এবং এগিয়ে থাকুন প্রতিযোগিতায়।
+        বিসিএস ও ব্যাংক জবের হাজারো প্রশ্নের সমাধানে তৈরি করুন নিজের কাস্টম কুইজ। বিশ্লেষণ করুন আপনার দুর্বলতা এবং এগিয়ে থাকুন প্রতিযোগিতায়।
       </p>
 
       <div className="flex flex-wrap gap-4 justify-center lg:justify-start">

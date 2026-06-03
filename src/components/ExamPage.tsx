@@ -570,160 +570,115 @@ const timerDanger = timeLeft < 60;
   const optionLetters = ['ক', 'খ', 'গ', 'ঘ', 'ঙ'];
 
   return (
-    <div 
-      className="pt-16 min-h-screen bg-[#F8F9FA] flex flex-col pb-12"
-      style={{ fontFamily: "'Anek Bangla', sans-serif" }}
-    >
-      {/* ---------------- ফিক্সড হেডার: প্রগ্রেস এবং টাইমার ---------------- */}
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-4">
-          
-          {/* Topic Title */}
-          <div className="flex-1 hidden sm:block font-black text-slate-700 truncate text-base">
-            <span className="text-green-600 mr-1.5"></span>
-          </div>
-          
-          {/* Timer */}
-          <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-sm md:text-base border transition-colors ${
-            timerDanger ? "bg-rose-50 text-rose-600 border-rose-200 animate-pulse" : "bg-green-50 text-green-700 border-green-100"
-          }`}>
-            ⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-          </div>
-          
-          {/* Answered Count */}
-          <div className="text-xs md:text-sm text-slate-600 font-bold bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-            <span className="text-green-600">{Object.keys(answers).length}</span> / {questions.length} <span className="hidden sm:inline">উত্তর দিয়েছেন</span>
-          </div>
-          
-          {/* Submit Button (Header) */}
-          <button 
-            onClick={finishExam} 
-            className="px-4 md:px-6 py-2 text-xs md:text-sm font-black bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition shadow-sm shadow-rose-200 active:scale-95"
-          >
-            জমা দিন
-          </button>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="h-1.5 bg-slate-100 w-full">
-          <div 
-            className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500 rounded-r-full" 
-            style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
-          ></div>
-        </div>
+  <div 
+  className="pt-16 min-h-screen bg-[#1c1c1c] flex flex-col pb-12 transition-colors duration-500" // image_84d103.png এর সাথে ম্যাচ করা গাঢ় রঙ
+  style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+>
+  {/* ---------------- ফিক্সড হেডার ---------------- */}
+  <div className="bg-[#262626] border-b border-[#333333] shadow-sm sticky top-0 z-30">
+    <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-4">
+      
+      <div className="flex-1 hidden sm:block font-black text-slate-300 truncate text-base">
+        <span className="text-green-500 mr-1.5"></span> পরীক্ষা
       </div>
-
-      {/* ---------------- মেইন কন্টেন্ট: প্রশ্ন তালিকা ---------------- */}
-      <div className="max-w-4xl mx-auto px-4 py-8 w-full">
-        <div className="space-y-5">
-          {questions.map((q: any, i: number) => {
-            const hasAnswered = answers[i] !== undefined;
-
-            return (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6 transition-all hover:shadow-md">
-                
-                {/* Question Top Bar (Q Number & Flag) */}
-                <div className="flex items-center justify-between mb-5">
-                  <span className="bg-green-50 border border-green-100 text-green-700 text-xs font-black px-3 py-1.5 rounded-lg">
-                    প্রশ্ন {i + 1}
-                  </span>
-                  <button 
-                    onClick={() => {
-                      setFlagged((prev: Set<number>) => {
-                        const next = new Set(prev);
-                        next.has(i) ? next.delete(i) : next.add(i);
-                        return next;
-                      });
-                    }} 
-                    className={`text-xl transition-all p-1.5 rounded-lg hover:bg-slate-50 ${
-                      flagged.has(i) ? "text-amber-500 scale-110" : "text-slate-300 hover:text-amber-400 grayscale hover:grayscale-0"
-                    }`}
-                    title="রিভিউয়ের জন্য মার্ক করুন"
-                  >
-                    🚩
-                  </button>
-                </div>
-
-                {/* Question Text */}
-                <div className="text-base ml-2 font-bold text-slate-700 mb-5 leading-relaxed">
-                  <MarkdownRenderer content={q?.question} />
-                </div>
-
-                {/* Options List */}
-                <div className="space-y-3 md:ml-2">
-                  {q?.options?.map((opt: string, optIdx: number) => {
-                    const isCorrect = opt === q.answer; // supabase e column name = answer
-                    const isSelected = answers[i] === opt;
-
-                    // ডিফল্ট স্টাইল
-                    let optionBoxClass = "border-slate-200 bg-white text-slate-700 hover:border-green-300 hover:bg-green-50/30";
-                    let circleClass = "bg-slate-50 border-slate-200 text-slate-500";
-                    let iconRender: React.ReactNode = optionLetters[optIdx] || (optIdx + 1);
-
-                    // উত্তর দেওয়ার পরের স্টাইল লজিক
-                    if (hasAnswered) {
-                      if (isSelected && isCorrect) {
-                        optionBoxClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500 shadow-sm";
-                        circleClass = "bg-green-600 border-green-600 text-white";
-                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>;
-                      } else if (isSelected && !isCorrect) {
-                        optionBoxClass = "border-rose-400 bg-rose-50 text-rose-800 shadow-sm";
-                        circleClass = "bg-rose-500 border-rose-500 text-white";
-                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>;
-                      } else if (isCorrect) {
-                        optionBoxClass = "border-green-500 bg-green-50 text-green-800 ring-1 ring-green-500 shadow-sm";
-                        circleClass = "bg-green-600 border-green-600 text-white";
-                        iconRender = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>;
-                      } else {
-                        // উত্তর দেওয়ার পর বাকি ভুল অপশনগুলো ফেড (Fade) হয়ে যাবে
-                        optionBoxClass = "border-slate-100 bg-white text-slate-400 opacity-60";
-                        circleClass = "bg-slate-50 border-slate-100 text-slate-400";
-                      }
-                    }
-
-                    return (
-                      <button
-                        key={optIdx}
-                        onClick={() => setAnswers((prev) => ({ ...prev, [i]: opt }))} 
-                        disabled={false} // disabled পরে লাগানো হলে delay হবে, এখন instant
-                        className={`w-full text-left p-3.5 rounded-xl border flex items-center gap-3 transition-all ${optionBoxClass}`}
-                      >
-                        {/* Option Circle (Letter or Icon) */}
-                        <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold border shrink-0 transition-colors ${circleClass}`}>
-                          {iconRender}
-                        </div>
-
-                        {/* Option Text */}
-                        <div className={`flex-1 font-medium leading-relaxed ${hasAnswered && isCorrect ? "font-bold" : ""}`}>
-                          <MarkdownRenderer content={opt} />
-                        </div>
-                        
-                        {/* Right side checkmark for correct answer (Shows after answering) */}
-                        {hasAnswered && isCorrect && (
-                          <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ---------------- ফাইনাল সাবমিট বাটন (Bottom) ---------------- */}
-        <div className="mt-6 mb-16">
-          <button 
-            onClick={finishExam} 
-            className="w-full py-4 bg-green-600 text-white font-black rounded-xl shadow-lg shadow-green-200 hover:bg-green-700 transition-all duration-300 active:scale-[0.98] text-base flex items-center justify-center gap-2 group"
-          >
-            পরীক্ষা শেষ করুন
-            <span className="text-xl group-hover:translate-x-1 transition-transform"></span>
-          </button>
-        </div>
+      
+      <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-sm md:text-base border transition-colors ${
+        timerDanger ? "bg-rose-950 text-rose-400 border-rose-800 animate-pulse" : "bg-[#1c1c1c] text-green-400 border-[#333333]"
+      }`}>
+        ⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
       </div>
+      
+      <div className="text-xs md:text-sm text-slate-400 font-bold bg-[#1c1c1c] px-3 py-1.5 rounded-lg border border-[#333333]">
+        <span className="text-green-400">{Object.keys(answers).length}</span> / {questions.length}
+      </div>
+      
+      <button 
+        onClick={finishExam} 
+        className="px-4 md:px-6 py-2 text-xs md:text-sm font-black bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition shadow-sm active:scale-95"
+      >
+        জমা দিন
+      </button>
     </div>
+    
+    <div className="h-1 bg-[#333333] w-full">
+      <div 
+        className="h-full bg-green-500 transition-all duration-500 rounded-r-full" 
+        style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
+      ></div>
+    </div>
+  </div>
+
+  {/* ---------------- মেইন কন্টেন্ট ---------------- */}
+  <div className="max-w-4xl mx-auto px-4 py-8 w-full">
+    <div className="space-y-6">
+      {questions.map((q: any, i: number) => {
+        const hasAnswered = answers[i] !== undefined;
+
+        return (
+          <div key={i} className="bg-[#262626] rounded-2xl shadow-lg border border-[#333333] p-5 md:p-6 transition-all">
+            
+            <div className="flex items-center justify-between mb-5">
+              <span className="bg-[#1c1c1c] border border-[#333333] text-green-400 text-xs font-black px-3 py-1.5 rounded-lg">
+                প্রশ্ন {i + 1}
+              </span>
+            </div>
+
+            <div className="text-base ml-2 font-bold text-slate-200 mb-6 leading-relaxed">
+              <MarkdownRenderer content={q?.question} />
+            </div>
+
+            <div className="space-y-3 md:ml-2">
+              {q?.options?.map((opt: string, optIdx: number) => {
+                const isCorrect = opt === q.answer;
+                const isSelected = answers[i] === opt;
+
+                let optionBoxClass = "border-[#333333] bg-[#1c1c1c] text-slate-300 hover:border-green-800 hover:bg-[#333333]";
+                let circleClass = "bg-[#333333] border-[#444444] text-slate-400";
+
+                if (hasAnswered) {
+                  if (isSelected && isCorrect) {
+                    optionBoxClass = "border-green-600 bg-green-950/20 text-green-400";
+                    circleClass = "bg-green-600 border-green-600 text-white";
+                  } else if (isSelected && !isCorrect) {
+                    optionBoxClass = "border-rose-700 bg-rose-950/10 text-rose-400";
+                    circleClass = "bg-rose-700 border-rose-700 text-white";
+                  } else if (isCorrect) {
+                    optionBoxClass = "border-green-600 bg-green-950/20 text-green-400";
+                    circleClass = "bg-green-600 border-green-600 text-white";
+                  } else {
+                    optionBoxClass = "border-[#333333] bg-[#262626]/50 text-slate-600";
+                  }
+                }
+
+                return (
+                  <button
+                    key={optIdx}
+                    onClick={() => setAnswers((prev) => ({ ...prev, [i]: opt }))}
+                    className={`w-full text-left p-4 rounded-xl border flex items-center gap-4 transition-all ${optionBoxClass}`}
+                  >
+                    <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold border ${circleClass}`}>
+                      {optionLetters[optIdx]}
+                    </div>
+                    <div className="flex-1 font-medium"><MarkdownRenderer content={opt} /></div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <div className="mt-8 mb-16">
+      <button 
+        onClick={finishExam} 
+        className="w-full py-4 bg-green-600 text-[#1c1c1c] font-black rounded-xl shadow-lg hover:bg-green-500 transition-all active:scale-[0.98]"
+      >
+        পরীক্ষা শেষ করুন
+      </button>
+    </div>
+  </div>
+</div>
   );
 
 
