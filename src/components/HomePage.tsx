@@ -87,7 +87,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-[#22C55E]/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
-              🔥
+              🔴
             </div>
             <div>
               <p className="text-gray-900 font-black text-xl tracking-tight">লাইভ পরীক্ষা</p>

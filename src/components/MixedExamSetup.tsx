@@ -179,14 +179,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   "বিসিএস কম্পিউটার প্রশ্নসমূহ" 
 ],
         'সাধারণ বিজ্ঞান': [ 
-  // ========================================== ভৌত বিজ্ঞান (Physical Science) ==========================================
-  "পদার্থের অবস্থা", "এটমের গঠন", "কার্বনের বহুমুখী ব্যবহার", "এসিড", "ক্ষার", "লবণ", "পদার্থের ক্ষয়", "সাবানের কাজ", "ভৌত রাশি এবং এর পরিমাপ", "ভৌত বিজ্ঞানের উন্নয়ন", "চৌম্বকত্ব", "তরঙ্গ এবং শব্দ", "তাপ ও তাপগতি বিদ্যা", "আলোর প্রকৃতি", "স্থির এবং চল তড়িৎ", "ইলেকট্রনিক্স", "আধুনিক পদার্থবিজ্ঞান", "শক্তির উৎস এবং এর প্রয়োগ", "নবায়নযোগ্য শক্তির উৎস", "পারমাণবিক শক্তি", "খনিজ উৎস", "শক্তির রূপান্তর", "আলোক যন্ত্রপাতি", "মৌলিক কণা", "ধাতব পদার্থ এবং তাদের যৌগসমূহ", "অধাতব পদার্থ", "জারণ-বিজারণ", "তড়িৎ কোষ", "অজৈব যৌগ", "জৈব যৌগ", "তড়িৎ চৌম্বক", "ট্রান্সফরমার", "এক্সরে", "তেজস্ক্রিয়তা",
-
-  // ========================================== জীব বিজ্ঞান (Biological Science) ==========================================
-  "পদার্থের জীববিজ্ঞান-বিষয়ক ধর্ম", "টিস্যু", "জেনেটিক্স", "জীববৈচিত্র্য", "এনিম্যাল ডাইভারসিটি", "প্ল্যান্ট ডাইভারসিটি", "এনিম্যাল টিস্যু", "অর্গান এবং অর্গান সিস্টেম", "সালোক সংশ্লেষণ", "ভাইরাস", "ব্যাকটেরিয়া", "জুলোজিক্যাল নমেনক্লেচার", "বোটানিক্যাল নমেনক্লেচার", "প্রাণিজগৎ", "উদ্ভিদ", "ফুল", "ফল", "রক্ত ও রক্ত সঞ্চালন", "রক্তচাপ", "হৃদপিণ্ড এবং হৃদরোগ", "স্নায়ু এবং স্নায়ুরোগ", "খাদ্য ও পুষ্টি", "ভিটামিন", "মাইক্রোবায়োলজি", "প্ল্যান্ট নিউট্রেশন", "পরাগায়ন",
-
-  // ========================================== আধুনিক বিজ্ঞান (Modern Science) ==========================================
-  "পৃথিবী সৃষ্টির ইতিহাস", "কসমিক রে", "ব্ল্যাক হোল", "হিগসের কণা", "বারিমণ্ডল", "টাইড", "বায়ুমণ্ডল", "টেকটোনিক প্লেট", "সাইক্লোন", "সুনামি", "বিবর্তন", "সামুদ্রিক জীবন", "মানবদেহ", "রোগের কারণ ও প্রতিকার", "সংক্রামক রোগ", "রোগ জীবাণুর জীবনধারণ", "মা ও শিশু স্বাস্থ্য", "ইমিউনাইজেশন এবং ভ্যাক্সিনেশন", "এইচআইভি", "এইডস", "টিবি", "পোলিও", "조য়ার-ভাটা", "এপিকারচার", "সেরিকালচার", "পিসিকালচার", "হর্টিকালচার", "ডায়োড", "ট্রানজিস্টর", "আইসি", "আপেক্ষিক তত্ত্ব", "ফোটন কণা"
+ 'পদার্থবিজ্ঞান' ,'রসায়ন' ,'জীববিজ্ঞান' 
 ],
        'গাণিতিক যুক্তি': [
   // ========================================== ১. পাটিগণিত ==========================================
@@ -389,14 +382,14 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
                   <span>প্রশ্ন</span>
                   <span className="text-green-600">{qCount}</span>
                 </div>
-                <input type="range" min="5" max="2000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="3000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between font-black text-[10px] text-gray-400">
                   <span>সময় (মিনিট)</span>
                   <span className="text-green-600">{examTime}</span>
                 </div>
-                <input type="range" min="5" max="2000" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
+                <input type="range" min="5" max="3000" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
               </div>
             </div>
             <button onClick={handleStartExam} className="w-35 mt-5 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs   transition-all">
