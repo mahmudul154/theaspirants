@@ -38,7 +38,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
     <div className="flex-1 space-y-8 text-center mt-8 lg:text-left">
      
       
-      <h1 className="text-4xl md:text-5xl font-black text-gray-800 leading-[1.05]">
+      <h1 className="text-2xl md:text-5xl font-black text-gray-800 leading-[1.05]">
        চাকরির পরীক্ষায়  <br/>
         <span className="text-green-600"> নিশ্চিত  সাফল্য</span>
       </h1>
@@ -68,7 +68,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         />
         
         {/* ইমেজের ওপর একটি গ্লাস কার্ড বা ওভারলে */}
-        <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 flex items-center justify-between">
+        <div className="absolute  left-6 right-6 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-gray-500 uppercase">মোট প্রশ্ন</p>
             <p className="text-xl font-black text-gray-900">১,৫০,০০০+</p>
