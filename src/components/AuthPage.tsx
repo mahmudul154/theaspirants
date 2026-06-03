@@ -61,7 +61,8 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
   };
 
   return (
-    <div className="pt-16 min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="pt-16 min-h-screen bg-gradient-to-br mt-8 from-green-50 via-white to-emerald-50 flex items-center justify-center p-4 font-sans"
+        style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
       <div className="w-full max-w-md">
 
         {/* Logo */}
@@ -70,12 +71,12 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
             <span className="text-white font-extrabold text-2xl"></span>
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900">
-            {isLogin ? "Welcome back!" : "Join Aspirants"}
+            {isLogin ? "স্বাগতম, আবার দেখা হয়ে ভালো লাগলো!" : "অ্যাসপিরেন্টস-এ যোগ দিন"}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {isLogin
-              ? "Login to continue your exam preparation"
-              : "Start your govt exam journey today — for free"}
+              ? "আপনার পরীক্ষার প্রস্তুতি চালিয়ে যেতে লগইন করুন"
+              : "আজই আপনার সরকারি চাকরির প্রস্তুতি শুরু করুন — সম্পূর্ণ ফ্রিতে"}
           </p>
         </div>
 
@@ -85,7 +86,7 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Full Name
+                  পূর্ণ নাম
                 </label>
                 <input
                   type="text"
@@ -101,7 +102,7 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Email Address
+                ইমেইল অ্যাড্রেস
               </label>
               <input
                 type="email"
@@ -116,7 +117,7 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Password
+                পাসওয়ার্ড
               </label>
               <input
                 type="password"
@@ -131,9 +132,9 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl"
+              className="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-md hover:opacity-95 transition"
             >
-              {isLogin ? "Login →" : "Create Free Account 🎓"}
+              {isLogin ? "লগইন করুন →" : "ফ্রি অ্যাকাউন্ট তৈরি করুন 🎓"}
             </button>
 
             {/* Divider */}
@@ -141,8 +142,8 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
-              <div className="relative flex justify-center text-xs text-gray-400 bg-white px-3">
-                OR
+              <div className="relative flex justify-center text-xs text-gray-400 bg-white px-3 font-semibold">
+                অথবা
               </div>
             </div>
 
@@ -157,7 +158,7 @@ export function AuthPage({ mode, setCurrentPage }: AuthPageProps) {
                 alt="Google"
                 className="w-5 h-5"
               />
-              Continue with Google
+              গুগল দিয়ে চালিয়ে যান
             </button>
           </form>
         </div>

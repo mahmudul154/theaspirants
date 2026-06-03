@@ -13,8 +13,10 @@ export function Navbar({ currentPage, setCurrentPage, setSelectedExam, user }: N
   const navLinks = [
      { id: "home", label: "হোম" },
   { id: "exams", label: "পরীক্ষা" },
+  
   { id: "leaderboard", label: "লিডারবোর্ড" },
   { id: "about", label: "আমাদের সম্পর্কে" },
+
   ];
 
   // Custom Quiz হ্যান্ডলার

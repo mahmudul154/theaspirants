@@ -1,11 +1,111 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase"; 
+import { BookOpen, Languages, FlaskConical, Calculator, Brain, Map, Globe, Laptop, Atom } from 'lucide-react';
 
+const iconMap: { [key: string]: { emoji: string, color: string, bg: string } } = {
+  "English": { emoji: "📚", color: "text-blue-600"},
+  "বাংলা": { emoji: "📒", color: "text-red-600"},
+  "সাধারণ বিজ্ঞান": { emoji: "🧬", color: "text-emerald-600"},
+  "গাণিতিক যুক্তি": { emoji: "📐", color: "text-purple-600"},
+  "মানসিক দক্ষতা": { emoji: "🧠", color: "text-amber-600"},
+  "বাংলাদেশ বিষয়াবলী": { emoji: "🗺️", color: "text-orange-600"},
+  "আন্তর্জাতিক বিষয়াবলী": { emoji: "🌍", color: "text-sky-600"},
+  "কম্পিউটার ও তথ্য প্রযুক্তি": { emoji: "💻", color: "text-slate-700"},
+ 
+   "নৈতিকতা, মূল্যবোধ ও সুশাসন": { emoji: "❄", color: "text-rose-600" },
+    "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা": { emoji: "🌪", color: "text-rose-600" },
+};
+// আপনার supabase কনফিগারেশন
 
+export const fetchQuestionCounts = async () => {
+  const { data, error } = await supabase
+    .from('mcq_questions_job')
+    .select('sub_topic'); // সব প্রশ্নের সাব-টপিকগুলো আনুন
+
+  if (error) return {};
+
+  // ডাটা থেকে কাউন্ট ম্যাপ তৈরি করুন
+  const counts = data.reduce((acc, curr) => {
+    acc[curr.sub_topic] = (acc[curr.sub_topic] || 0) + 1;
+    return acc;
+  }, {});
+
+  return counts;
+};
 interface MixedExamSetupProps {
   setCurrentPage: (page: string) => void;
   setSelectedExam: (examData: any) => void;
 }
+// lib/data-utils.js
+
+export const getQuestionCount = (item) => {
+  const countMap = {
+    "পদার্থবিজ্ঞান": 3000,
+    "জীববিজ্ঞান": 3500,
+    "রসায়ন": 3500,
+    "সাধারণ বিজ্ঞান":10000,
+    "কম্পিউটার ও তথ্য প্রযুক্তি":6500,
+    "বাংলাদেশ বিষয়াবলী":25000,
+    "আন্তর্জাতিক বিষয়াবলী":15000,
+    "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা":7500,
+    "নৈতিকতা, মূল্যবোধ ও সুশাসন":5500,
+    "গাণিতিক যুক্তি":8000,
+    "মানসিক দক্ষতা":6000,
+    "বাংলা":20000,
+    "English":20000,
+
+
+
+
+
+
+    // আপনার বাকি সাবজেক্টগুলো এখানে যোগ করুন
+  };
+  return countMap[item] || 0;
+};
+
+export    const getExamTagsForSubject = (subject) => {
+  const examMap = {
+    "English": ["BCS", "NTRCA", "Primary","Bank","General"],
+    "বাংলা": ["BCS", "NTRCA", "Primary","Bank","General"],
+    "সাধারণ বিজ্ঞান":["BCS", "NTRCA", "Primary","Bank","General"],
+    "কম্পিউটার ও তথ্য প্রযুক্তি":["BCS", "NTRCA", "Primary","Bank","General"],
+    "বাংলাদেশ বিষয়াবলী":["BCS", "NTRCA", "Primary","Bank","General"],
+    "আন্তর্জাতিক বিষয়াবলী":["BCS", "NTRCA", "Primary","Bank","General"],
+    "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা":["BCS"],
+    "নৈতিকতা, মূল্যবোধ ও সুশাসন":["BCS"],
+    "গাণিতিক যুক্তি":["BCS", "NTRCA", "Primary","Bank","General"],
+    "মানসিক দক্ষতা":["BCS", "NTRCA","Bank"],
+    
+
+    // এভাবে আপনার সব সাবজেক্টের জন্য লিস্ট যোগ করুন
+  };
+  return examMap[subject] || ["সাধারণ"];
+};
+
+// lib/dat
+export const getExamTagsForTopic = (topic) => {
+  const topicMap = {
+    // বাংলা ও ব্যাকরণ
+    "বিরামচিহ্ন": ["BCS", "NTRCA", "Primary"],
+    "ধ্বনি ও বর্ণ": ["BCS", "Govt"],
+    "শব্দ ও বাক্য": ["BCS", "Bank", "Primary"],
+    "সমাস": ["BCS", "Bank", "NTRCA"],
+    
+    // বিজ্ঞান ও জীববিজ্ঞান
+    "কোষ বিদ্যা": ["BCS", "NTRCA", "Medical"],
+    "বল ও গতি": ["BCS", "Bank", "Govt"],
+    "মানবদেহ": ["BCS", "Primary", "Medical"],
+    
+    // ডিফল্ট ট্যাগ
+    "বিবিধ": ["BCS", "All"]
+  };
+
+  // যদি টপিকটি ম্যাপে না থাকে, ডিফল্ট হিসেবে ["BCS", "All"] দেখাবে
+  return topicMap[topic] || ["BCS", "All"];
+};
+
+
 
 export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSetupProps) {
   const [step, setStep] = useState(1); 
@@ -16,6 +116,8 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   
   const [qCount, setQCount] = useState(25);
   const [examTime, setExamTime] = useState(20);
+
+
 
   useEffect(() => {
     if (step === 3) {
@@ -287,7 +389,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 {step === 1 && (
   <div className="animate-in fade-in slide-in-from-bottom-2">
     <h2 
-      className="text-2xl font-bold text-gray-800 mb-8 tracking-tight" 
+      className="text-2xl font-bold text-gray-800 mb-8" 
       style={{ fontFamily: "'Anek Bangla', sans-serif" }}
     >
       <span className="text-green-600"></span>
@@ -324,46 +426,106 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
     </div>
   </div>
 )}
-        {/* Step 2 & 3: Selection */}
-        {(step === 2 || step === 3) && (
-          <div className="animate-in slide-in-from-right-4"
-              style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
-            <div className="flex justify-between items-end mb-6">
-              <h2 className="text-lg ml-3 font-black text-gray-800 tracking-tight">
-                 <span className="text-green-600">{step === 2 ? "বিষয়" : "টপিক "}
-                  
-                 </span>
-              </h2>
-              <button onClick={() => {setStep(step - 1); if(step===2) setSelectedSubjects([])}} className="text-[10px] font-black  text-gray-400 hover:text-green-600 transition-colors">← পিছে </button>
+
+
+
+
+
+
+
+
+
+{/* Step 2 & 3: Selection */}
+{(step === 2 || step === 3) && (
+  <div className="animate-in slide-in-from-right-4 p-4" style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
+    <div className="flex justify-between items-center mb-6">
+      <h2 className="text-xl ml-2 font-black text-green-700 ">
+        {step === 2 ? "বিষয়" : "টপিক"}
+      </h2>
+      <button 
+        onClick={() => {setStep(step - 1); if(step===2) setSelectedSubjects([])}} 
+        className="px-4 py-2 bg-green-50 text-green-600 text-xs font-black rounded-xl hover:bg-green-100 transition-all"
+      >
+        ← পিছে
+      </button>
+      
+    </div>
+
+    <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
+      {(step === 2 ? getAvailableSubjects() : availableTopics).map(item => {
+        const isSelected = step === 2 ? selectedSubjects.includes(item) : selectedTopics.includes(item);
+        
+        // ডায়নামিক ট্যাগ ও কাউন্ট
+        const examTags = step === 2 ? getExamTagsForSubject(item) : getExamTagsForTopic(item);
+        const questionCount = getQuestionCount(item);
+
+        return (
+          <label 
+            key={item} 
+            className={`group flex items-start justify-between p-6 rounded-3xl border-2 transition-all cursor-pointer 
+            ${isSelected 
+              ? "bg-white border-green-300  ring-green-100 " 
+              : "bg-white border-gray-100 hover:border-green-300 "}`}
+          >
+            <div className="flex flex-col gap-3 flex-1">
+             <div className="flex justify-between items-center gap-4 w-full">
+
+
+
+<div className="flex items-center ">
+    {/* সরাসরি ইমোজি কন্টেইনার */}
+    <div className={`p-3 rounded-2xl  ${isSelected ? iconMap[item]?.bg : "bg-white-100"}`}>
+      <span className="text-xl">
+        {iconMap[item]?.emoji || ""}
+      </span>
+    </div>
+    
+    <span className={`text-sm font-black ${isSelected ? "text-gray-600" : "text-gray-600"}`}>
+      {item}
+    </span>
+  </div>
+
+  {/* প্রশ্ন সংখ্যা ব্যাজ */}
+  <span className="flex items-center gap-1 text-[8px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-md whitespace-nowrap flex-shrink-0">
+    ✍🏻 {questionCount} টি প্রশ্ন
+  </span>
+</div>
+              
+              {/* Exam Tags Section - এখন টপিক এবং বিষয় উভয়ক্ষেত্রেই দেখা যাবে */}
+              <div className="flex flex-wrap gap-2">
+                {examTags.map(tag => (
+                  <span key={tag} className="text-[10px] font text-gray-600 bg-green-50 border border-green-200 px-1  rounded-full whitespace-nowrap">
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
             
-            <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
-              {(step === 2 ? getAvailableSubjects() : availableTopics).map(item => {
-                const isSelected = step === 2 ? selectedSubjects.includes(item) : selectedTopics.includes(item);
-                return (
-                  <label key={item} className={`flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${isSelected ? "bg-green-50/50 border-green-500/30" : "bg-white border-gray-100"}`}>
-                    <span className={`text-xs font-bold tracking-wide ${isSelected ? "text-green-700" : "text-gray-500"}`}>{item}</span>
-                    <input type="checkbox" className="hidden" onChange={() => step === 2 ? toggleSelection(item, selectedSubjects, setSelectedSubjects) : toggleSelection(item, selectedTopics, setSelectedTopics)} />
-                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? "bg-green-600 border-green-600" : "border-gray-200"}`}>
-                      {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"/></svg>}
-                    </div>
-                  </label>
-                );
-              })}
-              {step === 3 && availableTopics.length === 0 && (
-                <div className="text-center p-10 text-gray-400 text-xs font-bold uppercase">কোনো টপিক পাওয়া যায়নি</div>
-              )}
-            </div>
+            <input type="checkbox" className="hidden" onChange={() => step === 2 ? toggleSelection(item, selectedSubjects, setSelectedSubjects) : toggleSelection(item, selectedTopics, setSelectedTopics)} />
             
-            <button 
-              onClick={() => setStep(step + 1)} 
-              disabled={(step === 2 && selectedSubjects.length === 0)}
-              className="w-20 mt-6 py-4 bg-green-600 text-white font-black rounded-2xl shadow-lg shadow-green-100 disabled:bg-gray-200 disabled:shadow-none transition-all  text-xs tracking-widest"
-            >
-              পরবর্তী→
-            </button>
-          </div>
-        )}
+            <div className={`mt-1 ml-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"}`}>
+              {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"/></svg>}
+            </div>
+          </label>
+        );
+      })}
+    </div>
+
+    <button 
+      onClick={() => setStep(step + 1)} 
+      disabled={(step === 2 && selectedSubjects.length === 0) || (step === 3 && selectedTopics.length === 0)}
+      className="w-full mt-6 py-6 bg-green-600 text-white font-black rounded-3xl hover:bg-green-700 transition-all text-sm uppercase active:scale-[0.98] disabled:bg-gray-300"
+    >
+      পরবর্তী ধাপ →
+    </button>
+  </div>
+)}
+
+
+
+
+
+
 
 
 
