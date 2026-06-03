@@ -63,7 +63,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
           onClick={() => setCurrentPage("mixed-setup")}
           className="group px-2 py-3 bg-[#22C55E] text-white font-black rounded-xl text-s t hover:bg-[#16a34a] shadow-[0_20px_40px_-10px_rgba(34,197,94,0.3)] transition-all duration-300   justify-center gap-3 active:scale-95"
         >
-          🚀 অনুশীলন করুন
+          অনুশীলন করুন
           <span className="group-hover:translate-x-1 transition-transform">→</span>
         </button>
         

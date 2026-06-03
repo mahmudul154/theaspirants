@@ -190,7 +190,7 @@ const calculateResult = () => {
 
   questions.forEach((q, i) => {
     // লজিক: যদি sub_topic থাকে তবে সেটি নাম হবে, নতুবা topic নাম হবে। দুটোর একটাও না থাকলে "অন্যান্য"
-    const displayName = q.sub_topic || q.topic || "অন্যান্য";
+    const displayName =  q.topic || "অন্যান্য";
     
     if (!analysis[displayName]) {
       analysis[displayName] = { correct: 0, total: 0 };
@@ -410,6 +410,11 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
             </div>
           )}
 
+
+
+
+
+
           {/* ---------------- Questions Review Section ---------------- */}
           <div className="space-y-4">
             {questions.map((q, i) => {
@@ -440,7 +445,7 @@ const { correct, wrong, totalScore, percentage, subTopicAnalysis } = calculateRe
                   </div>
 
                 {/* Question Text */}
-<div className="text-base font-bold text-slate-800 mb-5 flex items-start gap-2">
+<div className="text-base font-bold text-slate-700 mb-5 flex items-start gap-2">
   <span className="text-slate-400">{i + 1}.</span> 
   {/* Added specific markdown spacing classes here */}
   <div className="flex-1 leading-relaxed [&>p]:mb-3 last:[&>p]:mb-0 [&_table]:w-full [&_td]:p-2 [&_th]:p-2 [&_th]:text-left [&_table]:mb-3">
@@ -575,7 +580,7 @@ const timerDanger = timeLeft < 60;
           
           {/* Topic Title */}
           <div className="flex-1 hidden sm:block font-black text-slate-700 truncate text-base">
-            <span className="text-green-600 mr-1.5">বিষয়:</span>{displayTitle}
+            <span className="text-green-600 mr-1.5"></span>
           </div>
           
           {/* Timer */}
@@ -640,7 +645,7 @@ const timerDanger = timeLeft < 60;
                 </div>
 
                 {/* Question Text */}
-                <div className="text-base font-bold text-slate-800 mb-5 leading-relaxed">
+                <div className="text-base ml-2 font-bold text-slate-700 mb-5 leading-relaxed">
                   <MarkdownRenderer content={q?.question} />
                 </div>
 
