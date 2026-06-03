@@ -68,7 +68,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         />
         
         {/* ইমেজের ওপর একটি গ্লাস কার্ড বা ওভারলে */}
-        <div className="absolute  left-6 right-6 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 flex items-center justify-between">
+        <div className="absolute bottom-2 left-6 right-6 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white/50 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-gray-500 uppercase">মোট প্রশ্ন</p>
             <p className="text-xl font-black text-gray-900">১,৫০,০০০+</p>
