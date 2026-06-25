@@ -5,7 +5,7 @@ import { BookOpen, Languages, FlaskConical, Calculator, Brain, Map, Globe, Lapto
 const iconMap: { [key: string]: { emoji: string, color: string, bg: string } } = {
   "English": { emoji: "📚", color: "text-blue-600"},
   "বাংলা": { emoji: "📒", color: "text-red-600"},
-  "সাধারণ বিজ্ঞান": { emoji: "🧬", color: "text-emerald-600"},
+  "বিজ্ঞান": { emoji: "🧬", color: "text-emerald-600"},
   "গাণিতিক যুক্তি": { emoji: "📐", color: "text-purple-600"},
   "মানসিক দক্ষতা": { emoji: "🧠", color: "text-amber-600"},
   "বাংলাদেশ বিষয়াবলী": { emoji: "🗺️", color: "text-orange-600"},
@@ -55,7 +55,7 @@ export const getQuestionCount = (item) => {
 "সন্ধি":1000,
 
 
-    "সাধারণ বিজ্ঞান":7000,
+    "বিজ্ঞান":7000,
     "কম্পিউটার ও তথ্য প্রযুক্তি":4500,
     "বাংলাদেশ বিষয়াবলী":25000,
     "আন্তর্জাতিক বিষয়াবলী":15000,
@@ -80,7 +80,7 @@ export    const getExamTagsForSubject = (subject) => {
   const examMap = {
     "English": ["BCS", "NTRCA", "Primary","Bank","General"],
     "বাংলা": ["BCS", "NTRCA", "Primary","Bank","General"],
-    "সাধারণ বিজ্ঞান":["BCS", "NTRCA", "Primary","Bank","General"],
+    "বিজ্ঞান":["BCS", "NTRCA", "Primary","Bank","General"],
     "কম্পিউটার ও তথ্য প্রযুক্তি":["BCS", "NTRCA", "Primary","Bank","General"],
     "বাংলাদেশ বিষয়াবলী":["BCS", "NTRCA", "Primary","Bank","General"],
     "আন্তর্জাতিক বিষয়াবলী":["BCS", "NTRCA", "Primary","Bank","General"],
