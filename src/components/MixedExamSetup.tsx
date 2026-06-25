@@ -43,6 +43,7 @@ export const getQuestionCount = (item) => {
     "পদার্থবিজ্ঞান": 2000,
     "জীববিজ্ঞান": 3000,
     "রসায়ন": 2000,
+
     "বিসিএস কম্পিউটার প্রশ্নসমূহ": 100,
     "আধুনিক প্রযুক্তি":700,
     "সিস্টেম ও সাইবার নিরাপত্তা":700,
@@ -50,6 +51,10 @@ export const getQuestionCount = (item) => {
       "নেটওয়ার্কিং ও ইন্টারনেট":700,
        "কম্পিউটার সিস্টেম ও হার্ডওয়্যার":700,
         "আইসিটি ও বিশ্বগ্রাম":700,
+      
+"সন্ধি":1000,
+
+
     "সাধারণ বিজ্ঞান":7000,
     "কম্পিউটার ও তথ্য প্রযুক্তি":4500,
     "বাংলাদেশ বিষয়াবলী":25000,
@@ -135,30 +140,92 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
        "Microcontroller":["Arduino Basics","Digital read","Digital write","Arduino+port language","Timers/Counters","Interrupts"],
         
         // General/Job Topics
-        'English': [
+'English': [
   // ========================================== A. Parts of Speech ==========================================
-  "Noun: Determiner, Gender, Number", "Pronoun", "Verb: Finite: transitive, intransitive", "Non-finite: participles, infinitives, gerund", "Linking Verb", "Phrasal Verb", "Modals", "Adjective", "Adverb", "Preposition", "Conjunction",
+  "The Noun",
+  "The Gender",
+  "The Number",
+  "The Pronoun",
+  "The Verb",
+  "Phrasal Verb Group Verb",
+  "Modals",
+  "The Adjective",
+  "The Determiner",
+  "The Article",
+  "The Adverb",
+  "The Preposition",
+  "Appropriate Preposition",
+  "The Conjunction",
+  "The Interjection",
 
-  // ========================================== B. Idioms & Phrases ==========================================
-  "Meanings of Phrases", "Kinds of Phrases", "Identifying Phrases",
+  // ========================================== B. Idioms and Phrases ==========================================
+  "Idioms and Phrases",
 
-  // ========================================== C. Clauses ==========================================
-  "Principal Clause", "Subordinate Clause: Noun Clause", "Adjective Clause", "Adverbial Clause & its types",
+  // ========================================== C. Clause ==========================================
+  "Clause",
 
-  // ========================================== D. Corrections ==========================================
-  "Tense", "Verb", "Preposition", "Determiner", "Gender", "Number", "Subject-Verb Agreement",
+  // ========================================== D. Correction ==========================================
+  "The Tense Sequence of Tense",
+  "Conditionals & Example",
+  "The Verb Right Form of Verbs",
+  "The Preposition Use of Correct Preposition",
+  "The Determiner Use of Correct Determiner",
+  "The Number & The Gender",
+  "Subject Verb Agreement",
 
-  // ========================================== E. Sentences & Transformations ==========================================
-  "Simple Sentence", "Compound Sentence", "Complex Sentence", "Active Voice", "Passive Voice", "Positive Degree", "Comparative Degree", "Superlative Degree",
+  // ========================================== E. Sentences and Transformations ==========================================
+  "The Sentence",
+  "Transformation of Sentences",
+  "Voice",
+  "Degrees",
+  "The Narration Extra",
 
   // ========================================== F. Words ==========================================
-  "Meanings", "Synonyms", "Antonyms", "Spellings", "Usage of words as various parts of speech", "Formation of new words by adding prefixes and suffixes",
+  "Meanings",
+  "Synonym & Antonym",
+  "One Word Substitute",
+  "Definition and Expressions",
+  "Some Word Related to Some Fields",
+  "Analogy",
+  "Spelling",
+  "Formation of New Words by Adding Prefixes and Suffixes",
+  "Interchange of Parts of Speech",
+  "The same word used as different Parts of Speech",
+  "Proverbs & Translation",
 
   // ========================================== G. Composition ==========================================
-  "Names of parts of paragraphs/letters/applications",
+  "Composition",
 
   // ========================================== H. English Literature ==========================================
-  "Names of writers of literary pieces from Elizabethan period to the 21st Century", "Quotations from drama/poetry of different ages"
+  "Various Periods of English Literature",
+  "Old English Period Anglo Saxon Period",
+  "Middle English Period",
+  "The Renaissance Period",
+  "Elizabethan Age",
+  "Jacobean Age",
+  "Caroline Age",
+  "Commonwealth Period",
+  "Neo Classical Period",
+  "The Restoration Period",
+  "The Augustan Period",
+  "The Age of Sensibility",
+  "The Romantic Period",
+  "The Victorian Period",
+  "The Modern Period",
+  "The Post Modern Period",
+  "Major Writers of Different Countries",
+  "Real and pen names of the some Famous Writers",
+  "Titles Titular Names of the Some Famous Writer",
+  "Some famous Books and Writers",
+  "Main Themes of Some Famous Book",
+  "Some Important Books and Characters",
+  "Some Books Banned by Government",
+  "Text Books Important English Literature",
+  "Important Literary Quotes",
+  "Nobel Laureates in English Literature",
+  "Genres of Literature",
+  "Literary Terms in English Literature",
+  "English Literature at a Glance"
 ],
       'বাংলা': [
   // ========================================== ব্যাকরণ (Grammar) ==========================================
@@ -288,7 +355,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   "বিসিএস কম্পিউটার প্রশ্নসমূহ" 
 ],
         'সাধারণ বিজ্ঞান': [ 
- 'পদার্থবিজ্ঞান' ,'রসায়ন' ,'জীববিজ্ঞান' 
+ 'পদার্থবিজ্ঞান' ,'রসায়ন' ,'জীববিজ্ঞান' ,'সাধারণ বিজ্ঞান'
 ],
        'গাণিতিক যুক্তি': [
   // ========================================== ১. পাটিগণিত ==========================================
