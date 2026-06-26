@@ -139,94 +139,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
        //power topic
        "Microcontroller":["Arduino Basics","Digital read","Digital write","Arduino+port language","Timers/Counters","Interrupts"],
         
-        // General/Job Topics
-'English': [
-  // ========================================== A. Parts of Speech ==========================================
-  "The Noun",
-  "The Gender",
-  "The Number",
-  "The Pronoun",
-  "The Verb",
-  "Phrasal Verb Group Verb",
-  "Modals",
-  "The Adjective",
-  "The Determiner",
-  "The Article",
-  "The Adverb",
-  "The Preposition",
-  "Appropriate Preposition",
-  "The Conjunction",
-  "The Interjection",
-
-  // ========================================== B. Idioms and Phrases ==========================================
-  "Idioms and Phrases",
-
-  // ========================================== C. Clause ==========================================
-  "Clause",
-
-  // ========================================== D. Correction ==========================================
-  "The Tense Sequence of Tense",
-  "Conditionals & Example",
-  "The Verb Right Form of Verbs",
-  "The Preposition Use of Correct Preposition",
-  "The Determiner Use of Correct Determiner",
-  "The Number & The Gender",
-  "Subject Verb Agreement",
-
-  // ========================================== E. Sentences and Transformations ==========================================
-  "The Sentence",
-  "Transformation of Sentences",
-  "Voice",
-  "Degrees",
-  "The Narration Extra",
-
-  // ========================================== F. Words ==========================================
-  "Meanings",
-  "Synonym & Antonym",
-  "One Word Substitute",
-  "Definition and Expressions",
-  "Some Word Related to Some Fields",
-  "Analogy",
-  "Spelling",
-  "Formation of New Words by Adding Prefixes and Suffixes",
-  "Interchange of Parts of Speech",
-  "The same word used as different Parts of Speech",
-  "Proverbs & Translation",
-
-  // ========================================== G. Composition ==========================================
-  "Composition",
-
-  // ========================================== H. English Literature ==========================================
-  "Various Periods of English Literature",
-  "Old English Period Anglo Saxon Period",
-  "Middle English Period",
-  "The Renaissance Period",
-  "Elizabethan Age",
-  "Jacobean Age",
-  "Caroline Age",
-  "Commonwealth Period",
-  "Neo Classical Period",
-  "The Restoration Period",
-  "The Augustan Period",
-  "The Age of Sensibility",
-  "The Romantic Period",
-  "The Victorian Period",
-  "The Modern Period",
-  "The Post Modern Period",
-  "Major Writers of Different Countries",
-  "Real and pen names of the some Famous Writers",
-  "Titles Titular Names of the Some Famous Writer",
-  "Some famous Books and Writers",
-  "Main Themes of Some Famous Book",
-  "Some Important Books and Characters",
-  "Some Books Banned by Government",
-  "Text Books Important English Literature",
-  "Important Literary Quotes",
-  "Nobel Laureates in English Literature",
-  "Genres of Literature",
-  "Literary Terms in English Literature",
-  "English Literature at a Glance"
-],
+'English': ["Grammar","Parts of Speech","Noun","Pronoun","Number","Gender","Articles","Adjective","Adverb","Verb","Right Form of Verb","Tense","Subject-Verb Agreement","Voice, Narration and One Word","Preposition","Clause","Sentence","Correction","Suffix Prefix","Words","Vocabulary","Synonym & Antonym","Idioms & Phrases","Proverb","Analogy","English Literature","Old English Period","Middle English Period","Renaissance Period","Elizabethan Age","Jacobean Age","Caroline Age","Commonwealth Period","Restoration Period","Augustan Period","Age of Sensibility","Romantic Period","Victorian Period","Modern Period","Post Modern Period","Major Writers of Different Countries","Real and Pen name of the Some Famous Writer","Titles/Titular Names of the Some Famous Writer","Some Famous Books and Writers","Some Important Books and Characters","Main Themes of Some Famous Book","Genres of Literature","Important Literary Quotes","Noble Laureates in English Literature","Text Books Important English Literature","Some Books Banned by Government","BCS","বিবিধ"],
      'বাংলা': ["ভাষা ও ব্যাকরণ","ধ্বনি ও বর্ণ","সন্ধি","সমাস","উপসর্গ প্রত্যয়","ণত্ব ও ষত্ব বিধান","পারিভাষিক শব্দ","শব্দ","শব্দার্থ ও সমার্থক শব্দ","বিপরীত শব্দ","সমোচ্চারিত ও ভিন্নার্থক শব্দ","সংখ্যাবাচক শব্দ","পুরুষ ও স্ত্রীবাচক শব্দ","দ্বিরুক্ত শব্দ","পদাশ্রিত নির্দেশক","বচন","কারক","পুরুষ","ধাতু","ক্রিয়ার কাল","বাচ্য","বাক্য","উক্তি","বিরামচিহ্ন","বাংলা ভাষারীতি","ভাষার প্রয়োগ অপপ্রয়োগ","ছন্দ প্রকরণ","বাগধারা ও প্রবাদ প্রবচন","এক কথায় প্রকাশ","ডাক ও খনার বচন","সাহিত্য","প্রাচীন ও মধ্যযুগ","প্রাচীন যুগ (চর্যাপদ)","আধুনিক যুগ","সমসাময়িক বাংলাদেশের সাহিত্য","বাংলা সাহিত্য ও বিভিন্ন সংগঠন","বাংলা সাহিত্যের অভিধা ও মতবাদ","বিদেশি সাহিত্য ও অনুবাদ","রবীন্দ্রনাথ ঠাকুর","কাজী নজরুল ইসলাম","ঈশ্বরচন্দ্র বিদ্যাসাগর","দীনবন্ধু মিত্র","মীর মশাররফ হোসেন","শরৎচন্দ্র চট্টোপাধ্যায়","ফররুখ আহমদ","জসীমউদ্দীন","কায়কোবাদ","বেগম রোকেয়া","বঙ্কিমচন্দ্র চট্টোপাধ্যায়","মাইকেল মধুসূদন দত্ত","রাজা রামমোহন রায়","সাহিত্যিকদের ছদ্মনাম ও উপাধি","বাংলা নাটক","মাধ্যমিক সাহিত্য","উচ্চমাধ্যমিক সাহিত্য","উপন্যাস","বাংলা গান","বিখ্যাত আত্মজীবনী","বিখ্যাত শিশুতোষগ্রন্থ","বিখ্যাত ভ্রমণ কাহিনী","বিখ্যাত উক্তি","BCS","বিবিধ"],
 
         "বাংলাদেশ বিষয়াবলী": [
@@ -590,34 +503,99 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
 
         {/* Step 4: Limits */}
-        {step === 4 && (
-          <div className="animate-in slide-in-from-right-4"
-              style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
-             <div className="flex justify-between items-end mb-8">
-              <h2 className="text-lg ml-5 font-black text-gray-800 ">লিমিট  <span className="text-green-600">নির্ধারণ করুন </span></h2>
-              <button onClick={() => setStep(3)} className="text-[10px] font-black uppercase text-gray-400">← পিছে </button>
-            </div>
-            <div className="space-y-10 bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-sm">
-              <div className="space-y-4">
-                <div className="flex justify-between font-black  text-[10px] text-gray-400">
-                  <span>প্রশ্ন</span>
-                  <span className="text-green-600">{qCount}</span>
-                </div>
-                <input type="range" min="5" max="3000" step="5" value={qCount} onChange={(e) => setQCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between font-black text-[10px] text-gray-400">
-                  <span>সময় (মিনিট)</span>
-                  <span className="text-green-600">{examTime}</span>
-                </div>
-                <input type="range" min="5" max="3000" step="5" value={examTime} onChange={(e) => setExamTime(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600" />
-              </div>
-            </div>
-            <button onClick={handleStartExam} className="w-35 mt-5 py-5 bg-green-600 text-white font-black rounded-[2rem] shadow-xl  text-xs   transition-all">
-            🚀 অনুশীলন করুন →
-            </button>
-          </div>
-        )}
+    {/* Step 4: Limits */}
+{step === 4 && (
+  <div
+    className="animate-in slide-in-from-right-4"
+    style={{ fontFamily: "'Anek Bangla', sans-serif" }}
+  >
+    <div className="flex justify-between items-end mb-8">
+      <h2 className="text-lg ml-5 font-black text-gray-800">
+        পরীক্ষা <span className="text-green-600">সেটআপ</span>
+      </h2>
+
+      <button
+        onClick={() => setStep(3)}
+        className="text-[10px] font-black uppercase text-gray-400"
+      >
+        ← পিছে
+      </button>
+    </div>
+
+    <div className="space-y-8 bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
+
+      {/* Question Count */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-black text-gray-500">
+            প্রশ্নের সংখ্যা
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black">
+            {qCount} টি
+          </span>
+        </div>
+
+        <input
+          type="range"
+          min="5"
+          max="3000"
+          step="5"
+          value={qCount}
+          onChange={(e) => setQCount(Number(e.target.value))}
+          className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600"
+        />
+
+        <div className="flex justify-between text-[10px] text-gray-400">
+          <span>৫</span>
+          <span>৫০0</span>
+          <span>১০০0</span>
+          <span>২০০0</span>
+          <span>৩০০0</span>
+        </div>
+      </div>
+
+      {/* Exam Time */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-black text-gray-500">
+            পরীক্ষার সময়
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black">
+            {examTime} মিনিট
+          </span>
+        </div>
+
+        <input
+          type="range"
+          min="5"
+          max="1800"
+          step="5"
+          value={examTime}
+          onChange={(e) => setExamTime(Number(e.target.value))}
+          className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-green-600"
+        />
+
+        <div className="flex justify-between text-[10px] text-gray-400">
+          <span>৫</span>
+          <span>৩০0</span>
+          <span>৬০0</span>
+          <span>১২০0</span>
+          <span>১৮০0</span>
+        </div>
+      </div>
+
+    </div>
+
+    <button
+      onClick={handleStartExam}
+      className="w-full mt-6 py-5 bg-green-600 hover:bg-green-700 text-white font-black rounded-[2rem] shadow-xl text-sm transition-all"
+    >
+      🚀 অনুশীলন শুরু করুন
+    </button>
+  </div>
+)}
       </div>
     </div>
   );
