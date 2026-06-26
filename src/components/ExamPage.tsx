@@ -108,6 +108,12 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
         
         if (isMixed) {
           const { category, subjects, topics, limit, time } = examId;
+
+          
+    console.log("TOPICS:", topics);
+console.log("SUBJECTS:", subjects);
+console.log("EXAMID:", examId);
+
           const dbTag = category;
 
           if (topics && (topics as string[]).length > 0) {
@@ -119,9 +125,36 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
           query = query.eq("exam_tag", dbTag);
 
           const { data, error } = await query;
+
+
+
+
+          console.log(
+  "Returned Topics:",
+  [...new Set(data?.map(q => q.topic))]
+);
+
+console.log(
+  "Topic Count:",
+  data?.reduce((acc, q) => {
+    acc[q.topic] = (acc[q.topic] || 0) + 1;
+    return acc;
+  }, {})
+);
+
+
+
+
           if (error) throw error;
 
           if (data && data.length > 0) {
+
+            
+            data.forEach(q => {
+  if (!Array.isArray(q.options)) {
+    console.log("Bad Question:", q.id, q.topic, q.options);
+  }
+});
             // নতুন লজিক কল করা হলো
             const processedQuestions = organizeQuestionsRoundRobin(data, limit || 25);
             setQuestions(processedQuestions);
