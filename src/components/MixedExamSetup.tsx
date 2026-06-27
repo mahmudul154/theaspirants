@@ -552,7 +552,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         <input
           type="range"
           min="5"
-          max="3000"
+          max="300"
           step="5"
           value={qCount}
           onChange={(e) => setQCount(Number(e.target.value))}
@@ -561,10 +561,10 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
         <div className="flex justify-between text-[10px] text-gray-400">
           <span>৫</span>
-          <span>৫০0</span>
-          <span>১০০0</span>
-          <span>২০০0</span>
-          <span>৩০০0</span>
+          <span>৫০</span>
+          <span>১০০</span>
+          <span>২০০</span>
+          <span>৩০০</span>
         </div>
       </div>
 
@@ -583,7 +583,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
         <input
           type="range"
           min="5"
-          max="1800"
+          max="180"
           step="5"
           value={examTime}
           onChange={(e) => setExamTime(Number(e.target.value))}
@@ -592,10 +592,10 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
         <div className="flex justify-between text-[10px] text-gray-400">
           <span>৫</span>
-          <span>৩০0</span>
-          <span>৬০0</span>
-          <span>১২০0</span>
-          <span>১৮০0</span>
+          <span>৩০</span>
+          <span>৬০</span>
+          <span>১২০</span>
+          <span>১৮০</span>
         </div>
       </div>
 
