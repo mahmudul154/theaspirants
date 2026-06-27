@@ -188,7 +188,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
       }}
     >
       {/* স্ক্রলবার হাইড করার CSS (Webkit এর জন্য) */}
-      <style jsx>{`
+      <style >{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
