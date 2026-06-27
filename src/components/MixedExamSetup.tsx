@@ -253,7 +253,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
   "বিসিএস কম্পিউটার প্রশ্নসমূহ" 
 ],
         'বিজ্ঞান': [ 
- 'পদার্থবিজ্ঞান' ,'রসায়ন' ,'জীববিজ্ঞান-টেস্ট' ,'সাধারণ বিজ্ঞান'
+ 'পদার্থবিজ্ঞান' ,'রসায়ন' ,'জীব বিজ্ঞান' ,'সাধারণ বিজ্ঞান','বিসিএস প্রশ্নব্যাংক'
 ],
        'গাণিতিক যুক্তি': [
   // ========================================== ১. পাটিগণিত ==========================================
@@ -338,7 +338,7 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
     return ["English", "বাংলা", "বাংলাদেশ বিষয়াবলী", "আন্তর্জাতিক বিষয়াবলী", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা","নৈতিকতা, মূল্যবোধ ও সুশাসন" , "গাণিতিক যুক্তি","মানসিক দক্ষতা","কম্পিউটার ও তথ্য প্রযুক্তি", "বিজ্ঞান"];
   }
     else if (category === "bank") {
-    return ["English", "বাংলা", "গাণিতিক যুক্তি","মানসিক দক্ষতা","কম্পিউটার ও তথ্য প্রযুক্তি", "সাধারণ বিজ্ঞান"];
+    return ["English", "বাংলা", "গাণিতিক যুক্তি","মানসিক দক্ষতা","কম্পিউটার ও তথ্য প্রযুক্তি", "বিজ্ঞান"];
   }
   
   return [];
@@ -406,28 +406,44 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
 
 
 
-
-{/* Step 2 & 3: Selection */}
 {(step === 2 || step === 3) && (
   <div className="animate-in slide-in-from-right-4 p-4" style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
     <div className="flex justify-between items-center mb-6">
       <h2 className="text-xl ml-2 font-black text-green-700 ">
         {step === 2 ? "বিষয়" : "টপিক"}
       </h2>
+      
+      {/* Select All বাটন এখানে যোগ করা হয়েছে */}
+      <button 
+        onClick={() => {
+          const items = step === 2 ? getAvailableSubjects() : availableTopics;
+          const currentSelection = step === 2 ? selectedSubjects : selectedTopics;
+          const setSelection = step === 2 ? setSelectedSubjects : setSelectedTopics;
+          
+          if (currentSelection.length === items.length) {
+            setSelection([]);
+          } else {
+            setSelection(items);
+          }
+        }}
+        className="px-3 py-1 bg-gray-100 text-gray-500 text-[10px] font-black rounded-lg hover:bg-gray-200 transition-all mr-auto ml-4"
+      >
+        {(step === 2 ? selectedSubjects.length : selectedTopics.length) === (step === 2 ? getAvailableSubjects().length : availableTopics.length) 
+          ? "সব বাদ দিন" 
+          : "সব সিলেক্ট করুন"}
+      </button>
+
       <button 
         onClick={() => {setStep(step - 1); if(step===2) setSelectedSubjects([])}} 
         className="px-4 py-2 bg-green-50 text-green-600 text-xs font-black rounded-xl hover:bg-green-100 transition-all"
       >
         ← পিছে
       </button>
-      
     </div>
 
     <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
       {(step === 2 ? getAvailableSubjects() : availableTopics).map(item => {
         const isSelected = step === 2 ? selectedSubjects.includes(item) : selectedTopics.includes(item);
-        
-        // ডায়নামিক ট্যাগ ও কাউন্ট
         const examTags = step === 2 ? getExamTagsForSubject(item) : getExamTagsForTopic(item);
         const questionCount = getQuestionCount(item);
 
@@ -436,44 +452,42 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
             key={item} 
             className={`group flex items-start justify-between p-6 rounded-3xl border-2 transition-all cursor-pointer 
             ${isSelected 
-              ? "bg-white border-green-300  ring-green-100 " 
+              ? "bg-white border-green-300 ring-green-100 " 
               : "bg-white border-gray-100 hover:border-green-300 "}`}
           >
             <div className="flex flex-col gap-3 flex-1">
-             <div className="flex justify-between items-center gap-4 w-full">
+              <div className="flex justify-between items-center gap-4 w-full">
+                <div className="flex items-center ">
+                  <div className={`p-3 rounded-2xl ${isSelected ? iconMap[item]?.bg : "bg-white-100"}`}>
+                    <span className="text-xl">
+                      {iconMap[item]?.emoji || ""}
+                    </span>
+                  </div>
+                  <span className={`text-sm font-black ${isSelected ? "text-gray-600" : "text-gray-600"}`}>
+                    {item}
+                  </span>
+                </div>
 
-
-
-<div className="flex items-center ">
-    {/* সরাসরি ইমোজি কন্টেইনার */}
-    <div className={`p-3 rounded-2xl  ${isSelected ? iconMap[item]?.bg : "bg-white-100"}`}>
-      <span className="text-xl">
-        {iconMap[item]?.emoji || ""}
-      </span>
-    </div>
-    
-    <span className={`text-sm font-black ${isSelected ? "text-gray-600" : "text-gray-600"}`}>
-      {item}
-    </span>
-  </div>
-
-  {/* প্রশ্ন সংখ্যা ব্যাজ */}
-  <span className="flex items-center gap-1 text-[8px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-md whitespace-nowrap flex-shrink-0">
-    ✍🏻 {questionCount} টি প্রশ্ন
-  </span>
-</div>
+                <span className="flex items-center gap-1 text-[8px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-md whitespace-nowrap flex-shrink-0">
+                  ✍🏻 {questionCount} টি প্রশ্ন
+                </span>
+              </div>
               
-              {/* Exam Tags Section - এখন টপিক এবং বিষয় উভয়ক্ষেত্রেই দেখা যাবে */}
               <div className="flex flex-wrap gap-2">
                 {examTags.map(tag => (
-                  <span key={tag} className="text-[10px] font text-gray-600 bg-green-50 border border-green-200 px-1  rounded-full whitespace-nowrap">
+                  <span key={tag} className="text-[10px] font text-gray-600 bg-green-50 border border-green-200 px-1 rounded-full whitespace-nowrap">
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
             
-            <input type="checkbox" className="hidden" onChange={() => step === 2 ? toggleSelection(item, selectedSubjects, setSelectedSubjects) : toggleSelection(item, selectedTopics, setSelectedTopics)} />
+            <input 
+              type="checkbox" 
+              className="hidden" 
+              checked={isSelected}
+              onChange={() => step === 2 ? toggleSelection(item, selectedSubjects, setSelectedSubjects) : toggleSelection(item, selectedTopics, setSelectedTopics)} 
+            />
             
             <div className={`mt-1 ml-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"}`}>
               {isSelected && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"/></svg>}
@@ -492,7 +506,6 @@ export function MixedExamSetup({ setCurrentPage, setSelectedExam }: MixedExamSet
     </button>
   </div>
 )}
-
 
 
 

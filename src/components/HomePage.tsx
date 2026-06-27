@@ -25,10 +25,10 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
 
   return (
     
-    <div className="pt-8 bg-gray-50 min-h-screen"
+    <div className="pt-8 bg-gray-50 min-h-screen -mt-6"
         style={{ fontFamily: "'Anek Bangla', sans-serif" }}>
     {/* Premium Clean Dashboard Hero - Color Matched with Image */}
-<section className="relative min-h-[85vh] flex items-center bg-white overflow-hidden py-16">
+<section className="relative min-h-[85vh] flex items-center bg-white overflow-hidden py-">
   {/* ব্যাকগ্রাউন্ড ডেকোরেশন */}
   <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-50 rounded-full blur-[120px] -mr-20 -mt-20"></div>
 
@@ -38,7 +38,7 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
     <div className="flex-1 space-y-8 text-center mt-8 lg:text-left">
      
       
-      <h1 className="text-2xl md:text-5xl font-black text-gray-800 leading-[1.05]">
+      <h1 className="text-4xl md:text-5xl font-black text-gray-800 leading-[1.05]">
        চাকরির পরীক্ষায়  <br/>
         <span className="text-green-600"> নিশ্চিত  সাফল্য</span>
       </h1>
