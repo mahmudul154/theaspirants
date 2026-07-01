@@ -1,7 +1,13 @@
 import { categories, examSets, leaderboard } from "../data/examData";
 import { supabase } from "../lib/supabase"; // 'supabaseClient' এর বদলে শুধু 'supabase' লিখুন
 import { useNavigate } from 'react-router-dom';
+// ১. উপরে ইমপোর্ট করুন
+import { Settings, Target } from 'lucide-react'; 
 
+// ২. দ্বিতীয় কার্ডের ভেতর এভাবে লিখুন
+<div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+  <Settings className="text-emerald-700" />
+</div>
 
 
 
@@ -187,13 +193,12 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
         msOverflowStyle: 'none'  // IE/Edge এর জন্য
       }}
     >
-      {/* স্ক্রলবার হাইড করার CSS (Webkit এর জন্য) */}
-      <style >{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-
+   {/* স্ক্রলবার হাইড করার CSS (সঠিকভাবে jsx অ্যাট্রিবিউট ব্যবহার করে) */}
+<style jsx>{`
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`}</style>
       {[
         { tag: "BCS", sub: "বাংলা সাহিত্য", top: "মধ্যযুগ", q: "৫০", min: "২৫", color: "text-blue-700 bg-blue-50 border-blue-200" },
         { tag: "BANK", sub: "গাণিতিক যুক্তি", top: "শতকরা", q: "৪০", min: "২০", color: "text-purple-700 bg-purple-50 border-purple-200" },
@@ -266,15 +271,18 @@ export function HomePage({ setCurrentPage, setSelectedExam }: HomePageProps) {
     </div>
 
     {/* Feature 2: Weakness Analysis */}
-    <div 
-      onClick={() => setCurrentPage("analysis")}
-      className="bg-white border border-gray-100 rounded-[2rem] p-6 relative overflow-hidden group cursor-pointer hover:border-emerald-500 hover:shadow-xl transition-all"
-    >
-      <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
-      <h3 className="text-xl font-black text-gray-900 mb-1">ভুল পর্যালোচনা</h3>
-      <p className="text-gray-400 text-[11px] mb-4">আপনার দুর্বল দিকগুলো খুঁজে বের করুন এবং উন্নতি করুন।</p>
-      <span className="text-[10px] font-bold text-emerald-600 underline underline-offset-4">বিশ্লেষণ করুন →</span>
-    </div>
+  <div 
+  onClick={() => setCurrentPage("analysis")}
+  className="bg-white border border-gray-100 rounded-[2rem] p-6 relative overflow-hidden group cursor-pointer hover:border-emerald-500 hover:shadow-xl transition-all"
+>
+  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+    {/* ইমোজির জন্য আলাদা ফন্ট ফ্যামিলি এবং কন্টেন্ট */}
+    <span style={{ fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif' }}>⚙</span>
+  </div>
+  <h3 className="text-xl font-black text-gray-900 mb-1">ভুল পর্যালোচনা</h3>
+  <p className="text-gray-400 text-[11px] mb-4">আপনার দুর্বল দিকগুলো খুঁজে বের করুন এবং উন্নতি করুন।</p>
+  <span className="text-[10px] font-bold text-emerald-600 underline underline-offset-4">বিশ্লেষণ করুন →</span>
+</div>
 
     {/* Feature 3: Daily Challenge */}
     <div 
