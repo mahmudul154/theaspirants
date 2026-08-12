@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
@@ -10,7 +11,7 @@ import { BN, CATS, SUBJ_META, SUBJECTS, QCOUNT, LIVE, BOARD, QB, TOPICS, CAT_SUB
 
 const questionCountCache = new Map()
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
-const Md = ({ s }) => <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
+const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
 const ICOS = {
   book: <><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" /></>,
@@ -64,6 +65,12 @@ const SocIcon = ({ id }) => (
 
 /* আরও শিটের ব্ল্যাক-অ্যান্ড-হোয়াইট আইকন */
 const SHEET_ICONS = {
+  menu: <><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></>,
+  close: <><path d="m18 6-12 12" /><path d="m6 6 12 12" /></>,
+  home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></>,
+  user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
+  logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></>,
+  arrowUp: <><path d="m18 15-6-6-6 6" /><path d="M12 9v12" /></>,
   gem: <><path d="M6 3h12l4 6-10 13L2 9z" /><path d="M2 9h20" /><path d="m12 22-4-13 3-6" /><path d="m12 22 4-13-3-6" /></>,
   sliders: <><path d="M4 21v-7" /><path d="M4 10V3" /><path d="M12 21v-9" /><path d="M12 8V3" /><path d="M20 21v-5" /><path d="M20 12V3" /><path d="M1 14h6" /><path d="M9 8h6" /><path d="M17 16h6" /></>,
   flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
@@ -223,6 +230,12 @@ export function App() {
   }, [])
   useEffect(() => { document.documentElement.classList.toggle('dark', dark) }, [dark])
   useEffect(() => {
+    document.body.style.overflow = sheetOpen ? 'hidden' : ''
+    const closeOnEscape = e => { if (e.key === 'Escape') setSheetOpen(false) }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape) }
+  }, [sheetOpen])
+  useEffect(() => {
     if (!('IntersectionObserver' in window)) return
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { threshold: .08 })
     document.querySelectorAll('.page.on .sec, .page.on .hero-panel').forEach(el => { el.classList.add('fade'); io.observe(el) })
@@ -252,6 +265,8 @@ export function App() {
       return
     }
 
+    const origin = cfg.returnPage || page
+    const repeatSetup = { ...cfg, returnPage: origin }
     const { title, subjects, topics, limit, minutes, fallback } = cfg
     setLoading(true)
     let rows = null
@@ -303,7 +318,7 @@ export function App() {
     setLoading(false)
     if (!qs.length) { setToastMsg('প্রশ্ন পাওয়া যায়নি'); return }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র' })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup })
     go('quiz')
   }
 
@@ -337,7 +352,7 @@ export function App() {
     const pct = Math.round((Math.max(0, ok - bad * .5)) / qs.length * 100)
     const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
     setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
-    setResult({ ok, bad, skip, pct, rev, title: quiz.title })
+    setResult({ ok, bad, skip, pct, rev, title: quiz.title, origin: quiz.origin, setup: quiz.setup })
     setQuiz(null)
     setRevOnlyWrong(false)
     go('result')
@@ -412,26 +427,21 @@ export function App() {
     <div>
       {page !== 'quiz' && <header>
         <div className="hdr-in">
-          <button className="logo" onClick={() => go('home')} title="অভ্যাস">
+          <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
+            <SheetIco id="menu" />
+          </button>
+          <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
             <span className="wordmark">অভ্যাস</span>
           </button>
-          <nav>
-            <button className={page === 'home' ? 'active' : ''} onClick={() => go('home')}>হোম</button>
-            <button className={page === 'exams' ? 'active' : ''} onClick={() => go('exams')}>পরীক্ষা</button>
-            <button className={page === 'potrika' ? 'active' : ''} onClick={() => go('potrika')}>পত্রিকা</button>
-            <button className={page === 'visual' ? 'active' : ''} onClick={() => go('visual')}>ভিজ্যুয়াল জিকে</button>
-            <button className={page === 'leaderboard' ? 'active' : ''} onClick={() => go('leaderboard')}>লিডারবোর্ড</button>
-          </nav>
           <div className="hdr-right">
-            <button className="ibtn wide prem" onClick={() => go('pricing')}>💎 প্ল্যান</button>
-            <button className="ibtn wide" onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
-            <button className="ibtn" onClick={() => setDark(d => !d)}>{dark ? '☀' : '☾'}</button>
+            <button className="ibtn wide prem" onClick={() => go('pricing')}><SheetIco id="gem" /> প্ল্যান</button>
+            <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
+            <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
             {user
               ? <button className="ibtn" style={{ border: 'none', padding: 0, width: 38, height: 38 }} title="প্রোফাইল" onClick={() => go('profile')}>
                   <img className="av-sm" src={avSrc(user)} alt="profile" />
                 </button>
-              : <button className="ibtn wide auth-login" onClick={() => go('login')}>লগইন</button>}
-            <button className="ibtn burger" onClick={() => setSheetOpen(v => !v)}>≡</button>
+              : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
         </div>
       <div className="topbar">
@@ -591,24 +601,40 @@ export function App() {
 
             {wiz.step >= 2 && wiz.cat && <div className="panel">
               <h3>{wiz.cat === 'bcs' ? 'বিসিএস' : 'ব্যাংক'} — <i>বিষয় ও টপিক</i></h3>
-              <div><span className="lbl">বিষয়</span>
-                <div className="chips">
-                  {(CAT_SUBJECTS[wiz.cat] || []).map(s => (
-                    <button className={`chip ${wiz.sub === s ? 'on' : ''}`} key={s} onClick={() => setWiz(w => ({ ...w, sub: s, topics: [] }))}>
-                      <Ico id={s} size={14} /> {s}
-                    </button>
-                  ))}
-                </div>
+              <div className="setup-select-grid">
+                <label className="setup-field">
+                  <span className="lbl">বিষয় নির্বাচন করুন</span>
+                  <span className="select-shell">
+                    <Ico id={wiz.sub || 'বাংলা'} size={20} />
+                    <select value={wiz.sub || ''} onChange={e => setWiz(w => ({ ...w, sub: e.target.value || null, topics: [] }))}>
+                      <option value="" disabled>একটি বিষয় বাছুন</option>
+                      {(CAT_SUBJECTS[wiz.cat] || []).map(s => <option value={s} key={s}>{s} · {BN(QCOUNT[s] || 0)} প্রশ্ন</option>)}
+                    </select>
+                  </span>
+                </label>
+                <label className="setup-field">
+                  <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
+                  <span className={`select-shell ${!wiz.sub ? 'disabled' : ''}`}>
+                    <SheetIco id="book" />
+                    <select value="" disabled={!wiz.sub} onChange={e => {
+                      const topic = e.target.value
+                      if (topic === '__all') setWiz(w => ({ ...w, topics: [] }))
+                      else if (topic) setWiz(w => ({ ...w, topics: [...w.topics, topic] }))
+                    }}>
+                      <option value="">{wiz.sub ? 'ড্রপডাউন থেকে টপিক যোগ করুন' : 'আগে বিষয় বাছুন'}</option>
+                      <option value="__all">সকল টপিক থেকে প্রশ্ন</option>
+                      {(TOPICS[wiz.sub] || []).filter(t => !wiz.topics.includes(t)).map(t => <option value={t} key={t}>{t}</option>)}
+                    </select>
+                  </span>
+                </label>
               </div>
-              {wiz.sub && <div><span className="lbl">টপিক ({BN(TOPICS[wiz.sub]?.length || 0)}টি — একাধিক বাছা যাবে)</span>
-                <div className="chips">
-                  {(TOPICS[wiz.sub] || []).map(t => (
-                    <button className={`chip ${wiz.topics.includes(t) ? 'on' : ''}`} key={t}
-                      onClick={() => setWiz(w => ({ ...w, topics: w.topics.includes(t) ? w.topics.filter(x => x !== t) : [...w.topics, t] }))}>
-                      {t}{QCOUNT[t] ? <span className="cnt">{BN(QCOUNT[t])}+</span> : null}
-                    </button>
-                  ))}
-                </div>
+              {wiz.sub && <div className="topic-selection" aria-live="polite">
+                {!wiz.topics.length
+                  ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
+                  : <>
+                      <div className="selected-topic-head"><span><b>{BN(wiz.topics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setWiz(w => ({ ...w, topics: [] }))}>সব মুছুন</button></div>
+                      <div className="selected-topics">{wiz.topics.map(t => <button key={t} title="নির্বাচন বাতিল করুন" onClick={() => setWiz(w => ({ ...w, topics: w.topics.filter(x => x !== t) }))}><span>{t}</span><b aria-hidden="true">×</b></button>)}</div>
+                    </>}
               </div>}
               <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
                 <div><span className="lbl">প্রশ্নসংখ্যা</span>
@@ -867,8 +893,21 @@ export function App() {
               <div className="stat"><strong>{BN(result.bad)}</strong><span>ভুল</span></div>
               <div className="stat"><strong>{BN(result.skip)}</strong><span>বাদ</span></div>
             </div>
-            <div className="cta">
-              <button className="btn primary" onClick={() => setShowRev(v => !v)}>{showRev ? 'ব্যাখ্যা লুকান' : 'উত্তর ও ব্যাখ্যা দেখুন'}</button>
+            {result.setup && <div className="result-return">
+              <span className="result-return-icon"><SheetIco id="book" /></span>
+              <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
+              <div className="result-return-actions">
+                <button className="btn primary" onClick={() => beginQuiz(result.setup)}>↻ একই সেটআপে আবার দিন</button>
+                {(result.origin === 'exams' || result.origin === 'setup') && <button className="btn ghost" onClick={() => {
+                  if (result.origin === 'setup') { go('setup'); return }
+                  const s = result.setup
+                  setWiz(w => ({ ...w, step: 2, cat: s.tag === 'bank' ? 'bank' : 'bcs', sub: s.subjects?.[0] || null, topics: s.topics || [], limit: s.limit || 25, time: s.minutes || 20 }))
+                  go('exams')
+                }}>← আগের সেটআপে ফিরুন</button>}
+              </div>
+            </div>}
+            <div className="cta result-main-actions">
+              <button className="btn" onClick={() => setShowRev(v => !v)}>{showRev ? 'ব্যাখ্যা লুকান' : 'উত্তর ও ব্যাখ্যা দেখুন'}</button>
               <button className="btn ghost" onClick={() => go('home')}>হোমে ফিরুন</button>
             </div>
             {showRev && <div style={{ marginTop: 26 }}>
@@ -1049,76 +1088,68 @@ export function App() {
         {loading && <div className="toast show">প্রশ্ন লোড হচ্ছে…</div>}
       </main>
 
-      {page !== 'quiz' && <footer>
-        <div className="ft-in">
-          <div className="ft-grid">
-            <div className="ft-brand">
-              <button className="logo" onClick={() => go('home')} title="অভ্যাস"><span className="wordmark sm">অভ্যাস</span></button>
-              <p>বিসিএস, ব্যাংক ও সরকারি চাকরির প্রস্তুতির বিশ্বস্ত প্ল্যাটফর্ম — ১.৫ লাখ+ প্রশ্নের ব্যাংক, প্রতিটি প্রশ্নে ব্যাখ্যাসহ সমাধান।</p>
-              <div className="socials">
-                {SOCIALS.map(s => (
-                  <a className="soc" key={s.id} href={s.url} target="_blank" rel="noreferrer" title={s.name}><SocIcon id={s.id} /></a>
-                ))}
-              </div>
-            </div>
-            <div className="ft-col">
-              <h5>অ্যাপ</h5>
-              <button onClick={() => go('home')}>⌂ হোম</button>
-              <button onClick={() => go('exams')}>✎ পরীক্ষা</button>
-              <button onClick={() => go('potrika')}>📰 পত্রিকা</button>
-              <button onClick={() => go('visual')}>🖼 ভিজ্যুয়াল জিকে</button>
-              <button onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
-              <button onClick={() => go('daily')}>🔥 ডেইলি চ্যালেঞ্জ</button>
-              <button onClick={() => go('leaderboard')}>🏆 লিডারবোর্ড</button>
-              <button onClick={() => go('pricing')}>💎 প্ল্যান ও প্রাইসিং</button>
-            </div>
-            <div className="ft-col">
-              <h5>স্মার্ট লার্নিং</h5>
-              <button onClick={() => go('review')}>⚙ ভুল পর্যালোচনা</button>
-              <button onClick={() => go('profile')}>◉ প্রোফাইল</button>
-              {!user && <button onClick={() => go('login')}>↪ লগইন / সাইন আপ</button>}
-              {user && <button onClick={async () => { await supabase.auth.signOut(); setToastMsg('লগআউট হয়েছে'); go('home') }}>⇤ লগআউট</button>}
-              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑ উপরে যান</button>
-            </div>
-            <div className="ft-col">
-              <h5>যোগাযোগ</h5>
-              <a href="mailto:support@ovvash.app">✉ support@ovvash.app</a>
-              <a href="tel:+8809611234567">☎ +৮৮০ ৯৬১১-২৩৪৫৬৭</a>
-              <span className="ft-static">📍 ঢাকা, বাংলাদেশ</span>
-              <span className="ft-static">🕘 সাপোর্ট: সকাল ৯টা – রাত ১০টা</span>
-            </div>
-          </div>
-          <div className="ft-bottom">
-            <small>© ২০২৬ অভ্যাস — সর্বস্বত্ব সংরক্ষিত।</small>
-            <small>বিসিএস • ব্যাংক • এনটিআরসিএ • প্রাথমিক</small>
-          </div>
-        </div>
-      </footer>}
-
       {page !== 'quiz' && <nav className="bnav">
-        <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><i>⌂</i>হোম</button>
-        <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><i>✎</i>পরীক্ষা</button>
+        <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
+        <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="book" />পরীক্ষা</button>
         <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
         <button className={page === 'visual' ? 'on' : ''} onClick={() => go('visual')}><SheetIco id="image" />ভিজ্যুয়াল</button>
-        <button className={sheetOpen ? 'on' : ''} onClick={() => setSheetOpen(v => !v)}><i>≡</i>আরও</button>
+        <button className={sheetOpen ? 'on' : ''} onClick={() => setSheetOpen(v => !v)}><SheetIco id="menu" />আরও</button>
       </nav>}
 
-      {page !== 'quiz' && sheetOpen && <>
-        <div className="sheet-bg" onClick={() => setSheetOpen(false)} />
-        <div className="sheet">
-          <div className="sheet-bar" />
-          <h3>সব টুলস</h3>
-          <div className="sheet-grid">
-            {!user && <button onClick={() => go('login')}><SheetIco id="login" />লগইন</button>}
-            {!user && <button onClick={() => go('signup')}><SheetIco id="userPlus" />সাইন আপ</button>}
-            <button onClick={() => go('pricing')}><SheetIco id="gem" />প্ল্যান ও প্রাইসিং</button>
-            <button onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
-            <button onClick={() => go('daily')}><SheetIco id="flame" />ডেইলি চ্যালেঞ্জ</button>
-            <button onClick={() => go('leaderboard')}><SheetIco id="trophy" />লিডারবোর্ড</button>
-            <button onClick={() => go('review')}><SheetIco id="book" />ভুল খাতা</button>
-            <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} />{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</button>
+      {page !== 'quiz' && <>
+        <div className={`side-nav-bg ${sheetOpen ? 'open' : ''}`} onClick={() => setSheetOpen(false)} />
+        <aside className={`side-nav ${sheetOpen ? 'open' : ''}`} aria-label="প্রধান সাইড নেভিগেশন" aria-hidden={!sheetOpen} inert={!sheetOpen}>
+          <div className="side-nav-head">
+            <button className="logo" onClick={() => go('home')} title="অভ্যাস"><span className="wordmark">অভ্যাস</span></button>
+            <button className="ibtn" aria-label="সাইড নেভিগেশন বন্ধ করুন" onClick={() => setSheetOpen(false)}><SheetIco id="close" /></button>
           </div>
-        </div>
+          <div className="side-nav-scroll">
+            <div className="side-intro">
+              <span className="eyebrow">আপনার প্রস্তুতি সহায়ক</span>
+              <p>বিসিএস, ব্যাংক ও সরকারি চাকরির প্রশ্নব্যাংক, ব্যাখ্যা ও স্মার্ট রিভিশন—এক জায়গায়।</p>
+            </div>
+
+            {user ? <button className="side-user" onClick={() => go('profile')}>
+              <img className="av-sm" src={avSrc(user)} alt="" />
+              <span><b>{user.user_metadata?.full_name || 'শিক্ষার্থী'}</b><small>প্রোফাইল ও অগ্রগতি দেখুন</small></span>
+              <span aria-hidden="true">›</span>
+            </button> : <div className="side-auth">
+              <button className="btn primary" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>
+              <button className="btn" onClick={() => go('signup')}><SheetIco id="userPlus" /> সাইন আপ</button>
+            </div>}
+
+            <div className="side-nav-group">
+              <span className="side-nav-label">প্রধান মেনু</span>
+              {[
+                ['home', 'home', 'হোম'], ['exams', 'book', 'পরীক্ষা'], ['potrika', 'news', 'পত্রিকা'],
+                ['visual', 'image', 'ভিজ্যুয়াল জিকে'], ['daily', 'flame', 'ডেইলি চ্যালেঞ্জ'], ['leaderboard', 'trophy', 'লিডারবোর্ড']
+              ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
+            </div>
+
+            <div className="side-nav-group">
+              <span className="side-nav-label">শেখা ও টুলস</span>
+              {[
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'book', 'ভুল পর্যালোচনা'], ['pricing', 'gem', 'প্ল্যান ও প্রাইসিং'], ['profile', 'user', 'প্রোফাইল']
+              ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
+              <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
+              <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
+              {user && <button className="side-logout" onClick={async () => { await supabase.auth.signOut(); setToastMsg('লগআউট হয়েছে'); go('home') }}><SheetIco id="logout" /><span>লগআউট</span></button>}
+            </div>
+
+            <div className="side-info">
+              <span className="side-nav-label">যোগাযোগ</span>
+              <a href="mailto:support@ovvash.app"><span>✉</span><span>support@ovvash.app</span></a>
+              <a href="tel:+8809611234567"><span>☎</span><span>+৮৮০ ৯৬১১-২৩৪৫৬৭</span></a>
+              <p><span>⌖</span><span>ঢাকা, বাংলাদেশ</span></p>
+              <p><span>◷</span><span>সাপোর্ট: সকাল ৯টা – রাত ১০টা</span></p>
+              <div className="socials">
+                {SOCIALS.map(s => <a className="soc" key={s.id} href={s.url} target="_blank" rel="noreferrer" title={s.name}><SocIcon id={s.id} /></a>)}
+              </div>
+              <small>© ২০২৬ অভ্যাস — সর্বস্বত্ব সংরক্ষিত।</small>
+              <small>বিসিএস • ব্যাংক • এনটিআরসিএ • প্রাথমিক</small>
+            </div>
+          </div>
+        </aside>
       </>}
 
       {/* ================= SSLCommerz চেকআউট ================= */}
