@@ -341,11 +341,19 @@ export function App() {
     const { qs, ans } = quiz
     let ok = 0, bad = 0, skip = 0
     const rev = []
+    const topicMap = new Map()
     let newWrong = [...wrong]
     const rm = { ...revMeta }
     qs.forEach((q, i) => {
       const key = q.id || q.question
       const isOk = ans[i] != null && q.options[ans[i]] === q.answer
+      const topicName = String(q.topic || 'বিবিধ').trim() || 'বিবিধ'
+      const topicStat = topicMap.get(topicName) || { topic: topicName, total: 0, correct: 0, wrong: 0, skipped: 0 }
+      topicStat.total++
+      if (ans[i] == null) topicStat.skipped++
+      else if (isOk) topicStat.correct++
+      else topicStat.wrong++
+      topicMap.set(topicName, topicStat)
       if (ans[i] == null) skip++
       else if (isOk) {
         ok++
@@ -366,7 +374,9 @@ export function App() {
     const pct = Math.round((Math.max(0, ok - bad * .5)) / qs.length * 100)
     const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
     setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
-    setResult({ ok, bad, skip, pct, rev, title: quiz.title, origin: quiz.origin, setup: quiz.setup })
+    const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
+      .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
+    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup })
     setQuiz(null)
     setRevOnlyWrong(false)
     go('result')
@@ -936,6 +946,31 @@ export function App() {
               <div className="stat"><strong>{BN(result.bad)}</strong><span>ভুল</span></div>
               <div className="stat"><strong>{BN(result.skip)}</strong><span>বাদ</span></div>
             </div>
+            {!!result.topicStats?.length && <div className="topic-report">
+              <div className="topic-report-head">
+                <span className="topic-report-icon"><SheetIco id="sliders" /></span>
+                <div><h3>টপিকভিত্তিক উত্তরপত্র</h3><p>কোন টপিকে কতটি সঠিক হয়েছে এবং কোথায় আরও অনুশীলন দরকার।</p></div>
+              </div>
+              {result.topicStats.some(t => t.accuracy < 60)
+                ? <div className="weak-topic-box"><b>দুর্বল টপিক</b><div>{result.topicStats.filter(t => t.accuracy < 60).map(t => <span key={t.topic}>{t.topic} · {BN(t.accuracy)}%</span>)}</div></div>
+                : <div className="weak-topic-box clear"><b>দারুণ!</b><span>এই পরীক্ষায় ৬০%-এর নিচে কোনো টপিক নেই।</span></div>}
+              <div className="topic-report-list">
+                {result.topicStats.map(t => {
+                  const level = t.accuracy < 60 ? 'weak' : t.accuracy < 80 ? 'practice' : 'strong'
+                  const label = level === 'weak' ? 'দুর্বল' : level === 'practice' ? 'আরও অনুশীলন' : 'ভালো'
+                  return <div className={`topic-report-row ${level}`} key={t.topic}>
+                    <div className="topic-report-title"><b>{t.topic}</b><span className={`topic-level ${level}`}>{label}</span></div>
+                    <div className="topic-report-counts">
+                      <strong>{BN(t.correct)}/{BN(t.total)} সঠিক</strong>
+                      <span>ভুল {BN(t.wrong)}</span>
+                      <span>বাদ {BN(t.skipped)}</span>
+                      <em>{BN(t.accuracy)}%</em>
+                    </div>
+                    <div className="topic-progress" aria-label={`${t.topic}: ${t.accuracy}% সঠিক`}><i style={{ width: `${t.accuracy}%` }} /></div>
+                  </div>
+                })}
+              </div>
+            </div>}
             {result.setup && <div className="result-return">
               <span className="result-return-icon"><SheetIco id="book" /></span>
               <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
@@ -962,6 +997,7 @@ export function App() {
                 const isOk = r.ua != null && r.options[r.ua] === r.answer
                 if (revOnlyWrong && isOk) return null
                 return <div className={`rev-item ${isOk ? 'ok-item' : 'bad-item'}`} key={i}>
+                  <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span></div>
                   <div className="q">{BN(i + 1)}. <Md s={r.question} /> <span className={`rev-badge ${isOk ? 'ok' : 'bad'}`}>{isOk ? '✓ সঠিক' : r.ua == null ? '◌ বাদ' : '✗ ভুল'}</span></div>
                   <div className={`a ${isOk ? 'ok' : 'bad'}`}>আপনার উত্তর: {r.ua == null ? '—' : r.options[r.ua]}</div>
                   <div className="a ok">সঠিক উত্তর: {r.answer}</div>
