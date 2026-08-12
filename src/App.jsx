@@ -84,6 +84,8 @@ const SHEET_ICONS = {
   login: <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /></>,
   userPlus: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>,
   lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+  search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
+  bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
   moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
   sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>
 }
@@ -105,11 +107,28 @@ function examSource(q) {
   return { full, label }
 }
 
+function questionKey(q) {
+  const id = q?.id == null ? '' : String(q.id)
+  const identity = String(q?.created_at || q?.question || '')
+  return `${id}::${identity}`
+}
+
+function wrongAnswerOf(q) {
+  return q?.revision?.selectedAnswer || q?.wrongAnswer || ''
+}
+
+function uniqueWrongQuestions(items) {
+  const unique = new Map()
+  const rows = Array.isArray(items) ? items : []
+  rows.forEach(item => unique.set(questionKey(item), item))
+  return [...unique.values()].slice(-100)
+}
+
 export function App() {
   const [page, setPage] = useState('home')
   const [dark, setDark] = useState(false)
   const [user, setUser] = useState(null)
-  const [wrong, setWrong] = useState(() => load('asp_wrong', []))
+  const [wrong, setWrong] = useState(() => uniqueWrongQuestions(load('asp_wrong', [])))
   const [stats, setStats] = useState(() => load('asp_stats', { exams: 0, correct: 0, total: 0 }))
   const [toastMsg, setToastMsg] = useState('')
   const [loading, setLoading] = useState(false)
@@ -136,7 +155,7 @@ export function App() {
   const [profData, setProfData] = useState(null)
   const [q, setQ] = useState('')
   const [notifOpen, setNotifOpen] = useState(false)
-  const [searchFocus, setSearchFocus] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [hist, setHist] = useState(() => load('asp_hist', []))
   const [todo, setTodo] = useState(() => load('asp_todo_' + new Date().toDateString(), [false, false, false]))
   const [avatar, setAvatar] = useState(() => localStorage.getItem('asp_avatar') || null)
@@ -301,7 +320,12 @@ export function App() {
   useEffect(() => { document.documentElement.classList.toggle('dark', dark) }, [dark])
   useEffect(() => {
     document.body.style.overflow = sheetOpen ? 'hidden' : ''
-    const closeOnEscape = e => { if (e.key === 'Escape') setSheetOpen(false) }
+    const closeOnEscape = e => {
+      if (e.key !== 'Escape') return
+      setSheetOpen(false)
+      setSearchOpen(false)
+      setNotifOpen(false)
+    }
     window.addEventListener('keydown', closeOnEscape)
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape) }
   }, [sheetOpen])
@@ -322,7 +346,7 @@ export function App() {
 
   function go(p) {
     if (p === 'profile' && !user) p = 'login'
-    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false)
+    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
     if (p !== 'visual') setVSel(null)
     if (p === 'leaderboard') fetchLeaderboard()
     if (p === 'profile') fetchProfile()
@@ -495,7 +519,10 @@ export function App() {
     let newWrong = [...wrong]
     const rm = { ...revMeta }
     qs.forEach((q, i) => {
-      const key = q.id || q.question
+      const key = questionKey(q)
+      const legacyKey = String(q.id || q.question || '')
+      const previousMeta = rm[key] || rm[legacyKey]
+      if (legacyKey !== key && rm[legacyKey]) delete rm[legacyKey]
       const isOk = ans[i] != null && q.options[ans[i]] === q.answer
       const topicName = String(q.topic || 'বিবিধ').trim() || 'বিবিধ'
       const topicStat = topicMap.get(topicName) || { topic: topicName, total: 0, correct: 0, wrong: 0, skipped: 0 }
@@ -507,16 +534,28 @@ export function App() {
       if (ans[i] == null) skip++
       else if (isOk) {
         ok++
-        if (rm[key]) {
-          const lv = (rm[key].level || 1) + 1
-          if (lv > 3) { delete rm[key]; newWrong = newWrong.filter(x => (x.id || x.question) !== key) }
-          else rm[key] = { level: lv, due: Date.now() + [1, 3, 7][lv - 1] * 864e5 }
+        if (previousMeta) {
+          const lv = (previousMeta.level || 1) + 1
+          if (lv > 3) {
+            delete rm[key]
+            newWrong = newWrong.filter(item => questionKey(item) !== key)
+          } else rm[key] = { level: lv, due: Date.now() + [1, 3, 7][lv - 1] * 864e5 }
         }
+      } else {
+        bad++
+        const previousWrong = [...newWrong].reverse().find(item => questionKey(item) === key)
+        const selectedAnswer = q.options[ans[i]]
+        const mistakes = (previousWrong?.revision?.mistakes || 0) + 1
+        newWrong = newWrong.filter(item => questionKey(item) !== key)
+        newWrong.push({
+          ...q,
+          revision: { selectedAnswer, selectedIndex: ans[i], wrongAt: new Date().toISOString(), mistakes }
+        })
+        rm[key] = { level: 1, due: Date.now() + 864e5 }
       }
-      else { bad++; newWrong.push(q); rm[key] = { level: 1, due: Date.now() + 864e5 } }
       rev.push({ ...q, ua: ans[i] })
     })
-    const w = newWrong.slice(-100)
+    const w = uniqueWrongQuestions(newWrong)
     setWrong(w); localStorage.setItem('asp_wrong', JSON.stringify(w))
     setRevMeta(rm); localStorage.setItem('asp_rev', JSON.stringify(rm))
     const st = { exams: stats.exams + 1, correct: stats.correct + ok, total: stats.total + qs.length }
@@ -600,7 +639,11 @@ export function App() {
   const weak = {}
   wrong.forEach(w => { if (w.topic) { (weak[w.topic] ||= { n: 0, s: w.subject || 'বাংলা', tag: w.exam_tag }); weak[w.topic].n++ } })
   const weakList = Object.entries(weak).sort((a, b) => b[1].n - a[1].n).slice(0, 4)
-  const dueList = wrong.filter(q => { const m = revMeta[q.id || q.question]; return m && m.due <= Date.now() })
+  const dueList = wrong.filter(item => {
+    const m = revMeta[questionKey(item)] || revMeta[String(item.id || item.question || '')]
+    return m && m.due <= Date.now()
+  })
+  const revisionQuizRows = dueList.length ? dueList : wrong
   const greet = () => { const h = new Date().getHours(); return h < 5 ? 'শুভ রাত্রি' : h < 12 ? 'সুপ্রভাত' : h < 17 ? 'শুভ দুপুর' : h < 20 ? 'শুভ সন্ধ্যা' : 'শুভ রাত্রি' }
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
@@ -624,15 +667,21 @@ export function App() {
     <div>
       {page !== 'quiz' && <header>
         <div className="hdr-in">
-          <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
-            <SheetIco id="menu" />
-          </button>
+          <div className="hdr-left">
+            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
+              <SheetIco id="menu" />
+            </button>
+            <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
+              <SheetIco id="bell" /><span className="ndot" />
+            </button>
+          </div>
           <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
             <span className="wordmark">অভ্যাস</span>
           </button>
           <div className="hdr-right">
             <button className="ibtn wide prem" onClick={() => go('pricing')}><SheetIco id="gem" /> প্ল্যান</button>
             <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
+            <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
             {user
               ? <button className="ibtn" style={{ border: 'none', padding: 0, width: 38, height: 38 }} title="প্রোফাইল" onClick={() => go('profile')}>
@@ -640,30 +689,27 @@ export function App() {
                 </button>
               : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
+
+          {notifOpen && <div className="npanel header-npanel">
+            <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
+            {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
+            {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
+          </div>}
+
+          {searchOpen && <div className="header-search-panel">
+            <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
+            <div className="sres">
+              {q.trim().length <= 1 ? <>
+                <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
+                {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
+              </> : searchRes.length ? searchRes.map((result, index) => (
+                <button key={index} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
+                  <span>{result.t}</span><span>{result.sb}</span>
+                </button>
+              )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
+            </div>
+          </div>}
         </div>
-      <div className="topbar">
-        <div className="search"><svg className="s-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg><input placeholder="" value={q} onFocus={() => setSearchFocus(true)} onBlur={() => setTimeout(() => setSearchFocus(false), 180)} onChange={e => setQ(e.target.value)} /></div>
-        <button className="ibtn notif" onClick={() => setNotifOpen(v => !v)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg><span className="ndot" /></button>
-        {q.trim().length <= 1 && searchFocus && <div className="sres">
-          <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
-          {POP_SEARCH.map(t => (
-            <button key={t} onClick={() => setQ(t)}>
-              <span>{t}</span><span style={{ color: 'var(--ink3)' }}>খুঁজুন →</span>
-            </button>
-          ))}
-        </div>}
-        {q.trim().length > 1 && <div className="sres">
-          {searchRes.length ? searchRes.map((r, i) => (
-            <button key={i} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(r.sb) ? 'bcs' : 'bank', subjects: [r.sb], topics: [r.t] }) }}>
-              <span>{r.t}</span><span style={{ color: 'var(--ink3)' }}>{r.sb}</span>
-            </button>
-          )) : <button>কিছু পাওয়া যায়নি</button>}
-        </div>}
-        {notifOpen && <div className="npanel">
-          <div className="nh">🔔 নোটিফিকেশন</div>
-          {NOTICES.map((n, i) => <div className="ni" key={i}><b>{n.t}</b><small>{n.d}</small></div>)}
-        </div>}
-      </div>
       </header>}
 
       <main style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
@@ -747,7 +793,7 @@ export function App() {
             <div className="qk-grid">
               <button className="qk" onClick={() => go('setup')}><span className="ic">🛠</span><b>কাস্টম কুইজ</b><span>নিজে পরীক্ষা বানাও</span></button>
               <button className="qk" onClick={() => go('daily')}><span className="ic">🔥</span><b>ডেইলি চ্যালেঞ্জ</b><span>প্রতিদিন ১০ প্রশ্ন</span></button>
-              <button className="qk" onClick={() => go('review')}><span className="ic">⚙</span><b>ভুল পর্যালোচনা</b><span>{BN(wrong.length)}টি ভুল খাতায়</span></button>
+              <button className="qk" onClick={() => go('review')}><span className="ic">↻</span><b>রিভিশন ও ভুল খাতা</b><span>{BN(wrong.length)}টি ভুল উত্তর সংরক্ষিত</span></button>
               <button className="qk" onClick={() => go('leaderboard')}><span className="ic">🏆</span><b>লিডারবোর্ড</b><span>আজকের র‍্যাংকিং</span></button>
             </div>
           </section>
@@ -995,21 +1041,40 @@ export function App() {
           </section>
         </>}
 
-        {/* ================= REVIEW ================= */}
+        {/* ================= REVISION / WRONG ANSWERS ================= */}
         {page === 'review' && <>
-          <section className="sec">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">স্মার্ট লার্নিং</div><h2 style={{ marginTop: 10 }}>ভুল <i>পর্যালোচনা</i></h2></div>
-              <button className="btn sm ghost" onClick={() => { setWrong([]); localStorage.setItem('asp_wrong', '[]'); setToastMsg('ভুল তালিকা মুছে ফেলা হয়েছে') }}>লিস্ট মুছুন</button>
+          <section className="sec revision-page">
+            <div className="head review-head">
+              <div><div className="eyebrow">স্মার্ট লার্নিং</div><h2 style={{ marginTop: 10 }}>রিভিশন ও <i>ভুল খাতা</i></h2><p className="muted">কুইজে দেওয়া প্রতিটি ভুল উত্তর এখানে সঠিক উত্তর ও ব্যাখ্যাসহ সংরক্ষিত থাকে।</p></div>
+              {wrong.length > 0 && <div className="review-head-actions">
+                <button className="btn sm primary" onClick={() => beginQuiz({ title: 'ভুল উত্তর রিভিশন', rows: revisionQuizRows, limit: Math.min(20, revisionQuizRows.length), minutes: Math.max(10, Math.min(20, revisionQuizRows.length)) })}>↻ {dueList.length ? `আজকের ${BN(dueList.length)}টি` : 'রিভিশন'} শুরু করুন</button>
+                <button className="btn sm ghost" onClick={() => { setWrong([]); setRevMeta({}); localStorage.setItem('asp_wrong', '[]'); localStorage.setItem('asp_rev', '{}'); setToastMsg('রিভিশন ও ভুলের তালিকা মুছে ফেলা হয়েছে') }}>লিস্ট মুছুন</button>
+              </div>}
             </div>
             {wrong.length === 0
-              ? <div className="note"><b>এখনো কোনো ভুল নেই!</b> কুইজ দিলে ভুল প্রশ্নগুলো এখানে ব্যাখ্যাসহ জমা হবে।</div>
-              : wrong.map((q, i) => (
-                <div className="rev-item" key={i}><div className="q"><Md s={q.question} /></div>
-                  <div className="a ok">সঠিক উত্তর: {q.answer}</div>
-                  <Expl q={q} />
+              ? <div className="note"><b>এখনো কোনো ভুল নেই!</b> কুইজে ভুল উত্তর দিলে প্রশ্নটি এখানে নিজে থেকেই যোগ হবে।</div>
+              : <>
+                <div className="revision-summary">
+                  <span><b>{BN(wrong.length)}</b> ভুল প্রশ্ন</span>
+                  <span><b>{BN(dueList.length)}</b> আজ রিভিশন বাকি</span>
+                  <span>ধাপ: <b>১ → ৩ → ৭ দিন</b></span>
                 </div>
-              ))}
+                {wrong.slice().reverse().map((item, index) => {
+                  const source = examSource(item)
+                  const selectedAnswer = wrongAnswerOf(item)
+                  return <article className="rev-item bad-item" key={questionKey(item) || index}>
+                    <div className="rev-meta">
+                      <span>{item.subject || 'মিশ্র'}</span>
+                      <span>{item.topic || 'বিবিধ'}</span>
+                      <span className="source-badge" title={source.full}>{source.label}</span>
+                    </div>
+                    <div className="q"><Md s={item.question} /></div>
+                    <div className="a bad">✗ আপনার দেওয়া উত্তর: {selectedAnswer || 'পুরোনো রেকর্ডে উত্তরটি সংরক্ষিত নেই'}</div>
+                    <div className="a ok">✓ সঠিক উত্তর: {item.answer}</div>
+                    <Expl q={item} />
+                  </article>
+                })}
+              </>}
           </section>
         </>}
 
@@ -1361,6 +1426,20 @@ export function App() {
                     </button>
                   ))}
                 </div> : <p className="muted" style={{ fontSize: '.85rem' }}>দারুণ! কোনো দুর্বল টপিক নেই।</p>}
+              </div>
+
+              <div className="pcard profile-revision-card">
+                <div className="pcard-title-row"><h4>ভুল উত্তর ও রিভিশন</h4>{dueList.length > 0 && <span>{BN(dueList.length)}টি বাকি</span>}</div>
+                {wrong.length ? <>
+                  <div className="profile-wrong-list">
+                    {wrong.slice(-3).reverse().map((item, index) => <div className="profile-wrong-item" key={questionKey(item) || index}>
+                      <div className="profile-wrong-question"><Md s={item.question} /></div>
+                      <small>আপনার উত্তর: <b>{wrongAnswerOf(item) || 'পুরোনো রেকর্ড'}</b></small>
+                      <small className="correct">সঠিক: <b>{item.answer}</b></small>
+                    </div>)}
+                  </div>
+                  <button className="btn sm ghost profile-review-link" onClick={() => go('review')}>সব {BN(wrong.length)}টি দেখুন →</button>
+                </> : <p className="muted" style={{ fontSize: '.85rem' }}>কোনো ভুল উত্তর জমা নেই।</p>}
               </div>
 
               <div className="pcard">
