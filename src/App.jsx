@@ -126,6 +126,48 @@ function questionKey(q) {
   return `${id}::${identity}`
 }
 
+// Compact, stable 64-bit-style fingerprint for per-user question progress.
+// The database `id` is not unique, so questionKey also includes created_at.
+function questionFingerprint(q) {
+  const value = questionKey(q)
+  let first = 2166136261
+  let second = 2654435769
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index)
+    first = Math.imul(first ^ code, 16777619)
+    second = Math.imul(second ^ code, 2246822519)
+  }
+  return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
+}
+
+function uniqueQuestions(items) {
+  const unique = new Map()
+  const questions = Array.isArray(items) ? items : []
+  questions.forEach(question => {
+    const key = questionKey(question)
+    if (!unique.has(key)) unique.set(key, question)
+  })
+  return [...unique.values()]
+}
+
+const REVIEW_OPTION_KEYS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ', 'ছ', 'জ']
+function ReviewOptions({ question, selectedIndex }) {
+  const options = question?.options || []
+  if (!options.length) return null
+  return <div className="review-options" aria-label="উত্তরের সব অপশন">
+    {options.map((option, index) => {
+      const selected = selectedIndex === index
+      const correct = option === question.answer
+      const status = selected && correct ? 'আপনার উত্তর • সঠিক' : selected ? 'আপনার উত্তর' : correct ? 'সঠিক উত্তর' : ''
+      return <div className={`review-option ${selected ? 'selected' : ''} ${correct ? 'correct' : ''}`} key={`${index}-${option}`}>
+        <span className="review-option-key">{REVIEW_OPTION_KEYS[index] || BN(index + 1)}</span>
+        <div className="review-option-text"><Md s={option} /></div>
+        {status && <b className="review-option-status">{status}</b>}
+      </div>
+    })}
+  </div>
+}
+
 function wrongAnswerOf(q) {
   return q?.revision?.selectedAnswer || q?.wrongAnswer || ''
 }
@@ -160,6 +202,7 @@ export function App() {
   const [cTopicSearch, setCTopicSearch] = useState('')
   const [cCount, setCCount] = useState(25)
   const [cTime, setCTime] = useState(20)
+  const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
   const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + (questionCounts?.subjects?.[subject]?.topics?.[topic] || 0), 0)
   const [clock, setClock] = useState(Date.now())
@@ -285,6 +328,9 @@ export function App() {
     return () => sub.subscription.unsubscribe()
   }, [])
   useEffect(() => {
+    setSeenQuestions(user?.id ? load(`asp_seen_questions_v1_${user.id}`, []) : [])
+  }, [user?.id])
+  useEffect(() => {
     if (page !== 'home' && page !== 'exams') return
     setClock(Date.now())
     const timer = setInterval(() => setClock(Date.now()), 1000)
@@ -371,6 +417,34 @@ export function App() {
     if (p === 'profile') fetchProfile()
   }
 
+  const seenQuestionStorageKey = () => user?.id ? `asp_seen_questions_v1_${user.id}` : null
+  const readSeenQuestionSet = () => new Set(seenQuestionStorageKey() ? load(seenQuestionStorageKey(), []) : [])
+
+  function rememberSeenQuestions(questions) {
+    const storageKey = seenQuestionStorageKey()
+    if (!storageKey) return true
+    const next = readSeenQuestionSet()
+    questions.forEach(question => next.add(questionFingerprint(question)))
+    const values = [...next]
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(values))
+      setSeenQuestions(values)
+      return true
+    } catch (error) {
+      setToastMsg('প্রশ্নের অগ্রগতি সেভ করার জায়গা পূর্ণ—ব্রাউজার স্টোরেজ খালি করুন')
+      return false
+    }
+  }
+
+  function resetSeenQuestionProgress(restartSetup = null) {
+    if (!user?.id) { setToastMsg('আগে লগইন করুন'); return }
+    if (!window.confirm('আগে দেখা সব প্রশ্নের হিসাব মুছে শুরু থেকে শুরু করবেন?')) return
+    localStorage.removeItem(seenQuestionStorageKey())
+    setSeenQuestions([])
+    setToastMsg('প্রশ্নের অগ্রগতি রিসেট হয়েছে—এখন শুরু থেকে প্রশ্ন আসবে')
+    if (restartSetup) beginQuiz(restartSetup)
+  }
+
   function updateCustomSubjects(nextSubjects) {
     const next = [...new Set(nextSubjects)]
     const allowedTopics = new Set(next.flatMap(subject => TOPICS[subject] || []))
@@ -390,7 +464,7 @@ export function App() {
 
   function startQuestionBankQuiz(source, topic, subject) {
     const questionTotal = topic ? topic.total : source.total
-    const limit = Math.max(1, Math.min(100, questionTotal))
+    const limit = Math.max(1, Math.min(200, questionTotal))
     const label = topic ? `${source.name} • ${topic.name}` : source.name
     beginQuiz({
       title: `প্রশ্নব্যাংক • ${label}`,
@@ -499,9 +573,13 @@ export function App() {
     }
 
     const origin = cfg.returnPage || page
-    const repeatSetup = cfg.once ? null : { ...cfg, returnPage: origin }
+    const repeatSetup = cfg.once || cfg.noRepeatSetup ? null : { ...cfg, returnPage: origin }
     const { title, subjects, topics, limit, minutes, fallback } = cfg
-    const requestedLimit = Math.max(1, Number(limit || 10))
+    const requestedLimit = Math.min(200, Math.max(1, Number(limit || 10)))
+    // Fresh-question mode applies to database practice. Fixed revision/visual sets
+    // and one-attempt live exams intentionally retain their own exact questions.
+    const avoidSeen = cfg.avoidSeen !== false && !cfg.rows && !cfg.once
+    const seenQuestionSet = avoidSeen ? readSeenQuestionSet() : new Set()
     setLoading(true)
     let rows = null
     let databaseRowsArePrioritized = false
@@ -580,17 +658,30 @@ export function App() {
         if (!poolCount || desiredCount <= 0) return []
         const poolSize = Math.min(poolCount, Math.max(120, desiredCount * 8))
         const maxOffset = Math.max(0, poolCount - poolSize)
-        const offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-        const { data, error } = await applyPoolFilter(applyQuestionFilters(
-          supabase.from('mcq_questions_job').select('*')
-        ))
-          // id alone is not unique in this table; the composite order keeps range
-          // pagination stable while choosing a random bounded window.
-          .order('id', { ascending: true })
-          .order('created_at', { ascending: true })
-          .range(offset, offset + poolSize - 1)
-        if (error) throw error
-        return data || []
+        const attempts = avoidSeen ? Math.min(6, Math.max(2, Math.ceil(poolCount / poolSize))) : 1
+        let collected = []
+        const usedOffsets = new Set()
+        for (let attempt = 0; attempt < attempts; attempt++) {
+          let offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+          if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          usedOffsets.add(offset)
+          const { data, error } = await applyPoolFilter(applyQuestionFilters(
+            supabase.from('mcq_questions_job').select('*')
+          ))
+            // id alone is not unique in this table; the composite order keeps range
+            // pagination stable while choosing bounded windows until enough unseen
+            // questions have been found.
+            .order('id', { ascending: true })
+            .order('created_at', { ascending: true })
+            .range(offset, offset + poolSize - 1)
+          if (error) throw error
+          const freshData = avoidSeen
+            ? (data || []).filter(question => !seenQuestionSet.has(questionFingerprint(question)))
+            : (data || [])
+          collected = uniqueQuestions([...collected, ...freshData])
+          if (collected.length >= desiredCount || poolSize >= poolCount) break
+        }
+        return collected
       }
 
       if (available > 0) {
@@ -623,12 +714,28 @@ export function App() {
       }
       }
     } catch (e) { console.error('Fetch Error:', e) }
-    if (!rows) rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(s => localPool(s))
-    const qs = databaseRowsArePrioritized ? rows.slice(0, requestedLimit) : mixQuestions(rows, limit)
+    if (rows && avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
+    if (!rows) {
+      rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(subject => localPool(subject))
+      if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
+    }
+    rows = uniqueQuestions(rows)
+    const qs = databaseRowsArePrioritized ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
     setLoading(false)
-    if (!qs.length) { setToastMsg('প্রশ্ন পাওয়া যায়নি'); return }
+    if (!qs.length) {
+      setToastMsg(avoidSeen
+        ? 'এই নির্বাচনের সব প্রশ্ন দেখা হয়ে গেছে—অগ্রগতি রিসেট করে আবার শুরু করুন'
+        : 'প্রশ্ন পাওয়া যায়নি')
+      return
+    }
+    // A question counts as seen when it is placed on the answer sheet—not only
+    // after submission—so abandoning an exam cannot make it appear as “new”.
+    if (avoidSeen && !rememberSeenQuestions(qs)) return
+    if (avoidSeen && qs.length < requestedLimit) {
+      setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
+    }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, daily: !!cfg.daily })
     go('quiz')
   }
 
@@ -685,6 +792,7 @@ export function App() {
     const pct = Math.round((Math.max(0, ok - bad * .5)) / qs.length * 100)
     const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
     setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
+    if (quiz.daily) localStorage.setItem('asp_daily', new Date().toDateString())
     if (quiz.scheduleId && user?.id) {
       const storageKey = `asp_live_attempts_${user.id}`
       const completion = { completedAt: new Date().toISOString(), score: pct }
@@ -782,7 +890,15 @@ export function App() {
     : selectedQbGroup
       ? QUESTION_BANK_SOURCES.filter(source => source.groupId === selectedQbGroup.id)
       : []
-  const Expl = ({ q }) => q?.explanation ? <div className="expl"><b>ব্যাখ্যা: </b><Md s={q.explanation} /></div> : null
+  const Expl = ({ q }) => {
+    const explanation = q?.explanation || q?.explanation_bn || ''
+    return <details className="explanation-details">
+      <summary><span>ব্যাখ্যা দেখুন</span><small>খুলতে চাপুন</small></summary>
+      <div className="expl explanation-content">
+        {explanation ? <Md s={explanation} /> : <>সঠিক উত্তর — <b>{q?.answer}</b></>}
+      </div>
+    </details>
+  }
 
   const LBRow = (x, i) => (
     <div className="lb-row" key={i}>
@@ -1130,8 +1246,14 @@ export function App() {
 
         {/* ================= CUSTOM QUIZ ================= */}
         {page === 'setup' && <>
-          <section className="sec">
+          <section className="sec custom-quiz-section">
             <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>বিষয় ও টপিক বেছে <i>কাস্টম কুইজ</i></h2><p className="muted">এক বা একাধিক বিষয় বাছুন, তারপর সেই বিষয়গুলোর নির্দিষ্ট টপিক নির্বাচন করুন।</p></div>
+            <div className="seen-progress-card">
+              <div><b>নতুন প্রশ্নের অগ্রগতি</b><span>{user ? <>এ পর্যন্ত <strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখেছেন। সাধারণ কুইজে এগুলো আর আসবে না।</> : 'লগইন করলে দেখা প্রশ্নগুলো আলাদাভাবে সংরক্ষিত হবে।'}</span></div>
+              {user
+                ? <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
+                : <button className="btn sm ghost" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
+            </div>
             <div className="panel custom-quiz-panel">
               <div className="question-count-status">
                 <span className="live-dot" aria-hidden="true" />
@@ -1214,10 +1336,10 @@ export function App() {
 
               <div className="custom-quiz-options">
                 <div><span className="lbl">প্রশ্নসংখ্যা</span>
-                  <div className="chips">{[10, 25, 50].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
+                  <div className="chips custom-size-options">{[10, 25, 50, 100, 200].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
                 </div>
                 <div><span className="lbl">সময় (মিনিট)</span>
-                  <div className="chips">{[10, 20, 30].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
+                  <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
                 </div>
               </div>
               <div className="cta"><button className="btn primary" onClick={() => {
@@ -1236,7 +1358,7 @@ export function App() {
             <div className="panel">
               {localStorage.getItem('asp_daily') === new Date().toDateString()
                 ? <><h3>আজকের চ্যালেঞ্জ <i>শেষ!</i></h3><p className="muted">দারুণ! আগামীকালের নতুন চ্যালেঞ্জে দেখা হবে।</p><div className="cta"><button className="btn ghost" onClick={() => go('home')}>হোমে ফিরুন</button></div></>
-                : <><h3>আজকের <i>মিশ্র চ্যালেঞ্জ</i></h3><p className="muted">সব বিষয় মিলিয়ে ১০টি প্রশ্ন — ১০ মিনিট। দিনে একবার।</p><div className="cta"><button className="btn primary" onClick={() => { localStorage.setItem('asp_daily', new Date().toDateString()); beginQuiz({ title: 'ডেইলি চ্যালেঞ্জ', tag: 'bcs', subjects: CAT_SUBJECTS.bcs, limit: 10, minutes: 10, fallback: SUBJECTS }) }}>{user ? 'অংশ নিন →' : <><SheetIco id="lock" /> লগইন করে অংশ নিন</>}</button></div></>}
+                : <><h3>আজকের <i>মিশ্র চ্যালেঞ্জ</i></h3><p className="muted">সব বিষয় মিলিয়ে ১০টি প্রশ্ন — ১০ মিনিট। দিনে একবার।</p><div className="cta"><button className="btn primary" onClick={() => beginQuiz({ title: 'ডেইলি চ্যালেঞ্জ', tag: 'bcs', subjects: CAT_SUBJECTS.bcs, limit: 10, minutes: 10, fallback: SUBJECTS, daily: true, noRepeatSetup: true })}>{user ? 'অংশ নিন →' : <><SheetIco id="lock" /> লগইন করে অংশ নিন</>}</button></div></>}
             </div>
           </section>
         </>}
@@ -1262,6 +1384,9 @@ export function App() {
                 {wrong.slice().reverse().map((item, index) => {
                   const source = examSource(item)
                   const selectedAnswer = wrongAnswerOf(item)
+                  const selectedIndex = Number.isInteger(item?.revision?.selectedIndex)
+                    ? item.revision.selectedIndex
+                    : (item.options || []).indexOf(selectedAnswer)
                   return <article className="rev-item bad-item" key={questionKey(item) || index}>
                     <div className="rev-meta">
                       <span>{item.subject || 'মিশ্র'}</span>
@@ -1269,8 +1394,9 @@ export function App() {
                       <span className="source-badge" title={source.full}>{source.label}</span>
                     </div>
                     <div className="q"><Md s={item.question} /></div>
-                    <div className="a bad">✗ আপনার দেওয়া উত্তর: {selectedAnswer || 'পুরোনো রেকর্ডে উত্তরটি সংরক্ষিত নেই'}</div>
-                    <div className="a ok">✓ সঠিক উত্তর: {item.answer}</div>
+                    {selectedIndex >= 0
+                      ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
+                      : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
                     <Expl q={item} />
                     <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(item, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
                   </article>
@@ -1473,7 +1599,8 @@ export function App() {
               <span className="result-return-icon"><SheetIco id="book" /></span>
               <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
               <div className="result-return-actions">
-                <button className="btn primary" onClick={() => beginQuiz(result.setup)}>↻ একই সেটআপে আবার দিন</button>
+                <button className="btn primary" onClick={() => beginQuiz(result.setup)}>↻ {result.setup.rows ? 'একই প্রশ্ন আবার দিন' : 'একই সেটআপে নতুন প্রশ্ন দিন'}</button>
+                {!result.setup.rows && <button className="btn ghost danger-outline" onClick={() => resetSeenQuestionProgress(result.setup)}>অগ্রগতি রিসেট করে শুরু করুন</button>}
                 {result.origin === 'setup' && <button className="btn ghost" onClick={() => {
                   const setup = result.setup
                   setCCat(setup.tag === 'bank' ? 'bank' : 'bcs')
@@ -1507,8 +1634,8 @@ export function App() {
                 return <div className={`rev-item ${isOk ? 'ok-item' : 'bad-item'}`} key={i}>
                   <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span><span className="source-badge" title={source.full}>🏷 {source.label}</span></div>
                   <div className="q">{BN(i + 1)}. <Md s={r.question} /> <span className={`rev-badge ${isOk ? 'ok' : 'bad'}`}>{isOk ? '✓ সঠিক' : r.ua == null ? '◌ বাদ' : '✗ ভুল'}</span></div>
-                  <div className={`a ${isOk ? 'ok' : 'bad'}`}>আপনার উত্তর: {r.ua == null ? '—' : r.options[r.ua]}</div>
-                  <div className="a ok">সঠিক উত্তর: {r.answer}</div>
+                  <ReviewOptions question={r} selectedIndex={r.ua} />
+                  {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
                   <Expl q={r} />
                   <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(r, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
                 </div>
@@ -1599,6 +1726,11 @@ export function App() {
                 <div className="stat"><strong>{BN(wrong.length)}</strong><span>ভুল খাতায়</span></div>
                 <div className="stat"><strong>{BN(stats.total)}</strong><span>প্রশ্ন সমাধান</span></div>
               </div>
+            </div>
+
+            <div className="seen-progress-card profile-seen-progress">
+              <div><b>নতুন প্রশ্নের অগ্রগতি</b><span><strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখা হয়েছে এবং সাধারণ কুইজে আর পুনরাবৃত্তি হবে না। চাইলে পুরো হিসাব মুছে শুরু থেকে শুরু করুন।</span></div>
+              <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
             </div>
 
             <div className="p-grid" style={{ marginTop: 14 }}>
