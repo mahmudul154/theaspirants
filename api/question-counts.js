@@ -12,7 +12,9 @@ async function fetchPage(offset) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/mcq_questions_job`)
   url.searchParams.set('select', 'subject,topic')
   url.searchParams.set('is_active', 'eq.true')
-  url.searchParams.set('order', 'id.asc')
+  // `id` is not unique in this table, so use the unique (id, created_at)
+  // composite order to keep offset pagination deterministic at page boundaries.
+  url.searchParams.set('order', 'id.asc,created_at.asc')
   url.searchParams.set('offset', String(offset))
   url.searchParams.set('limit', String(PAGE_SIZE))
   for (let attempt = 0; attempt < 3; attempt++) {
