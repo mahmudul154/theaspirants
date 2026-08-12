@@ -1485,11 +1485,10 @@ export function App() {
       </main>
 
       {page !== 'quiz' && <nav className="bnav">
-        <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
         <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="book" />পরীক্ষা</button>
+        <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
         <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
         <button className={page === 'visual' ? 'on' : ''} onClick={() => go('visual')}><SheetIco id="image" />ভিজ্যুয়াল</button>
-        <button className={sheetOpen ? 'on' : ''} onClick={() => setSheetOpen(v => !v)}><SheetIco id="menu" />আরও</button>
       </nav>}
 
       {page !== 'quiz' && <>
