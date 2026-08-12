@@ -20,13 +20,13 @@ const iconMap: { [key: string]: { emoji: string, color: string, bg: string } } =
 export const fetchQuestionCounts = async () => {
   const { data, error } = await supabase
     .from('mcq_questions_job')
-    .select('sub_topic'); // সব প্রশ্নের সাব-টপিকগুলো আনুন
+    .select('topic');
 
   if (error) return {};
 
-  // ডাটা থেকে কাউন্ট ম্যাপ তৈরি করুন
+  // Supabase-এর exact topic value অনুযায়ী কাউন্ট ম্যাপ তৈরি করুন।
   const counts = data.reduce((acc, curr) => {
-    acc[curr.sub_topic] = (acc[curr.sub_topic] || 0) + 1;
+    if (curr.topic) acc[curr.topic] = (acc[curr.topic] || 0) + 1;
     return acc;
   }, {});
 

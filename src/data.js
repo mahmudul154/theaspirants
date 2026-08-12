@@ -24,6 +24,66 @@ export const SUBJ_META = {
 }
 export const SUBJECTS = Object.keys(SUBJ_META)
 
+
+/* UI labels mapped to the exact `subject` values used by Supabase.
+   Every currently active database subject belongs to one UI subject, while
+   all quiz filtering remains strictly on the exact `topic` field. */
+export const DB_SUBJECT_ALIASES = {
+  'English': [
+    'English', 'ইংরেজি', 'ইংরেজি ব্যাকরণ', 'ইংলিশ সাহিত্য', 'ইংরেজি থেকে বাংলা অনুবাদ'
+  ],
+  'বাংলা': [
+    'বাংলা', 'বাংলা ব্যাকরণ', 'বাংলা সাহিত্য', 'সাহিত্য', 'বিশ্ব সাহিত্য',
+    'বিশ্ব সাহিত্য / ইতিহাস', 'বাংলা সাহিত্য / ইতিহাস', 'শিল্প ও সাহিত্য', 'অর্থনীতি ও সাহিত্য'
+  ],
+  'বিজ্ঞান': [
+    'বিজ্ঞান', 'সাধারণ বিজ্ঞান', 'চিকিৎসা বিজ্ঞান', 'বিজ্ঞান ও প্রযুক্তি',
+    'Chemistry 2nd Paper', 'Physics1'
+  ],
+  'গাণিতিক যুক্তি': ['গণিত', 'গণит', 'গণಿತ', 'অ্যাকাউন্টিং'],
+  'মানসিক দক্ষতা': ['মানসিক দক্ষতা'],
+  'বাংলাদেশ বিষয়াবলি': [
+    'বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ অর্থনীতি',
+    'বাংলাদেশ পরিসংখ্যান', 'বাংলাদেশ অর্জন', 'বাংলাদেশ বিষয়াবলি / আন্তর্জাতিক সম্পর্ক',
+    'খেলাধুলা', 'শিল্প ও সংস্কৃতি', 'ইতিহাস', 'জাতীয় দিবস', 'ব্যক্তিত্ব',
+    'সাধারণ জ্ঞান', 'অর্থনীতি ও বাণিজ্য', 'অর্থনীতি', 'ব্যাংকিং'
+  ],
+  'আন্তর্জাতিক বিষয়াবলি': [
+    'আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক সংস্থা',
+    'আন্তর্জাতিক ভূগোল', 'আন্তর্জাতিক মুদ্রা', 'আন্তর্জাতিক সম্পর্ক', 'বিশ্ব ইতিহাস',
+    'আন্তর্জাতিক অর্থবাজার', 'আন্তর্জাতিক ব্যাংক', 'আন্তর্জাতিক পরিবেশ',
+    'আন্তর্জাতিক রাজনীতি', 'আন্তর্জাতিক দিবস', 'আন্তর্জাতিক সংবাদ সংস্থা',
+    'আন্তর্জাতিক ইতিহাস', 'আন্তর্জাতিক অর্জন', 'বিশ্ব চলচ্চিত্র',
+    'আন্তর্জাতিক সংস্থা / অর্থনীতি', 'আন্তর্জাতিক বাণিজ্য'
+  ],
+  'কম্পিউটার ও তথ্য প্রযুক্তি': [
+    'কম্পিউটার ও তথ্য প্রযুক্তি', 'তথ্যপ্রযুক্তি', 'অর্থনীতি ও প্রযুক্তি', 'প্রযুক্তি'
+  ],
+  'নৈতিকতা, মূল্যবোধ ও সুশাসন': [
+    'নৈতিকতা ও সুশাসন', 'শ্রম আইন', 'আইন', 'রাষ্ট্রবিজ্ঞান',
+    'শিক্ষা ও দর্শন', 'সমাজবিজ্ঞান', 'ম্যানেজমেন্ট'
+  ],
+  'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': [
+    'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা', 'পরিবেশ'
+  ],
+  'Microcontroller': ['মাইক্রোকন্ট্রোলার']
+}
+
+export const dbSubjectsFor = subjects => {
+  const requested = [...new Set(subjects || [])]
+  const expanded = [...new Set(
+    requested.flatMap(subject => DB_SUBJECT_ALIASES[subject] || [subject])
+  )]
+
+  // Keep large mixed-exam filters small enough for PostgREST's exact-count query.
+  // A single selected subject always gets every alias; broad mixes use each
+  // subject's primary database name, while the all-BCS case is handled directly.
+  if (requested.length > 1 && expanded.length > 24) {
+    return requested.map(subject => (DB_SUBJECT_ALIASES[subject] || [subject])[0])
+  }
+  return expanded
+}
+
 /* হোমপেজের ৫টি কার্ড — আগের অ্যাপের মতো */
 export const HOME_SUBJS = [
   { id: 'English', label: 'English', icon: '📒', tint: '#4f46e5' },
@@ -39,7 +99,7 @@ export const QCOUNT = { 'পদার্থবিজ্ঞান':2000,'জী�
 export const LIVE = [
   { tag: 'BCS', sub: 'বাংলা সাহিত্য', top: 'মধ্যযুগ', q: 50, min: 25, subj: 'বাংলা' },
   { tag: 'BANK', sub: 'গাণিতিক যুক্তি', top: 'শতকরা', q: 40, min: 20, subj: 'গাণিতিক যুক্তি' },
-  { tag: 'BCS', sub: 'বাংলাদেশ বিষয়াবলী', top: 'মুক্তিযুদ্ধ', q: 60, min: 30, subj: 'বাংলাদেশ বিষয়াবলি' },
+  { tag: 'BCS', sub: 'বাংলাদেশ বিষয়াবলী', top: 'মুক্তিযুদ্ধ ও স্বাধীনতা', q: 60, min: 30, subj: 'বাংলাদেশ বিষয়াবলি' },
   { tag: 'GEN', sub: 'সাধারণ বিজ্ঞান', top: 'পদার্থবিজ্ঞান', q: 30, min: 15, subj: 'বিজ্ঞান' }
 ]
 

@@ -6,8 +6,9 @@ import 'katex/dist/katex.min.css'
 import './styles.css'
 import { supabase } from './lib/supabase.js'
 import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcommerz.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QCOUNT, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QCOUNT, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
 
+const questionCountCache = new Map()
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
@@ -251,17 +252,51 @@ export function App() {
       return
     }
 
-    const { title, tag, subjects, topics, limit, minutes, fallback } = cfg
+    const { title, subjects, topics, limit, minutes, fallback } = cfg
     setLoading(true)
     let rows = null
     if (cfg.rows) rows = cfg.rows
     else try {
-      let q = supabase.from('mcq_questions_job').select('*')
-      if (topics && topics.length) q = q.in('topic', topics)
-      else if (subjects && subjects.length) q = q.in('subject', subjects)
-      if (tag === 'bcs' || tag === 'bank') q = q.eq('exam_tag', tag)
-      const { data, error } = await q
-      if (!error && data && data.length) rows = data
+      const dbSubjects = dbSubjectsFor(subjects)
+      const selectedTopics = topics && topics.length ? [...new Set(topics)] : []
+      const isAllBcs = !selectedTopics.length && subjects?.length === CAT_SUBJECTS.bcs.length
+        && CAT_SUBJECTS.bcs.every(subject => subjects.includes(subject))
+      const applyQuestionFilters = query => {
+        let filtered = query.eq('is_active', true)
+        // The full BCS mix is the whole active job pool except Microcontroller.
+        // This avoids an oversized 70+ value IN filter while retaining ~93K rows.
+        if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
+        else if (dbSubjects.length) filtered = filtered.in('subject', dbSubjects)
+        if (selectedTopics.length) filtered = filtered.in('topic', selectedTopics)
+        return filtered
+      }
+
+      // exam_tag is intentionally not used: almost every database row is tagged
+      // "bcs" (and normal bank rows are not tagged "bank"). Subject + exact topic
+      // aliases expose the full active pool while filtering only on exact topic values.
+      const countKey = JSON.stringify([isAllBcs ? 'all-bcs' : dbSubjects.slice().sort(), selectedTopics.slice().sort()])
+      let available = questionCountCache.get(countKey)
+      if (available == null) {
+        const countResult = await applyQuestionFilters(
+          supabase.from('mcq_questions_job').select('id', { count: 'exact', head: true })
+        )
+        if (countResult.error) throw countResult.error
+        available = countResult.count || 0
+        questionCountCache.set(countKey, available)
+      }
+
+      if (available > 0) {
+        // Pull a bounded random window instead of repeatedly downloading the first
+        // 1,000 rows (or attempting to download the approximately 93K-row table).
+        const poolSize = Math.min(available, Math.max(120, Number(limit || 10) * 8))
+        const maxOffset = Math.max(0, available - poolSize)
+        const offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+        const { data, error } = await applyQuestionFilters(
+          supabase.from('mcq_questions_job').select('*')
+        ).range(offset, offset + poolSize - 1)
+        if (error) throw error
+        if (data && data.length) rows = data
+      }
     } catch (e) { console.error('Fetch Error:', e) }
     if (!rows) rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(s => localPool(s))
     const qs = mixQuestions(rows, limit)

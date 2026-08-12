@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../lib/supabase"; 
+import { supabase } from "../lib/supabase";
+// @ts-expect-error Legacy TS screen shares the JavaScript data module used by App.jsx.
+import { dbSubjectsFor } from "../data.js";
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -103,28 +105,25 @@ export function ExamPage({ examId, setCurrentPage }: ExamPageProps) {
       setLoading(true);
       
       try {
-        let query = supabase.from("mcq_questions_job").select("*");
+        let query = supabase.from("mcq_questions_job").select("*").eq("is_active", true);
         const isMixed = typeof examId === 'object' && examId !== null && examId.type === 'mixed';
         
         if (isMixed) {
-          const { category, subjects, topics, limit, time } = examId;
+          const { subjects, topics, limit, time } = examId;
 
           
     console.log("TOPICS:", topics);
 console.log("SUBJECTS:", subjects);
 console.log("EXAMID:", examId);
 
-          const dbTag = category;
+          const dbSubjects = dbSubjectsFor(subjects as string[]);
+          if (dbSubjects.length > 0) query = query.in("subject", dbSubjects);
+          if (topics && (topics as string[]).length > 0) query = query.in("topic", topics);
 
-          if (topics && (topics as string[]).length > 0) {
-            query = query.in("topic", topics);
-          } else if (subjects && (subjects as string[]).length > 0) {
-            query = query.in("subject", subjects);
-          }
-
-          query = query.eq("exam_tag", dbTag);
-
-          const { data, error } = await query;
+          // Keep this legacy path bounded too; the active App.jsx path also
+          // selects a random window using an exact filtered count.
+          const poolSize = Math.max(120, Number(limit || 25) * 8);
+          const { data, error } = await query.limit(poolSize);
 
 
 
@@ -166,7 +165,8 @@ console.log(
           const { data, error } = await supabase
             .from("mcq_questions_job")
             .select("*")
-            .eq("exam_tag", String(examId).toLowerCase());
+            .eq("is_active", true)
+            .limit(400);
           
           if (error) throw error;
 
@@ -218,12 +218,11 @@ console.log(
 const calculateResult = () => {
   let correct = 0;
   let wrong = 0;
-  // নতুন অবজেক্ট: টপিক/সাব-টপিক ভিত্তিক এনালাইসিসের জন্য
+  // নতুন অবজেক্ট: Supabase-এর exact topic ভিত্তিক এনালাইসিসের জন্য
   let analysis: Record<string, { correct: number, total: number }> = {};
 
   questions.forEach((q, i) => {
-    // লজিক: যদি sub_topic থাকে তবে সেটি নাম হবে, নতুবা topic নাম হবে। দুটোর একটাও না থাকলে "অন্যান্য"
-    const displayName =  q.topic || "অন্যান্য";
+    const displayName = q.topic || "অন্যান্য";
     
     if (!analysis[displayName]) {
       analysis[displayName] = { correct: 0, total: 0 };
