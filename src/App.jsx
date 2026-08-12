@@ -6,6 +6,7 @@ import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
+import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
 import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcommerz.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, BOARD, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
@@ -49,6 +50,14 @@ const NOTICES = [
   { t: 'এনটিআরসিএ স্কুল পর্যায় নিবন্ধন শুরু', d: '১ সপ্তাহ আগে' }
 ]
 const POP_SEARCH = ['সন্ধি', 'শতকরা', 'মুক্তিযুদ্ধ', 'পদ্মা সেতু', 'জাতীয় প্রতীক', 'সৌরজগৎ']
+const QUESTION_BANK_SOURCES = QUESTION_BANK.groups.flatMap(group => group.sources.map(source => ({
+  ...source,
+  groupId: group.id,
+  groupName: group.name,
+  groupLogo: group.logo,
+  topicCount: new Set(source.subjects.flatMap(subject => subject.topics.map(topic => topic.name))).size,
+  searchText: [group.name, source.name, ...source.subjects.flatMap(subject => [subject.name, ...subject.topics.map(topic => topic.name)])].join(' ').toLocaleLowerCase()
+})))
 
 const SOCIALS = [
   { id: 'fb', name: 'ফেসবুক', url: 'https://www.facebook.com/' },
@@ -87,7 +96,11 @@ const SHEET_ICONS = {
   search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
   bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
   moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
-  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>,
+  bank: <><path d="m3 10 9-6 9 6" /><path d="M5 10v8M9 10v8M15 10v8M19 10v8" /><path d="M3 18h18M2 22h20" /></>,
+  sparkles: <><path d="m12 3-1.1 3.2a2 2 0 0 1-1.2 1.2L6.5 8.5l3.2 1.1a2 2 0 0 1 1.2 1.2L12 14l1.1-3.2a2 2 0 0 1 1.2-1.2l3.2-1.1-3.2-1.1a2 2 0 0 1-1.2-1.2z" /><path d="m19 15-.6 1.7a1 1 0 0 1-.6.6l-1.8.7 1.8.6a1 1 0 0 1 .6.6L19 22l.6-1.8a1 1 0 0 1 .6-.6L22 19l-1.8-.7a1 1 0 0 1-.6-.6z" /><path d="m5 2-.4 1.2a1 1 0 0 1-.6.6l-1.2.4 1.2.4a1 1 0 0 1 .6.6L5 6.5l.4-1.1a1 1 0 0 1 .6-.6l1.2-.4L6 4a1 1 0 0 1-.6-.6z" /></>,
+  external: <><path d="M15 3h6v6" /><path d="m10 14 11-11" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></>,
+  copy: <><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></>
 }
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
@@ -135,6 +148,12 @@ export function App() {
 
   const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
   const subjectQuestionCount = subject => questionCounts?.subjects?.[subject]?.total || 0
+  const [qbQuery, setQbQuery] = useState('')
+  const [qbGroupId, setQbGroupId] = useState(null)
+  const [qbVisible, setQbVisible] = useState(40)
+  const [aiHelp, setAiHelp] = useState(null)
+  const [aiAnswer, setAiAnswer] = useState('')
+  const [aiStatus, setAiStatus] = useState('idle')
   const [cCat, setCCat] = useState('bcs')
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cTopics, setCTopics] = useState([])
@@ -369,6 +388,86 @@ export function App() {
     go('setup')
   }
 
+  function startQuestionBankQuiz(source, topic, subject) {
+    const questionTotal = topic ? topic.total : source.total
+    const limit = Math.max(1, Math.min(100, questionTotal))
+    const label = topic ? `${source.name} • ${topic.name}` : source.name
+    beginQuiz({
+      title: `প্রশ্নব্যাংক • ${label}`,
+      subjects: topic && subject ? [subject] : source.subjects.map(item => item.name),
+      topics: topic ? [topic.name] : [],
+      postNames: [source.name],
+      bankBuckets: topic
+        ? [{ name: topic.name, total: topic.total }]
+        : [...source.subjects.flatMap(item => item.topics).reduce((topics, item) => {
+            topics.set(item.name, (topics.get(item.name) || 0) + item.total)
+            return topics
+          }, new Map())].map(([name, total]) => ({ name, total })),
+      limit,
+      minutes: Math.max(5, Math.ceil(limit * .8)),
+      fallback: [],
+      returnPage: 'questionBank'
+    })
+  }
+
+  function aiPromptFor(question, revealAnswer = false) {
+    const options = (question?.options || []).map((option, index) => `${index + 1}. ${option}`).join('\n')
+    const answerInstruction = revealAnswer
+      ? `সঠিক উত্তর: ${question?.answer || 'উল্লেখ নেই'}\nডেটাবেজের ব্যাখ্যা: ${question?.explanation || 'নেই'}`
+      : 'পরীক্ষা এখনো চলছে। সঠিক অপশনের নম্বর বা সরাসরি উত্তর বলবে না; শুধু ধারণা, সূত্র ও সমাধানের পথ বুঝিয়ে দেবে।'
+    return `তুমি বাংলাদেশের চাকরির পরীক্ষার একজন বাংলা শিক্ষক। নিচের MCQ-টি সহজ, নির্ভুল বাংলায় বুঝিয়ে দাও। প্রয়োজন হলে ধাপে ধাপে বোঝাও এবং ভুল অপশনগুলোর ফাঁদ সংক্ষেপে বলো।\n\nবিষয়: ${question?.subject || 'সাধারণ'}\nটপিক: ${question?.topic || 'বিবিধ'}\nপ্রশ্ন: ${question?.question || ''}\nঅপশন:\n${options}\n\n${answerInstruction}`
+  }
+
+  function openAiHelp(question, revealAnswer = false) {
+    setAiHelp({ question, revealAnswer })
+    setAiAnswer('')
+    setAiStatus('idle')
+  }
+
+  async function askBuiltInAi() {
+    if (!aiHelp?.question) return
+    setAiStatus('loading')
+    setAiAnswer('')
+    try {
+      let session
+      if (window.LanguageModel) {
+        const availability = await window.LanguageModel.availability()
+        if (availability === 'unavailable') throw new Error('এই ব্রাউজারে বিল্ট-ইন AI পাওয়া যায়নি')
+        session = await window.LanguageModel.create()
+      } else if (window.ai?.languageModel) {
+        const capabilities = await window.ai.languageModel.capabilities()
+        if (capabilities?.available === 'no') throw new Error('এই ব্রাউজারে বিল্ট-ইন AI পাওয়া যায়নি')
+        session = await window.ai.languageModel.create()
+      } else {
+        throw new Error('এই ব্রাউজারে Chrome-এর বিল্ট-ইন AI চালু নেই')
+      }
+      const response = await session.prompt(aiPromptFor(aiHelp.question, aiHelp.revealAnswer))
+      setAiAnswer(String(response || '').trim())
+      setAiStatus('done')
+      session.destroy?.()
+    } catch (error) {
+      setAiAnswer(error?.message || 'বিল্ট-ইন AI চালু করা যায়নি')
+      setAiStatus('error')
+    }
+  }
+
+  function openExternalAiSearch() {
+    if (!aiHelp?.question) return
+    const prompt = aiPromptFor(aiHelp.question, aiHelp.revealAnswer).slice(0, 1800)
+    window.open(`https://www.google.com/search?udm=50&q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer')
+  }
+
+  async function copyAiPrompt() {
+    if (!aiHelp?.question) return
+    const prompt = aiPromptFor(aiHelp.question, aiHelp.revealAnswer)
+    try {
+      await navigator.clipboard.writeText(prompt)
+      setToastMsg('AI প্রম্পট কপি হয়েছে')
+    } catch (error) {
+      setToastMsg('কপি করা যায়নি—Google AI Search ব্যবহার করুন')
+    }
+  }
+
   function startScheduledExam(exam) {
     if (!user) {
       setToastMsg('🔒 লাইভ পরীক্ষা দিতে আগে লগইন করুন')
@@ -408,34 +507,56 @@ export function App() {
     let databaseRowsArePrioritized = false
     if (cfg.rows) rows = cfg.rows
     else try {
-      const dbSubjects = dbSubjectsFor(subjects)
+      const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []
+      const dbSubjects = selectedPostNames.length ? [] : dbSubjectsFor(subjects)
       const selectedTopics = topics && topics.length ? [...new Set(topics)] : []
-      const isAllBcs = !selectedTopics.length && subjects?.length === CAT_SUBJECTS.bcs.length
+      const isAllBcs = !selectedPostNames.length && !selectedTopics.length && subjects?.length === CAT_SUBJECTS.bcs.length
         && CAT_SUBJECTS.bcs.every(subject => subjects.includes(subject))
       const applyQuestionFilters = query => {
         let filtered = query.eq('is_active', true)
+        // Question Bank exams preserve the exact post_name value. Subject aliases
+        // are intentionally skipped here so one source can combine all its topics.
+        if (selectedPostNames.length === 1) filtered = filtered.eq('post_name', selectedPostNames[0])
+        else if (selectedPostNames.length > 1) filtered = filtered.in('post_name', selectedPostNames)
         // The full BCS mix is the whole active job pool except Microcontroller.
         // This avoids an oversized 70+ value IN filter while retaining ~93K rows.
-        if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
+        else if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
         else if (dbSubjects.length) filtered = filtered.in('subject', dbSubjects)
         if (selectedTopics.length) filtered = filtered.in('topic', selectedTopics)
         return filtered
       }
 
       // `post_name = bcs` (case-insensitive, exact value) is the generic/AI pool.
-      // Any non-empty different post_name identifies a named previous exam/source
-      // and must be exhausted first. Values such as "45th BCS" remain preferred;
-      // only the bare generic value "bcs" is deprioritized.
-      const applyAppearedQuestionFilter = query => query
-        .not('post_name', 'ilike', 'bcs')
-        .neq('post_name', '')
+      // Exact Question Bank sources are already preferred by definition; elsewhere
+      // any named previous exam is exhausted before the generic pool.
+      const applyAppearedQuestionFilter = selectedPostNames.length
+        ? query => query
+        : query => query.not('post_name', 'ilike', 'bcs').neq('post_name', '')
       const applyGenericQuestionFilter = query => query
         .or('post_name.ilike.bcs,post_name.is.null,post_name.eq.')
 
-      // exam_tag is intentionally not used: almost every database row is tagged
-      // "bcs" (and normal bank rows are not tagged "bank"). Subject + exact topic
-      // aliases expose the full active pool while filtering only on exact topic values.
-      const countKey = JSON.stringify([isAllBcs ? 'all-bcs' : dbSubjects.slice().sort(), selectedTopics.slice().sort()])
+      // Exact post_name counts can exceed Supabase's anonymous statement timeout
+      // when post_name is not indexed. The catalogue already contains the exact
+      // topic list and total, so a single indexed topic-IN query retrieves the
+      // source without a costly count scan or one network request per topic.
+      if (selectedPostNames.length === 1 && cfg.bankBuckets?.length) {
+        const buckets = cfg.bankBuckets.filter(bucket => bucket?.name && bucket.total > 0)
+        const bucketTopics = buckets.map(bucket => bucket.name)
+        const bucketTotal = buckets.reduce((total, bucket) => total + bucket.total, 0)
+        const { data, error } = await applyQuestionFilters(
+          supabase.from('mcq_questions_job').select('*')
+        )
+          .in('topic', bucketTopics)
+          .order('id', { ascending: true })
+          .order('created_at', { ascending: true })
+          .range(0, Math.max(0, bucketTotal - 1))
+        if (error) throw error
+        if (data?.length) rows = data
+      } else {
+        // exam_tag is intentionally not used. Regular custom quizzes use subject
+        // aliases plus exact topics, with named previous-exam rows first.
+        const countScope = isAllBcs ? ['all-bcs'] : dbSubjects.slice().sort()
+      const countKey = JSON.stringify([countScope, selectedTopics.slice().sort()])
       let available = questionCountCache.get(countKey)
       let appearedAvailable = appearedQuestionCountCache.get(countKey)
       if (available == null || appearedAvailable == null) {
@@ -499,6 +620,7 @@ export function App() {
           rows = [...appearedRows, ...genericRows]
           databaseRowsArePrioritized = true
         }
+      }
       }
     } catch (e) { console.error('Fetch Error:', e) }
     if (!rows) rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(s => localPool(s))
@@ -653,6 +775,13 @@ export function App() {
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
   const featuredExam = liveExam || upcomingExams[0] || null
   const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
+  const selectedQbGroup = QUESTION_BANK.groups.find(group => group.id === qbGroupId) || null
+  const qbNeedle = qbQuery.trim().toLocaleLowerCase()
+  const matchingQbSources = qbNeedle
+    ? QUESTION_BANK_SOURCES.filter(source => source.searchText.includes(qbNeedle))
+    : selectedQbGroup
+      ? QUESTION_BANK_SOURCES.filter(source => source.groupId === selectedQbGroup.id)
+      : []
   const Expl = ({ q }) => q?.explanation ? <div className="expl"><b>ব্যাখ্যা: </b><Md s={q.explanation} /></div> : null
 
   const LBRow = (x, i) => (
@@ -751,6 +880,7 @@ export function App() {
                 <button className="chip" onClick={() => go('visual')}>🖼 ছবি দিয়ে শেখো</button>
                 {(!plan || plan.id === 'free') && <button className="chip" onClick={() => go('pricing')}>💎 প্রিমিয়াম প্ল্যান</button>}
                 <button className="chip" onClick={() => go('exams')}>📘 নতুন টপিক ধরো</button>
+                <button className="chip" onClick={() => go('questionBank')}>🏛 প্রশ্নব্যাংক</button>
               </div>
             </div>
           </section>
@@ -918,6 +1048,76 @@ export function App() {
           </section>
         </>}
 
+        {/* ================= QUESTION BANK ================= */}
+        {page === 'questionBank' && <>
+          <section className="sec question-bank-page">
+            <div className="head qb-head">
+              <div className="eyebrow">বিগত পরীক্ষার সংগ্রহ</div>
+              <h2>প্রতিষ্ঠানভিত্তিক <i>প্রশ্নব্যাংক</i></h2>
+              <p className="muted">প্রতিটি নির্দিষ্ট পরীক্ষার সব বিষয় ও টপিক একসাথে দেখুন। একটি টপিক আলাদাভাবে, অথবা সেই পরীক্ষার সব টপিক মিলিয়ে পূর্ণ পরীক্ষা দিন।</p>
+            </div>
+
+            <div className="qb-stats" aria-label="প্রশ্নব্যাংক পরিসংখ্যান">
+              <span><b>{BN(QUESTION_BANK.totalQuestions)}</b><small>বাছাই করা প্রশ্ন</small></span>
+              <span><b>{BN(QUESTION_BANK.totalSources)}</b><small>নির্দিষ্ট পরীক্ষা</small></span>
+              <span><b>{BN(QUESTION_BANK.groups.length)}</b><small>প্রতিষ্ঠান ও বিভাগ</small></span>
+            </div>
+
+            <label className="qb-search">
+              <SheetIco id="search" />
+              <input value={qbQuery} onChange={event => { setQbQuery(event.target.value); setQbVisible(40) }} placeholder="প্রতিষ্ঠান, পরীক্ষা, বিষয় বা টপিক খুঁজুন…" />
+              {qbQuery && <button aria-label="সার্চ মুছুন" onClick={() => setQbQuery('')}>×</button>}
+            </label>
+
+            {selectedQbGroup && !qbNeedle && <div className="qb-breadcrumb">
+              <button onClick={() => { setQbGroupId(null); setQbVisible(40) }}>সব প্রতিষ্ঠান</button><span>›</span><b>{selectedQbGroup.name}</b>
+            </div>}
+          </section>
+
+          {!qbNeedle && !selectedQbGroup ? <section className="sec qb-groups-section">
+            <div className="head"><div className="eyebrow">প্রতিষ্ঠান বাছুন</div><h2>আপনার কাঙ্ক্ষিত <i>প্রতিষ্ঠান</i></h2></div>
+            <div className="qb-group-grid">
+              {QUESTION_BANK.groups.map(group => <button className="qb-group-card" key={group.id} onClick={() => { setQbGroupId(group.id); setQbVisible(40); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+                <span className="qb-logo"><img src={group.logo} alt={`${group.name} লোগো`} loading="lazy" onError={event => { event.currentTarget.src = '/assets/institutions/govt.png' }} /></span>
+                <span className="qb-group-copy"><b>{group.name}</b><small>{BN(group.sourceCount)} পরীক্ষা • {BN(group.total)} প্রশ্ন</small></span>
+                <i aria-hidden="true">→</i>
+              </button>)}
+            </div>
+          </section> : <section className="sec qb-exams-section">
+            <div className="qb-result-head">
+              <div><span className="eyebrow">{qbNeedle ? 'সার্চ ফলাফল' : selectedQbGroup?.name}</span><h3>{BN(matchingQbSources.length)}টি পরীক্ষা পাওয়া গেছে</h3></div>
+              {(qbNeedle || selectedQbGroup) && <button className="btn sm ghost" onClick={() => { setQbQuery(''); setQbGroupId(null); setQbVisible(40) }}>সব প্রতিষ্ঠান দেখুন</button>}
+            </div>
+
+            {matchingQbSources.length ? <div className="qb-source-list">
+              {matchingQbSources.slice(0, qbVisible).map(source => <article className="qb-source-card" key={`${source.groupId}-${source.name}`}>
+                <div className="qb-source-head">
+                  <span className="qb-logo small"><img src={source.groupLogo} alt="" loading="lazy" onError={event => { event.currentTarget.src = '/assets/institutions/govt.png' }} /></span>
+                  <div className="qb-source-title"><span>{source.groupName}</span><h3>{source.name}</h3><div><small>{BN(source.total)} প্রশ্ন</small><small>{BN(source.topicCount)} টপিক</small><small>{BN(source.subjects.length)} বিষয়</small></div></div>
+                  <button className="btn primary qb-all-exam" onClick={() => startQuestionBankQuiz(source)}>
+                    {user ? <>সব টপিকের পরীক্ষা <span aria-hidden="true">→</span></> : <><SheetIco id="lock" /> লগইন করে পূর্ণ পরীক্ষা দিন</>}
+                  </button>
+                </div>
+                <details className="qb-topic-details">
+                  <summary><span>বিষয় ও টপিক দেখুন</span><small>টপিকে ট্যাপ করে আলাদা পরীক্ষা দিন</small><i aria-hidden="true">⌄</i></summary>
+                  <div className="qb-subjects">
+                    {source.subjects.map(subject => <div className="qb-subject-block" key={subject.name}>
+                      <div className="qb-subject-head"><h4>{subject.name}</h4><span>{BN(subject.total)} প্রশ্ন</span></div>
+                      <div className="qb-topic-list">
+                        {subject.topics.map(topic => <button key={topic.name} onClick={() => startQuestionBankQuiz(source, topic, subject.name)} title={`${topic.name} থেকে ${BN(topic.total)}টি প্রশ্নের পরীক্ষা`}>
+                          <span>{topic.name}</span><b>{BN(topic.total)}</b><i aria-hidden="true">{user ? '→' : <SheetIco id="lock" />}</i>
+                        </button>)}
+                      </div>
+                    </div>)}
+                  </div>
+                </details>
+              </article>)}
+            </div> : <div className="qb-empty"><SheetIco id="search" /><h3>কোনো পরীক্ষা পাওয়া যায়নি</h3><p>অন্য বানান, প্রতিষ্ঠান বা টপিক দিয়ে খুঁজে দেখুন।</p></div>}
+
+            {matchingQbSources.length > qbVisible && <div className="qb-load-more"><button className="btn ghost" onClick={() => setQbVisible(value => value + 40)}>আরও {BN(Math.min(40, matchingQbSources.length - qbVisible))}টি দেখুন ↓</button></div>}
+          </section>}
+        </>}
+
         {/* ================= LEADERBOARD ================= */}
         {page === 'leaderboard' && <>
           <section className="sec">
@@ -1072,6 +1272,7 @@ export function App() {
                     <div className="a bad">✗ আপনার দেওয়া উত্তর: {selectedAnswer || 'পুরোনো রেকর্ডে উত্তরটি সংরক্ষিত নেই'}</div>
                     <div className="a ok">✓ সঠিক উত্তর: {item.answer}</div>
                     <Expl q={item} />
+                    <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(item, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
                   </article>
                 })}
               </>}
@@ -1202,8 +1403,11 @@ export function App() {
             {quiz.qs.map((q, qi) => (
               <div className="q-card qcard" id={'qcard-' + qi} key={qi} style={{ scrollMarginTop: 130 }}>
                 <div className="qno"><span>প্রশ্ন {BN(qi + 1)}</span>
-                  <button className={`flag ${quiz.mark[qi] ? 'on' : ''}`} title="রিভিউয়ের জন্য মার্ক করুন"
-                    onClick={() => setQuiz(z => { const m = [...z.mark]; m[qi] = !m[qi]; return { ...z, mark: m } })}>🚩</button>
+                  <div className="q-card-tools">
+                    <button className="ai-help-btn" title="AI দিয়ে সহজ ব্যাখ্যা নিন" onClick={() => openAiHelp(q, false)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন</button>
+                    <button className={`flag ${quiz.mark[qi] ? 'on' : ''}`} title="রিভিউয়ের জন্য মার্ক করুন"
+                      onClick={() => setQuiz(z => { const m = [...z.mark]; m[qi] = !m[qi]; return { ...z, mark: m } })}>🚩</button>
+                  </div>
                 </div>
                 <div className="qn"><Md s={q.question} /></div>
                 {(q.options || []).map((o, i) => (
@@ -1279,6 +1483,7 @@ export function App() {
                   setCTime(setup.minutes || 20)
                   go('setup')
                 }}>← আগের সেটআপে ফিরুন</button>}
+                {result.origin === 'questionBank' && <button className="btn ghost" onClick={() => go('questionBank')}>← প্রশ্নব্যাংকে ফিরুন</button>}
               </div>
             </div>}
             {result.scheduleId && <div className="result-return live-result-return">
@@ -1305,6 +1510,7 @@ export function App() {
                   <div className={`a ${isOk ? 'ok' : 'bad'}`}>আপনার উত্তর: {r.ua == null ? '—' : r.options[r.ua]}</div>
                   <div className="a ok">সঠিক উত্তর: {r.answer}</div>
                   <Expl q={r} />
+                  <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(r, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
@@ -1516,7 +1722,7 @@ export function App() {
             <div className="side-nav-group">
               <span className="side-nav-label">প্রধান মেনু</span>
               {[
-                ['home', 'home', 'হোম'], ['exams', 'book', 'পরীক্ষা'], ['potrika', 'news', 'পত্রিকা'],
+                ['home', 'home', 'হোম'], ['exams', 'book', 'পরীক্ষা'], ['questionBank', 'bank', 'প্রশ্নব্যাংক'], ['potrika', 'news', 'পত্রিকা'],
                 ['visual', 'image', 'ভিজ্যুয়াল জিকে'], ['daily', 'flame', 'ডেইলি চ্যালেঞ্জ'], ['leaderboard', 'trophy', 'লিডারবোর্ড']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
             </div>
@@ -1546,6 +1752,33 @@ export function App() {
           </div>
         </aside>
       </>}
+
+      {/* ================= PER-QUESTION FREE AI HELP ================= */}
+      {aiHelp && <div className="ai-modal-bg" onClick={() => setAiHelp(null)}>
+        <div className="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-help-title" onClick={event => event.stopPropagation()}>
+          <div className="ai-modal-head">
+            <span className="ai-modal-icon"><SheetIco id="sparkles" /></span>
+            <div><span>ফ্রি • কোনো API key লাগবে না</span><h3 id="ai-help-title">AI দিয়ে সহজ ব্যাখ্যা</h3></div>
+            <button className="ibtn" aria-label="AI সহায়তা বন্ধ করুন" onClick={() => setAiHelp(null)}><SheetIco id="close" /></button>
+          </div>
+          <div className="ai-question-preview">
+            <span>{aiHelp.question?.subject || 'সাধারণ'} • {aiHelp.question?.topic || 'বিবিধ'}</span>
+            <Md s={aiHelp.question?.question} />
+          </div>
+          {!aiHelp.revealAnswer && <div className="ai-exam-safe"><SheetIco id="lock" /><span><b>পরীক্ষা চলছে:</b> AI-কে সরাসরি উত্তর না বলে শুধু ধারণা ও সমাধানের পথ বোঝাতে বলা হবে।</span></div>}
+          {aiStatus === 'loading' && <div className="ai-loading"><span className="spin" /> বিল্ট-ইন AI উত্তর তৈরি করছে… প্রথমবার মডেল ডাউনলোড হতে পারে।</div>}
+          {aiAnswer && <div className={`ai-answer ${aiStatus === 'error' ? 'error' : ''}`}>
+            <span>{aiStatus === 'error' ? 'বিল্ট-ইন AI চালু হয়নি' : 'AI ব্যাখ্যা'}</span>
+            <Md s={aiAnswer} />
+          </div>}
+          <div className="ai-actions">
+            <button className="btn primary" disabled={aiStatus === 'loading'} onClick={askBuiltInAi}><SheetIco id="sparkles" /> Chrome বিল্ট-ইন AI</button>
+            <button className="btn" onClick={openExternalAiSearch}><SheetIco id="external" /> Google AI Search-এ বুঝুন</button>
+            <button className="btn ghost ai-copy" onClick={copyAiPrompt}><SheetIco id="copy" /> প্রম্পট কপি</button>
+          </div>
+          <p className="ai-privacy-note">Chrome-এর সমর্থিত ডিভাইসে Gemini Nano লোকালভাবে চলে। সেটি না থাকলে Google AI Search নতুন ট্যাবে খুলবে—অভ্যাস কোনো API token সংগ্রহ বা পাঠায় না। AI-এর উত্তর গুরুত্বপূর্ণ সূত্রের সঙ্গে মিলিয়ে নিন।</p>
+        </div>
+      </div>}
 
       {/* ================= SSLCommerz চেকআউট ================= */}
       {buyPlan && payStage === 'select' && <div className="modal-bg" onClick={() => setBuyPlan(null)}>
