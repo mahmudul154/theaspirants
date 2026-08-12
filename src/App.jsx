@@ -105,6 +105,7 @@ export function App() {
   const [loading, setLoading] = useState(false)
 
   const [wiz, setWiz] = useState({ step: 1, cat: null, sub: null, topics: [], limit: 25, time: 20 })
+  const [topicSearch, setTopicSearch] = useState('')
   const [cCat, setCCat] = useState('bcs')
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cCount, setCCount] = useState(25)
@@ -592,7 +593,7 @@ export function App() {
 
             {wiz.step === 1 && <div className="cat-scroll">
               {EXAM_CARDS.map(c => (
-                <button className="cat-card" key={c.id} onClick={() => setWiz(w => ({ ...w, step: 2, cat: c.id, sub: null, topics: [] }))}>
+                <button className="cat-card" key={c.id} onClick={() => { setTopicSearch(''); setWiz(w => ({ ...w, step: 2, cat: c.id, sub: null, topics: [] })) }}>
                   <div className="im"><img src={c.img} alt={c.name} /></div>
                   <div className="bd"><b>{c.name}</b><span>{c.id === 'bcs' ? '১০টি বিষয়, সব টপিক' : '৬টি বিষয়, শর্টকাটসহ'}</span></div>
                 </button>
@@ -606,27 +607,41 @@ export function App() {
                   <span className="lbl">বিষয় নির্বাচন করুন</span>
                   <span className="select-shell">
                     <Ico id={wiz.sub || 'বাংলা'} size={20} />
-                    <select value={wiz.sub || ''} onChange={e => setWiz(w => ({ ...w, sub: e.target.value || null, topics: [] }))}>
+                    <select value={wiz.sub || ''} onChange={e => { setTopicSearch(''); setWiz(w => ({ ...w, sub: e.target.value || null, topics: [] })) }}>
                       <option value="" disabled>একটি বিষয় বাছুন</option>
                       {(CAT_SUBJECTS[wiz.cat] || []).map(s => <option value={s} key={s}>{s} · {BN(QCOUNT[s] || 0)} প্রশ্ন</option>)}
                     </select>
                   </span>
                 </label>
-                <label className="setup-field">
+                <div className="setup-field">
                   <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
-                  <span className={`select-shell ${!wiz.sub ? 'disabled' : ''}`}>
-                    <SheetIco id="book" />
-                    <select value="" disabled={!wiz.sub} onChange={e => {
-                      const topic = e.target.value
-                      if (topic === '__all') setWiz(w => ({ ...w, topics: [] }))
-                      else if (topic) setWiz(w => ({ ...w, topics: [...w.topics, topic] }))
-                    }}>
-                      <option value="">{wiz.sub ? 'ড্রপডাউন থেকে টপিক যোগ করুন' : 'আগে বিষয় বাছুন'}</option>
-                      <option value="__all">সকল টপিক থেকে প্রশ্ন</option>
-                      {(TOPICS[wiz.sub] || []).filter(t => !wiz.topics.includes(t)).map(t => <option value={t} key={t}>{t}</option>)}
-                    </select>
-                  </span>
-                </label>
+                  <details className={`topic-check-dropdown ${!wiz.sub ? 'disabled' : ''}`} onClick={e => { if (!wiz.sub) e.preventDefault() }}>
+                    <summary aria-disabled={!wiz.sub}>
+                      <SheetIco id="book" />
+                      <span>{!wiz.sub ? 'আগে বিষয় বাছুন' : wiz.topics.length ? `${BN(wiz.topics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
+                      <i aria-hidden="true">⌄</i>
+                    </summary>
+                    {wiz.sub && <div className="topic-check-menu">
+                      <div className="topic-check-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        <input value={topicSearch} onChange={e => setTopicSearch(e.target.value)} placeholder="টপিক খুঁজুন…" />
+                      </div>
+                      <div className="topic-check-list">
+                        <label className="topic-check-option all-option">
+                          <input type="checkbox" checked={!wiz.topics.length} onChange={() => setWiz(w => ({ ...w, topics: [] }))} />
+                          <span><b>সকল টপিক</b><small>বিষয়ের সব টপিক থেকে প্রশ্ন আসবে</small></span>
+                        </label>
+                        {(TOPICS[wiz.sub] || []).filter(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())).map(t => (
+                          <label className="topic-check-option" key={t}>
+                            <input type="checkbox" checked={wiz.topics.includes(t)} onChange={() => setWiz(w => ({ ...w, topics: w.topics.includes(t) ? w.topics.filter(x => x !== t) : [...w.topics, t] }))} />
+                            <span>{t}{QCOUNT[t] ? <small>{BN(QCOUNT[t])}+ প্রশ্ন</small> : null}</span>
+                          </label>
+                        ))}
+                        {!(TOPICS[wiz.sub] || []).some(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())) && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
+                      </div>
+                    </div>}
+                  </details>
+                </div>
               </div>
               {wiz.sub && <div className="topic-selection" aria-live="polite">
                 {!wiz.topics.length
