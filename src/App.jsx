@@ -5,9 +5,10 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import './styles.css'
+import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import { supabase } from './lib/supabase.js'
 import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcommerz.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QCOUNT, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
 
 const questionCountCache = new Map()
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
@@ -106,8 +107,11 @@ export function App() {
 
   const [wiz, setWiz] = useState({ step: 1, cat: null, subs: [], topics: [], limit: 25, time: 20 })
   const [topicSearch, setTopicSearch] = useState('')
+  const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
   const wizSubs = wiz.subs || (wiz.sub ? [wiz.sub] : [])
   const wizAvailableTopics = [...new Set(wizSubs.flatMap(s => TOPICS[s] || []))]
+  const subjectQuestionCount = subject => questionCounts?.subjects?.[subject]?.total || 0
+  const topicQuestionCount = topic => wizSubs.reduce((sum, subject) => sum + (questionCounts?.subjects?.[subject]?.topics?.[topic] || 0), 0)
   const [cCat, setCCat] = useState('bcs')
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cCount, setCCount] = useState(25)
@@ -230,6 +234,22 @@ export function App() {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null))
     return () => sub.subscription.unsubscribe()
+  }, [])
+  useEffect(() => {
+    let active = true
+    const refreshCounts = async () => {
+      try {
+        const response = await fetch('/api/question-counts', { headers: { Accept: 'application/json' } })
+        if (!response.ok) return
+        const data = await response.json()
+        if (!active || !data?.subjects || !data?.total) return
+        setQuestionCounts(data)
+        localStorage.setItem('asp_question_counts', JSON.stringify(data))
+      } catch (error) { /* bundled counts remain available offline */ }
+    }
+    refreshCounts()
+    const timer = setInterval(refreshCounts, 6 * 60 * 60 * 1000)
+    return () => { active = false; clearInterval(timer) }
   }, [])
   useEffect(() => { document.documentElement.classList.toggle('dark', dark) }, [dark])
   useEffect(() => {
@@ -625,6 +645,12 @@ export function App() {
 
             {wiz.step >= 2 && wiz.cat && <div className="panel">
               <h3>{wiz.cat === 'bcs' ? 'বিসিএস' : 'ব্যাংক'} — <i>বিষয় ও টপিক</i></h3>
+              <div className="question-count-status">
+                <span className="live-dot" aria-hidden="true" />
+                <b>Supabase লাইভ কাউন্ট</b>
+                <span>মোট {BN(questionCounts?.total || 0)}টি প্রশ্ন</span>
+                {questionCounts?.updatedAt && <time dateTime={questionCounts.updatedAt}>আপডেট: {new Date(questionCounts.updatedAt).toLocaleString('bn-BD', { dateStyle: 'medium', timeStyle: 'short' })}</time>}
+              </div>
               <div className="setup-select-grid">
                 <div className="setup-field">
                   <span className="lbl">বিষয় নির্বাচন করুন</span>
@@ -643,7 +669,7 @@ export function App() {
                         {(CAT_SUBJECTS[wiz.cat] || []).map(s => (
                           <label className="topic-check-option" key={s}>
                             <input type="checkbox" checked={wizSubs.includes(s)} onChange={() => toggleWizSubject(s)} />
-                            <span>{s}<small>{BN(QCOUNT[s] || 0)}+ প্রশ্ন</small></span>
+                            <span>{s}<small>{BN(subjectQuestionCount(s))} প্রশ্ন</small></span>
                           </label>
                         ))}
                       </div>
@@ -671,7 +697,7 @@ export function App() {
                         {wizAvailableTopics.filter(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())).map(t => (
                           <label className="topic-check-option" key={t}>
                             <input type="checkbox" checked={wiz.topics.includes(t)} onChange={() => setWiz(w => ({ ...w, topics: w.topics.includes(t) ? w.topics.filter(x => x !== t) : [...w.topics, t] }))} />
-                            <span>{t}{QCOUNT[t] ? <small>{BN(QCOUNT[t])}+ প্রশ্ন</small> : null}</span>
+                            <span>{t}<small>{BN(topicQuestionCount(t))} প্রশ্ন</small></span>
                           </label>
                         ))}
                         {!wizAvailableTopics.some(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())) && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
