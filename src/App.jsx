@@ -11,6 +11,7 @@ import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcom
 import { BN, CATS, SUBJ_META, SUBJECTS, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
 
 const questionCountCache = new Map()
+const appearedQuestionCountCache = new Map()
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
@@ -302,8 +303,10 @@ export function App() {
     const origin = cfg.returnPage || page
     const repeatSetup = { ...cfg, returnPage: origin }
     const { title, subjects, topics, limit, minutes, fallback } = cfg
+    const requestedLimit = Math.max(1, Number(limit || 10))
     setLoading(true)
     let rows = null
+    let databaseRowsArePrioritized = false
     if (cfg.rows) rows = cfg.rows
     else try {
       const dbSubjects = dbSubjectsFor(subjects)
@@ -320,35 +323,87 @@ export function App() {
         return filtered
       }
 
+      // `post_name = bcs` (case-insensitive, exact value) is the generic/AI pool.
+      // Any non-empty different post_name identifies a named previous exam/source
+      // and must be exhausted first. Values such as "45th BCS" remain preferred;
+      // only the bare generic value "bcs" is deprioritized.
+      const applyAppearedQuestionFilter = query => query
+        .not('post_name', 'ilike', 'bcs')
+        .neq('post_name', '')
+      const applyGenericQuestionFilter = query => query
+        .or('post_name.ilike.bcs,post_name.is.null,post_name.eq.')
+
       // exam_tag is intentionally not used: almost every database row is tagged
       // "bcs" (and normal bank rows are not tagged "bank"). Subject + exact topic
       // aliases expose the full active pool while filtering only on exact topic values.
       const countKey = JSON.stringify([isAllBcs ? 'all-bcs' : dbSubjects.slice().sort(), selectedTopics.slice().sort()])
       let available = questionCountCache.get(countKey)
-      if (available == null) {
-        const countResult = await applyQuestionFilters(
-          supabase.from('mcq_questions_job').select('id', { count: 'exact', head: true })
-        )
+      let appearedAvailable = appearedQuestionCountCache.get(countKey)
+      if (available == null || appearedAvailable == null) {
+        const [countResult, appearedCountResult] = await Promise.all([
+          applyQuestionFilters(
+            supabase.from('mcq_questions_job').select('id', { count: 'exact', head: true })
+          ),
+          applyAppearedQuestionFilter(applyQuestionFilters(
+            supabase.from('mcq_questions_job').select('id', { count: 'exact', head: true })
+          ))
+        ])
         if (countResult.error) throw countResult.error
+        if (appearedCountResult.error) throw appearedCountResult.error
         available = countResult.count || 0
+        appearedAvailable = appearedCountResult.count || 0
         questionCountCache.set(countKey, available)
+        appearedQuestionCountCache.set(countKey, appearedAvailable)
+      }
+
+      const fetchRandomPool = async (applyPoolFilter, poolCount, desiredCount) => {
+        if (!poolCount || desiredCount <= 0) return []
+        const poolSize = Math.min(poolCount, Math.max(120, desiredCount * 8))
+        const maxOffset = Math.max(0, poolCount - poolSize)
+        const offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+        const { data, error } = await applyPoolFilter(applyQuestionFilters(
+          supabase.from('mcq_questions_job').select('*')
+        ))
+          // id alone is not unique in this table; the composite order keeps range
+          // pagination stable while choosing a random bounded window.
+          .order('id', { ascending: true })
+          .order('created_at', { ascending: true })
+          .range(offset, offset + poolSize - 1)
+        if (error) throw error
+        return data || []
       }
 
       if (available > 0) {
-        // Pull a bounded random window instead of repeatedly downloading the first
-        // 1,000 rows (or attempting to download the approximately 93K-row table).
-        const poolSize = Math.min(available, Math.max(120, Number(limit || 10) * 8))
-        const maxOffset = Math.max(0, available - poolSize)
-        const offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-        const { data, error } = await applyQuestionFilters(
-          supabase.from('mcq_questions_job').select('*')
-        ).range(offset, offset + poolSize - 1)
-        if (error) throw error
-        if (data && data.length) rows = data
+        const appearedPool = await fetchRandomPool(
+          applyAppearedQuestionFilter,
+          appearedAvailable,
+          requestedLimit
+        )
+        const appearedRows = mixQuestions(appearedPool, requestedLimit)
+        const remaining = Math.max(0, requestedLimit - appearedRows.length)
+        let genericRows = []
+
+        // The generic/AI pool is touched only when the selected subject/topic does
+        // not contain enough named previous-exam questions to fill the quiz.
+        if (remaining > 0) {
+          const genericAvailable = Math.max(0, available - appearedAvailable)
+          const genericPool = await fetchRandomPool(
+            applyGenericQuestionFilter,
+            genericAvailable,
+            remaining
+          )
+          genericRows = mixQuestions(genericPool, remaining)
+        }
+
+        if (appearedRows.length || genericRows.length) {
+          // Keep previous-exam questions before any generic fallback questions.
+          rows = [...appearedRows, ...genericRows]
+          databaseRowsArePrioritized = true
+        }
       }
     } catch (e) { console.error('Fetch Error:', e) }
     if (!rows) rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(s => localPool(s))
-    const qs = mixQuestions(rows, limit)
+    const qs = databaseRowsArePrioritized ? rows.slice(0, requestedLimit) : mixQuestions(rows, limit)
     setLoading(false)
     if (!qs.length) { setToastMsg('প্রশ্ন পাওয়া যায়নি'); return }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
