@@ -8,7 +8,8 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import { supabase } from './lib/supabase.js'
 import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcommerz.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, LIVE, BOARD, QB, TOPICS, CAT_SUBJECTS, EXAM_CARDS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, BOARD, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
+import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -97,6 +98,13 @@ function calcStreak(days) {
   return n
 }
 
+function examSource(q) {
+  const raw = String(q?.post_name || '').trim()
+  const full = /^bcs$/i.test(raw) || !raw ? 'BCS' : raw
+  const label = full.length > 30 ? `${full.slice(0, 29).trim()}…` : full
+  return { full, label }
+}
+
 export function App() {
   const [page, setPage] = useState('home')
   const [dark, setDark] = useState(false)
@@ -106,17 +114,19 @@ export function App() {
   const [toastMsg, setToastMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const [wiz, setWiz] = useState({ step: 1, cat: null, subs: [], topics: [], limit: 25, time: 20 })
-  const [topicSearch, setTopicSearch] = useState('')
   const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
-  const wizSubs = wiz.subs || (wiz.sub ? [wiz.sub] : [])
-  const wizAvailableTopics = [...new Set(wizSubs.flatMap(s => TOPICS[s] || []))]
   const subjectQuestionCount = subject => questionCounts?.subjects?.[subject]?.total || 0
-  const topicQuestionCount = topic => wizSubs.reduce((sum, subject) => sum + (questionCounts?.subjects?.[subject]?.topics?.[topic] || 0), 0)
   const [cCat, setCCat] = useState('bcs')
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
+  const [cTopics, setCTopics] = useState([])
+  const [cTopicSearch, setCTopicSearch] = useState('')
   const [cCount, setCCount] = useState(25)
   const [cTime, setCTime] = useState(20)
+  const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
+  const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + (questionCounts?.subjects?.[subject]?.topics?.[topic] || 0), 0)
+  const [clock, setClock] = useState(Date.now())
+  const [liveAttempts, setLiveAttempts] = useState({})
+  const [liveAttemptsReady, setLiveAttemptsReady] = useState(false)
 
   const [quiz, setQuiz] = useState(null)
   const [arm, setArm] = useState(false)
@@ -237,6 +247,42 @@ export function App() {
     return () => sub.subscription.unsubscribe()
   }, [])
   useEffect(() => {
+    if (page !== 'home' && page !== 'exams') return
+    setClock(Date.now())
+    const timer = setInterval(() => setClock(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [page])
+  useEffect(() => {
+    let active = true
+    if (!user?.id) {
+      setLiveAttempts({})
+      setLiveAttemptsReady(true)
+      return () => { active = false }
+    }
+
+    const storageKey = `asp_live_attempts_${user.id}`
+    const localAttempts = load(storageKey, {})
+    setLiveAttempts(localAttempts)
+    setLiveAttemptsReady(false)
+    supabase.from('exam_results')
+      .select('category')
+      .eq('user_id', user.id)
+      .like('category', 'live:%')
+      .then(({ data, error }) => {
+        if (!active) return
+        const synced = { ...localAttempts }
+        if (!error) (data || []).forEach(row => {
+          const scheduleId = String(row.category || '').replace(/^live:/, '')
+          if (scheduleId) synced[scheduleId] = synced[scheduleId] || { synced: true }
+        })
+        setLiveAttempts(synced)
+        localStorage.setItem(storageKey, JSON.stringify(synced))
+        setLiveAttemptsReady(true)
+      })
+      .catch(() => { if (active) setLiveAttemptsReady(true) })
+    return () => { active = false }
+  }, [user?.id])
+  useEffect(() => {
     let active = true
     const refreshCounts = async () => {
       try {
@@ -282,15 +328,44 @@ export function App() {
     if (p === 'profile') fetchProfile()
   }
 
-  function updateWizSubjects(nextSubjects) {
+  function updateCustomSubjects(nextSubjects) {
     const next = [...new Set(nextSubjects)]
-    const allowedTopics = new Set(next.flatMap(s => TOPICS[s] || []))
-    setTopicSearch('')
-    setWiz(w => ({ ...w, sub: null, subs: next, topics: (w.topics || []).filter(t => allowedTopics.has(t)) }))
+    const allowedTopics = new Set(next.flatMap(subject => TOPICS[subject] || []))
+    setCSubs(next)
+    setCTopics(current => current.filter(topic => allowedTopics.has(topic)))
+    setCTopicSearch('')
   }
 
-  function toggleWizSubject(subject) {
-    updateWizSubjects(wizSubs.includes(subject) ? wizSubs.filter(s => s !== subject) : [...wizSubs, subject])
+  function openCustomQuiz({ category = 'bcs', subjects, topics = [] } = {}) {
+    const nextSubjects = subjects?.length ? subjects : (CAT_SUBJECTS[category] || CAT_SUBJECTS.bcs).slice(0, 2)
+    setCCat(category)
+    setCSubs(nextSubjects)
+    setCTopics(topics)
+    setCTopicSearch('')
+    go('setup')
+  }
+
+  function startScheduledExam(exam) {
+    if (!user) {
+      setToastMsg('🔒 লাইভ পরীক্ষা দিতে আগে লগইন করুন')
+      go('login')
+      return
+    }
+    if (!liveAttemptsReady) { setToastMsg('অ্যাটেম্পট যাচাই হচ্ছে—একটু অপেক্ষা করুন'); return }
+    if (liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
+    if (Date.now() < exam.startsAt) { setToastMsg('⏳ নির্ধারিত সময়ে পরীক্ষাটি শুরু হবে'); return }
+    beginQuiz({
+      title: exam.title,
+      tag: 'bcs',
+      subjects: [exam.subject],
+      topics: [exam.topic],
+      limit: exam.questions,
+      minutes: exam.minutes,
+      fallback: [exam.subject],
+      returnPage: 'exams',
+      scheduleId: exam.id,
+      once: true
+    })
   }
 
   async function beginQuiz(cfg) {
@@ -301,7 +376,7 @@ export function App() {
     }
 
     const origin = cfg.returnPage || page
-    const repeatSetup = { ...cfg, returnPage: origin }
+    const repeatSetup = cfg.once ? null : { ...cfg, returnPage: origin }
     const { title, subjects, topics, limit, minutes, fallback } = cfg
     const requestedLimit = Math.max(1, Number(limit || 10))
     setLoading(true)
@@ -407,7 +482,7 @@ export function App() {
     setLoading(false)
     if (!qs.length) { setToastMsg('প্রশ্ন পাওয়া যায়নি'); return }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null })
     go('quiz')
   }
 
@@ -449,9 +524,26 @@ export function App() {
     const pct = Math.round((Math.max(0, ok - bad * .5)) / qs.length * 100)
     const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
     setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
+    if (quiz.scheduleId && user?.id) {
+      const storageKey = `asp_live_attempts_${user.id}`
+      const completion = { completedAt: new Date().toISOString(), score: pct }
+      setLiveAttempts(current => {
+        const next = { ...current, [quiz.scheduleId]: completion }
+        localStorage.setItem(storageKey, JSON.stringify(next))
+        return next
+      })
+      supabase.from('exam_results').insert({
+        user_id: user.id,
+        user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'শিক্ষার্থী',
+        user_avatar: user.user_metadata?.avatar_url || null,
+        score: pct,
+        total_questions: qs.length,
+        category: `live:${quiz.scheduleId}`
+      }).then(({ error }) => { if (error) console.warn('Live attempt sync failed:', error.message) })
+    }
     const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
       .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
-    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup })
+    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup, scheduleId: quiz.scheduleId })
     setQuiz(null)
     setRevOnlyWrong(false)
     go('result')
@@ -512,6 +604,12 @@ export function App() {
   const greet = () => { const h = new Date().getHours(); return h < 5 ? 'শুভ রাত্রি' : h < 12 ? 'সুপ্রভাত' : h < 17 ? 'শুভ দুপুর' : h < 20 ? 'শুভ সন্ধ্যা' : 'শুভ রাত্রি' }
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
+  const scheduledExams = buildDailyLiveExams(clock)
+  const liveExam = scheduledExams.find(exam => exam.status === 'live') || null
+  const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming').slice(0, 7)
+  const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
+  const featuredExam = liveExam || upcomingExams[0] || null
+  const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
   const Expl = ({ q }) => q?.explanation ? <div className="expl"><b>ব্যাখ্যা: </b><Md s={q.explanation} /></div> : null
 
   const LBRow = (x, i) => (
@@ -556,7 +654,7 @@ export function App() {
         </div>}
         {q.trim().length > 1 && <div className="sres">
           {searchRes.length ? searchRes.map((r, i) => (
-            <button key={i} onClick={() => { setTopicSearch(''); setWiz({ step: 2, cat: CAT_SUBJECTS.bcs.includes(r.sb) ? 'bcs' : 'bank', subs: [r.sb], topics: [r.t], limit: 25, time: 20 }); setQ(''); go('exams') }}>
+            <button key={i} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(r.sb) ? 'bcs' : 'bank', subjects: [r.sb], topics: [r.t] }) }}>
               <span>{r.t}</span><span style={{ color: 'var(--ink3)' }}>{r.sb}</span>
             </button>
           )) : <button>কিছু পাওয়া যায়নি</button>}
@@ -574,13 +672,13 @@ export function App() {
           <section className="hero-panel">
             <div className="eyebrow">অভ্যাস — Govt Job Exam App</div>
             <h1>চাকরির পরীক্ষায় <i>নিশ্চিত সাফল্য</i>, এক অ্যাপে।</h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>১.৫ লাখ+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
+            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>অনুশীলন শুরু করুন →</button>
               <button className="btn ghost" onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
             </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>১.৫ লাখ+</b> প্রশ্ন</span>
+              <span className="hchip"><b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্ন</span>
               <span className="hchip"><b>১০,০০+</b> শিক্ষার্থী</span>
               <span className="hchip"><b>২২</b> ক্যাটাগরি</span>
               <span className="hchip"><b>১১</b> বিষয়</span>
@@ -612,18 +710,19 @@ export function App() {
           </section>
 
           <section className="sec">
-            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>চলমান <i>পরীক্ষা</i></h2></div>
+            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
             <div className="slider">
-              {LIVE.map((x, i) => (
-                <button className="live-card" key={i} onClick={() => beginQuiz({ title: `${x.tag} লাইভ • ${x.sub}`, tag: x.tag === 'BANK' ? 'bank' : 'bcs', subjects: [x.subj], topics: [x.top], limit: 10, minutes: 10, fallback: [x.subj] })}>
-                  <span className={`tag ${x.tag === 'BANK' ? 'bank' : x.tag === 'GEN' ? 'gen' : 'bcs'}`}>{x.tag} লাইভ</span>
-                  <h3>{x.sub}</h3>
-                  <div className="top">{x.top}</div>
-                  <div className="meta"><span>{BN(x.q)} টি প্রশ্ন</span><span>{BN(x.min)} মিনিট</span></div>
-                  <span className="go">{user ? 'যোগ দিন →' : <><SheetIco id="lock" /> লগইন করে যোগ দিন</>}</span>
+              {homeLiveExams.map(exam => (
+                <button className={`live-card ${exam.status}`} key={exam.id} onClick={() => exam.status === 'live' ? startScheduledExam(exam) : go('exams')}>
+                  <span className={`tag ${exam.status === 'live' ? 'live-now' : 'bcs'}`}>{exam.status === 'live' ? '● এখন লাইভ' : 'আগামী পরীক্ষা'}</span>
+                  <h3>{exam.subject}</h3>
+                  <div className="top">{exam.topic}</div>
+                  <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
+                  <span className="go">{exam.status === 'live' ? (user ? 'এখনই দিন →' : <><SheetIco id="lock" /> লগইন করে দিন</>) : <>⏳ {formatExamCountdown(exam.startsAt, clock)}</>}</span>
                 </button>
               ))}
             </div>
+            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>৭ দিনের সম্পূর্ণ রুটিন →</button></div>
           </section>
 
           <section className="sec">
@@ -633,8 +732,8 @@ export function App() {
             <div className="cat-scroll">
               {APP_CATS.map(c => (
                 <button className="cat-card" key={c.id} onClick={() => {
-                  if (c.id === 'bcs' || c.id === 'bank') { setTopicSearch(''); setWiz({ step: 2, cat: c.id, subs: [], topics: [], limit: 25, time: 20 }); go('exams') }
-                  else { setToastMsg('শীঘ্রই আসছে: ' + c.name) }
+                  if (c.id === 'bcs' || c.id === 'bank') openCustomQuiz({ category: c.id })
+                  else setToastMsg('শীঘ্রই আসছে: ' + c.name)
                 }}>
                   <div className="im">{c.img ? <img src={c.img} alt="" /> : c.e}</div>
                   <div className="bd"><b>{c.name}</b><span>{c.d}</span></div>
@@ -657,7 +756,7 @@ export function App() {
             <div className="head"><div className="eyebrow">অনুশীলন</div><h2>বিষয়সমূহ</h2></div>
             <div className="subj-tiles">
               {SUBJECTS.map(s => (
-                <button className="tile" key={s} onClick={() => { setTopicSearch(''); setWiz({ step: 2, cat: CAT_SUBJECTS.bcs.includes(s) ? 'bcs' : 'bank', subs: [s], topics: [], limit: 25, time: 20 }); go('exams') }}>
+                <button className="tile" key={s} onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(s) ? 'bcs' : 'bank', subjects: [s] })}>
                   <span className="e"><Ico id={s} size={26} /></span><b>{s}</b>
                 </button>
               ))}
@@ -681,114 +780,95 @@ export function App() {
           </section>
         </>}
 
-        {/* ================= EXAMS ================= */}
+        {/* ================= LIVE EXAM CENTER ================= */}
         {page === 'exams' && <>
-          <section className="sec">
-            <div className="head">
-              <div className="eyebrow">পরীক্ষা বাছাই করো</div>
-              <h2>ক্যাটাগরি → বিষয় → টপিক, <i>তারপর শুরু।</i></h2>
+          <section className="sec live-exam-center">
+            <div className="head live-center-head">
+              <div className="eyebrow">দৈনিক লাইভ পরীক্ষা</div>
+              <h2>প্রতিদিন রাত ৮টায় <i>টপিকভিত্তিক পরীক্ষা</i></h2>
+              <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা। সব নির্ধারিত পরীক্ষা ফ্রি—অংশ নিতে শুধু লগইন করুন।</p>
             </div>
 
-            {wiz.step === 1 && <div className="cat-scroll">
-              {EXAM_CARDS.map(c => (
-                <button className="cat-card" key={c.id} onClick={() => { setTopicSearch(''); setWiz(w => ({ ...w, step: 2, cat: c.id, sub: null, subs: [], topics: [] })) }}>
-                  <div className="im"><img src={c.img} alt={c.name} /></div>
-                  <div className="bd"><b>{c.name}</b><span>{c.id === 'bcs' ? '১০টি বিষয়, সব টপিক' : '৬টি বিষয়, শর্টকাটসহ'}</span></div>
-                </button>
-              ))}
+            <div className={`exam-access-note ${user ? 'signed-in' : ''}`}>
+              <span className="access-icon"><SheetIco id={user ? 'user' : 'lock'} /></span>
+              <span>{user ? <><b>আপনি লগইন করেছেন</b>—লাইভ ও বিগত পরীক্ষায় কোনো পেমেন্ট ছাড়াই অংশ নিতে পারবেন।</> : <><b>লগইন আবশ্যক</b>—পরীক্ষা সম্পূর্ণ ফ্রি, তবে ফল ও একবারের অ্যাটেম্পট সংরক্ষণে লগইন করতে হবে।</>}</span>
+              {!user && <button className="btn sm primary" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
+            </div>
+
+            {featuredExam && <div className={`live-feature ${featuredExam.status}`}>
+              <div className="live-feature-copy">
+                <div className="live-feature-tags">
+                  <span className={`live-status ${featuredExam.status}`}>{featuredExam.status === 'live' ? '● এখন লাইভ' : 'পরবর্তী পরীক্ষা'}</span>
+                  <span className="free-badge">ফ্রি</span>
+                </div>
+                <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
+                <h3>{featuredExam.topic}</h3>
+                <div className="live-feature-meta">
+                  <span>📅 {formatLiveExamDate(featuredExam.startsAt)}</span>
+                  <span>🕗 {formatLiveExamTime(featuredExam.startsAt)}</span>
+                  <span>📝 {BN(featuredExam.questions)} প্রশ্ন</span>
+                  <span>⏱ {BN(featuredExam.minutes)} মিনিট</span>
+                </div>
+              </div>
+              <div className="live-feature-action">
+                <span>{featuredExam.status === 'live' ? 'লাইভ উইন্ডো শেষ হতে' : 'শুরু হতে বাকি'}</span>
+                <strong aria-live="polite">{formatExamCountdown(featuredExam.status === 'live' ? featuredExam.endsAt : featuredExam.startsAt, clock)}</strong>
+                {featuredExam.status === 'live'
+                  ? <button className="btn primary" disabled={!!liveAttempts[featuredExam.id] || (!!user && !liveAttemptsReady)} onClick={() => startScheduledExam(featuredExam)}>
+                      {liveAttempts[featuredExam.id] ? '✓ পরীক্ষা দেওয়া হয়েছে' : !user ? <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</> : !liveAttemptsReady ? 'অ্যাটেম্পট যাচাই হচ্ছে…' : 'এখনই শুরু করুন →'}
+                    </button>
+                  : <button className="btn countdown-btn" disabled>নির্ধারিত সময়ে চালু হবে</button>}
+              </div>
             </div>}
 
-            {wiz.step >= 2 && wiz.cat && <div className="panel">
-              <h3>{wiz.cat === 'bcs' ? 'বিসিএস' : 'ব্যাংক'} — <i>বিষয় ও টপিক</i></h3>
-              <div className="question-count-status">
-                <span className="live-dot" aria-hidden="true" />
-                <b>Supabase লাইভ কাউন্ট</b>
-                <span>মোট {BN(questionCounts?.total || 0)}টি প্রশ্ন</span>
-                {questionCounts?.updatedAt && <time dateTime={questionCounts.updatedAt}>আপডেট: {new Date(questionCounts.updatedAt).toLocaleString('bn-BD', { dateStyle: 'medium', timeStyle: 'short' })}</time>}
-              </div>
-              <div className="setup-select-grid">
-                <div className="setup-field">
-                  <span className="lbl">বিষয় নির্বাচন করুন</span>
-                  <details className="topic-check-dropdown subject-check-dropdown">
-                    <summary>
-                      <Ico id={wizSubs[0] || 'বাংলা'} size={20} />
-                      <span>{wizSubs.length ? `${BN(wizSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    <div className="topic-check-menu subject-check-menu">
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={wizSubs.length === (CAT_SUBJECTS[wiz.cat] || []).length} onChange={() => updateWizSubjects(wizSubs.length === (CAT_SUBJECTS[wiz.cat] || []).length ? [] : (CAT_SUBJECTS[wiz.cat] || []))} />
-                          <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[wiz.cat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
-                        </label>
-                        {(CAT_SUBJECTS[wiz.cat] || []).map(s => (
-                          <label className="topic-check-option" key={s}>
-                            <input type="checkbox" checked={wizSubs.includes(s)} onChange={() => toggleWizSubject(s)} />
-                            <span>{s}<small>{BN(subjectQuestionCount(s))} প্রশ্ন</small></span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </details>
-                </div>
-                <div className="setup-field">
-                  <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
-                  <details className={`topic-check-dropdown ${!wizSubs.length ? 'disabled' : ''}`} onClick={e => { if (!wizSubs.length) e.preventDefault() }}>
-                    <summary aria-disabled={!wizSubs.length}>
-                      <SheetIco id="book" />
-                      <span>{!wizSubs.length ? 'আগে বিষয় বাছুন' : wiz.topics.length ? `${BN(wiz.topics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    {!!wizSubs.length && <div className="topic-check-menu">
-                      <div className="topic-check-search">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                        <input value={topicSearch} onChange={e => setTopicSearch(e.target.value)} placeholder="টপিক খুঁজুন…" />
-                      </div>
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={!wiz.topics.length} onChange={() => setWiz(w => ({ ...w, topics: [] }))} />
-                          <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
-                        </label>
-                        {wizAvailableTopics.filter(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())).map(t => (
-                          <label className="topic-check-option" key={t}>
-                            <input type="checkbox" checked={wiz.topics.includes(t)} onChange={() => setWiz(w => ({ ...w, topics: w.topics.includes(t) ? w.topics.filter(x => x !== t) : [...w.topics, t] }))} />
-                            <span>{t}<small>{BN(topicQuestionCount(t))} প্রশ্ন</small></span>
-                          </label>
-                        ))}
-                        {!wizAvailableTopics.some(t => t.toLocaleLowerCase().includes(topicSearch.trim().toLocaleLowerCase())) && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
-                      </div>
-                    </div>}
-                  </details>
-                </div>
-              </div>
-              {!!wizSubs.length && <div className="topic-selection" aria-live="polite">
-                {!wiz.topics.length
-                  ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
-                  : <>
-                      <div className="selected-topic-head"><span><b>{BN(wiz.topics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setWiz(w => ({ ...w, topics: [] }))}>সব মুছুন</button></div>
-                      <div className="selected-topics">{wiz.topics.map(t => <button key={t} title="নির্বাচন বাতিল করুন" onClick={() => setWiz(w => ({ ...w, topics: w.topics.filter(x => x !== t) }))}><span>{t}</span><b aria-hidden="true">×</b></button>)}</div>
-                    </>}
-              </div>}
-              <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-                <div><span className="lbl">প্রশ্নসংখ্যা</span>
-                  <div className="chips">{[10, 25, 50].map(n => <button className={`chip ${wiz.limit === n ? 'on' : ''}`} key={n} onClick={() => setWiz(w => ({ ...w, limit: n }))}>{BN(n)}</button>)}</div>
-                </div>
-                <div><span className="lbl">সময় (মিনিট)</span>
-                  <div className="chips">{[10, 20, 30].map(n => <button className={`chip ${wiz.time === n ? 'on' : ''}`} key={n} onClick={() => setWiz(w => ({ ...w, time: n }))}>{BN(n)}</button>)}</div>
-                </div>
-              </div>
-              <div className="cta">
-                <button className="btn ghost" onClick={() => setWiz(w => ({ ...w, step: 1 }))}>← পেছনে</button>
-                <button className="btn primary" onClick={() => {
-                  if (!wizSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছো'); return }
-                  const subjectLabel = wizSubs.length === 1 ? wizSubs[0] : `${BN(wizSubs.length)}টি বিষয়`
-                  beginQuiz({
-                    title: `${wiz.cat === 'bcs' ? 'বিসিএস' : 'ব্যাংক'} • ${subjectLabel}${wiz.topics.length ? ' • ' + wiz.topics[0] : ''}`,
-                    tag: wiz.cat, subjects: wizSubs, topics: wiz.topics, limit: wiz.limit, minutes: wiz.time, fallback: wizSubs
-                  })
-                }}>{user ? 'পরীক্ষা শুরু করো →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button>
-              </div>
-            </div>}
+            <button className="hub-custom-card" onClick={() => go('setup')}>
+              <span className="hub-custom-icon"><SheetIco id="sliders" /></span>
+              <span><b>নিজের মতো অনুশীলন করতে চান?</b><small>কাস্টম কুইজে একাধিক বিষয় ও নির্দিষ্ট টপিক বেছে নিন</small></span>
+              <i aria-hidden="true">→</i>
+            </button>
+          </section>
+
+          <section className="sec routine-section">
+            <div className="head routine-head">
+              <div><div className="eyebrow">পরবর্তী সাত দিন</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
+              <span className="dhaka-time-chip">Asia/Dhaka • রাত ৮:০০</span>
+            </div>
+            <div className="live-routine-list">
+              {upcomingExams.map((exam, index) => (
+                <article className="live-routine-card" key={exam.id}>
+                  <div className="routine-day"><b>{BN(index + 1)}</b><span>দিন</span></div>
+                  <div className="routine-main">
+                    <div className="routine-card-top"><span>{exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
+                    <h3>{exam.topic}</h3>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span></div>
+                  </div>
+                  <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="sec past-exam-section">
+            <div className="head routine-head">
+              <div><div className="eyebrow">আর্কাইভ</div><h2>বিগত <i>পরীক্ষা</i></h2></div>
+              <span className="once-chip">প্রতি পরীক্ষায় ১ বার</span>
+            </div>
+            <p className="muted archive-note">মিস করেছেন? লগইন করে প্রতিটি শেষ হওয়া পরীক্ষা একবার করে ফ্রিতে দিন।</p>
+            <div className="past-exam-grid">
+              {pastExams.map(exam => {
+                const attempted = !!liveAttempts[exam.id]
+                return <article className={`past-exam-card ${attempted ? 'attempted' : ''}`} key={exam.id}>
+                  <div className="past-card-head"><span className="past-badge">বিগত</span>{attempted && <span className="done-badge">✓ সম্পন্ন</span>}</div>
+                  <span className="past-subject"><Ico id={exam.subject} size={16} /> {exam.subject}</span>
+                  <h3>{exam.topic}</h3>
+                  <time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)} • {formatLiveExamTime(exam.startsAt)}</time>
+                  <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span></div>
+                  <button className={`btn ${attempted ? 'ghost' : 'primary'} sm`} disabled={attempted || (!!user && !liveAttemptsReady)} onClick={() => startScheduledExam(exam)}>
+                    {attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !user ? <><SheetIco id="lock" /> লগইন করে দিন</> : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
+                  </button>
+                </article>
+              })}
+            </div>
           </section>
         </>}
 
@@ -805,32 +885,100 @@ export function App() {
         {/* ================= CUSTOM QUIZ ================= */}
         {page === 'setup' && <>
           <section className="sec">
-            <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>কাস্টম <i>কুইজ</i> বানাও</h2></div>
-            <div className="panel">
+            <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>বিষয় ও টপিক বেছে <i>কাস্টম কুইজ</i></h2><p className="muted">এক বা একাধিক বিষয় বাছুন, তারপর সেই বিষয়গুলোর নির্দিষ্ট টপিক নির্বাচন করুন।</p></div>
+            <div className="panel custom-quiz-panel">
+              <div className="question-count-status">
+                <span className="live-dot" aria-hidden="true" />
+                <b>Supabase লাইভ কাউন্ট</b>
+                <span>মোট {BN(questionCounts?.total || 0)}টি প্রশ্ন</span>
+                {questionCounts?.updatedAt && <time dateTime={questionCounts.updatedAt}>আপডেট: {new Date(questionCounts.updatedAt).toLocaleString('bn-BD', { dateStyle: 'medium', timeStyle: 'short' })}</time>}
+              </div>
               <div><span className="lbl">ক্যাটাগরি</span>
                 <div className="chips">
-                  <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); setCSubs(['বাংলা']) }}>🎓 বিসিএস</button>
-                  <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); setCSubs(['গাণিতিক যুক্তি']) }}>🏦 ব্যাংক</button>
+                  <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); updateCustomSubjects(['বাংলা']); setCTopics([]) }}>🎓 বিসিএস</button>
+                  <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); updateCustomSubjects(['গাণিতিক যুক্তি']); setCTopics([]) }}>🏦 ব্যাংক</button>
                 </div>
               </div>
-              <div><span className="lbl">বিষয় বাছো (এক বা একাধিক)</span>
-                <div className="chips">
-                  {CAT_SUBJECTS[cCat].map(s => (
-                    <button className={`chip ${cSubs.includes(s) ? 'on' : ''}`} key={s} onClick={() => setCSubs(c => c.includes(s) ? (c.length > 1 ? c.filter(x => x !== s) : c) : [...c, s])}>
-                      <Ico id={s} size={14} /> {s}
-                    </button>
-                  ))}
+
+              <div className="setup-select-grid">
+                <div className="setup-field">
+                  <span className="lbl">বিষয় নির্বাচন করুন</span>
+                  <details className="topic-check-dropdown subject-check-dropdown">
+                    <summary>
+                      <Ico id={cSubs[0] || 'বাংলা'} size={20} />
+                      <span>{cSubs.length ? `${BN(cSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
+                      <i aria-hidden="true">⌄</i>
+                    </summary>
+                    <div className="topic-check-menu subject-check-menu">
+                      <div className="topic-check-list">
+                        <label className="topic-check-option all-option">
+                          <input type="checkbox" checked={cSubs.length === (CAT_SUBJECTS[cCat] || []).length} onChange={() => updateCustomSubjects(cSubs.length === (CAT_SUBJECTS[cCat] || []).length ? [] : (CAT_SUBJECTS[cCat] || []))} />
+                          <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[cCat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
+                        </label>
+                        {(CAT_SUBJECTS[cCat] || []).map(subject => (
+                          <label className="topic-check-option" key={subject}>
+                            <input type="checkbox" checked={cSubs.includes(subject)} onChange={() => updateCustomSubjects(cSubs.includes(subject) ? cSubs.filter(item => item !== subject) : [...cSubs, subject])} />
+                            <span>{subject}<small>{BN(subjectQuestionCount(subject))} প্রশ্ন</small></span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </details>
+                </div>
+
+                <div className="setup-field">
+                  <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
+                  <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
+                    <summary aria-disabled={!cSubs.length}>
+                      <SheetIco id="book" />
+                      <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
+                      <i aria-hidden="true">⌄</i>
+                    </summary>
+                    {!!cSubs.length && <div className="topic-check-menu">
+                      <div className="topic-check-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        <input value={cTopicSearch} onChange={event => setCTopicSearch(event.target.value)} placeholder="টপিক খুঁজুন…" />
+                      </div>
+                      <div className="topic-check-list">
+                        <label className="topic-check-option all-option">
+                          <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
+                          <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
+                        </label>
+                        {cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicSearch.trim().toLocaleLowerCase())).map(topic => (
+                          <label className="topic-check-option" key={topic}>
+                            <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
+                            <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                          </label>
+                        ))}
+                        {!cAvailableTopics.some(topic => topic.toLocaleLowerCase().includes(cTopicSearch.trim().toLocaleLowerCase())) && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
+                      </div>
+                    </div>}
+                  </details>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+
+              {!!cSubs.length && <div className="topic-selection" aria-live="polite">
+                {!cTopics.length
+                  ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
+                  : <>
+                      <div className="selected-topic-head"><span><b>{BN(cTopics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setCTopics([])}>সব মুছুন</button></div>
+                      <div className="selected-topics">{cTopics.map(topic => <button key={topic} title="নির্বাচন বাতিল করুন" onClick={() => setCTopics(current => current.filter(item => item !== topic))}><span>{topic}</span><b aria-hidden="true">×</b></button>)}</div>
+                    </>}
+              </div>}
+
+              <div className="custom-quiz-options">
                 <div><span className="lbl">প্রশ্নসংখ্যা</span>
-                  <div className="chips">{[10, 25, 50].map(n => <button className={`chip ${cCount === n ? 'on' : ''}`} key={n} onClick={() => setCCount(n)}>{BN(n)}</button>)}</div>
+                  <div className="chips">{[10, 25, 50].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
                 </div>
                 <div><span className="lbl">সময় (মিনিট)</span>
-                  <div className="chips">{[10, 20, 30].map(n => <button className={`chip ${cTime === n ? 'on' : ''}`} key={n} onClick={() => setCTime(n)}>{BN(n)}</button>)}</div>
+                  <div className="chips">{[10, 20, 30].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
                 </div>
               </div>
-              <div className="cta"><button className="btn primary" onClick={() => beginQuiz({ title: 'কাস্টম কুইজ', tag: cCat, subjects: cSubs, limit: cCount, minutes: cTime, fallback: cSubs })}>{user ? 'পরীক্ষা শুরু করো →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button></div>
+              <div className="cta"><button className="btn primary" onClick={() => {
+                if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
+                const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
+                beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, returnPage: 'setup' })
+              }}>{user ? 'কাস্টম কুইজ শুরু করুন →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button></div>
             </div>
           </section>
         </>}
@@ -1057,13 +1205,21 @@ export function App() {
               <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
               <div className="result-return-actions">
                 <button className="btn primary" onClick={() => beginQuiz(result.setup)}>↻ একই সেটআপে আবার দিন</button>
-                {(result.origin === 'exams' || result.origin === 'setup') && <button className="btn ghost" onClick={() => {
-                  if (result.origin === 'setup') { go('setup'); return }
-                  const s = result.setup
-                  setWiz(w => ({ ...w, step: 2, cat: s.tag === 'bank' ? 'bank' : 'bcs', sub: null, subs: s.subjects || [], topics: s.topics || [], limit: s.limit || 25, time: s.minutes || 20 }))
-                  go('exams')
+                {result.origin === 'setup' && <button className="btn ghost" onClick={() => {
+                  const setup = result.setup
+                  setCCat(setup.tag === 'bank' ? 'bank' : 'bcs')
+                  setCSubs(setup.subjects || [])
+                  setCTopics(setup.topics || [])
+                  setCCount(setup.limit || 25)
+                  setCTime(setup.minutes || 20)
+                  go('setup')
                 }}>← আগের সেটআপে ফিরুন</button>}
               </div>
+            </div>}
+            {result.scheduleId && <div className="result-return live-result-return">
+              <span className="result-return-icon">✓</span>
+              <div><b>লাইভ পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>প্রতি নির্ধারিত পরীক্ষা একবার দেওয়া যায়। পরবর্তী রুটিন ও বিগত পরীক্ষা লাইভ পরীক্ষা কেন্দ্রে দেখুন।</p></div>
+              <button className="btn primary" onClick={() => go('exams')}>লাইভ পরীক্ষা কেন্দ্রে ফিরুন →</button>
             </div>}
             <div className="cta result-main-actions">
               <button className="btn" onClick={() => setShowRev(v => !v)}>{showRev ? 'ব্যাখ্যা লুকান' : 'উত্তর ও ব্যাখ্যা দেখুন'}</button>
@@ -1076,9 +1232,10 @@ export function App() {
               </div>
               {result.rev.map((r, i) => {
                 const isOk = r.ua != null && r.options[r.ua] === r.answer
+                const source = examSource(r)
                 if (revOnlyWrong && isOk) return null
                 return <div className={`rev-item ${isOk ? 'ok-item' : 'bad-item'}`} key={i}>
-                  <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span></div>
+                  <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span><span className="source-badge" title={source.full}>🏷 {source.label}</span></div>
                   <div className="q">{BN(i + 1)}. <Md s={r.question} /> <span className={`rev-badge ${isOk ? 'ok' : 'bad'}`}>{isOk ? '✓ সঠিক' : r.ua == null ? '◌ বাদ' : '✗ ভুল'}</span></div>
                   <div className={`a ${isOk ? 'ok' : 'bad'}`}>আপনার উত্তর: {r.ua == null ? '—' : r.options[r.ua]}</div>
                   <div className="a ok">সঠিক উত্তর: {r.answer}</div>
