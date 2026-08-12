@@ -70,6 +70,9 @@ const SHEET_ICONS = {
   book: <><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" /></>,
   news: <><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" /><path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" /></>,
   image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></>,
+  login: <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /></>,
+  userPlus: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>,
+  lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
   sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>
 }
@@ -242,6 +245,12 @@ export function App() {
   }
 
   async function beginQuiz(cfg) {
+    if (!user) {
+      setToastMsg('🔒 পরীক্ষা দিতে আগে লগইন করুন')
+      go('login')
+      return
+    }
+
     const { title, tag, subjects, topics, limit, minutes, fallback } = cfg
     setLoading(true)
     let rows = null
@@ -337,7 +346,6 @@ export function App() {
     setProfData(false)
   }
 
-  const jump = i => document.getElementById('qcard-' + i)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   function quitTap() {
     if (!quitArm) { setQuitArm(true); setTimeout(() => setQuitArm(false), 2500); return }
     setQuiz(null); setQuitArm(false); go('home')
@@ -387,7 +395,7 @@ export function App() {
               ? <button className="ibtn" style={{ border: 'none', padding: 0, width: 38, height: 38 }} title="প্রোফাইল" onClick={() => go('profile')}>
                   <img className="av-sm" src={avSrc(user)} alt="profile" />
                 </button>
-              : <button className="ibtn wide" onClick={() => go('login')}>লগইন</button>}
+              : <button className="ibtn wide auth-login" onClick={() => go('login')}>লগইন</button>}
             <button className="ibtn burger" onClick={() => setSheetOpen(v => !v)}>≡</button>
           </div>
         </div>
@@ -468,7 +476,7 @@ export function App() {
                   <h3>{x.sub}</h3>
                   <div className="top">{x.top}</div>
                   <div className="meta"><span>{BN(x.q)} টি প্রশ্ন</span><span>{BN(x.min)} মিনিট</span></div>
-                  <span className="go">যোগ দিন →</span>
+                  <span className="go">{user ? 'যোগ দিন →' : <><SheetIco id="lock" /> লগইন করে যোগ দিন</>}</span>
                 </button>
               ))}
             </div>
@@ -583,7 +591,7 @@ export function App() {
                     title: `${wiz.cat === 'bcs' ? 'বিসিএস' : 'ব্যাংক'} • ${wiz.sub}${wiz.topics.length ? ' • ' + wiz.topics[0] : ''}`,
                     tag: wiz.cat, subjects: [wiz.sub], topics: wiz.topics, limit: wiz.limit, minutes: wiz.time, fallback: [wiz.sub]
                   })
-                }}>পরীক্ষা শুরু করো →</button>
+                }}>{user ? 'পরীক্ষা শুরু করো →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button>
               </div>
             </div>}
           </section>
@@ -627,7 +635,7 @@ export function App() {
                   <div className="chips">{[10, 20, 30].map(n => <button className={`chip ${cTime === n ? 'on' : ''}`} key={n} onClick={() => setCTime(n)}>{BN(n)}</button>)}</div>
                 </div>
               </div>
-              <div className="cta"><button className="btn primary" onClick={() => beginQuiz({ title: 'কাস্টম কুইজ', tag: cCat, subjects: cSubs, limit: cCount, minutes: cTime, fallback: cSubs })}>পরীক্ষা শুরু করো →</button></div>
+              <div className="cta"><button className="btn primary" onClick={() => beginQuiz({ title: 'কাস্টম কুইজ', tag: cCat, subjects: cSubs, limit: cCount, minutes: cTime, fallback: cSubs })}>{user ? 'পরীক্ষা শুরু করো →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button></div>
             </div>
           </section>
         </>}
@@ -639,7 +647,7 @@ export function App() {
             <div className="panel">
               {localStorage.getItem('asp_daily') === new Date().toDateString()
                 ? <><h3>আজকের চ্যালেঞ্জ <i>শেষ!</i></h3><p className="muted">দারুণ! আগামীকালের নতুন চ্যালেঞ্জে দেখা হবে।</p><div className="cta"><button className="btn ghost" onClick={() => go('home')}>হোমে ফিরুন</button></div></>
-                : <><h3>আজকের <i>মিশ্র চ্যালেঞ্জ</i></h3><p className="muted">সব বিষয় মিলিয়ে ১০টি প্রশ্ন — ১০ মিনিট। দিনে একবার।</p><div className="cta"><button className="btn primary" onClick={() => { localStorage.setItem('asp_daily', new Date().toDateString()); beginQuiz({ title: 'ডেইলি চ্যালেঞ্জ', tag: 'bcs', subjects: CAT_SUBJECTS.bcs, limit: 10, minutes: 10, fallback: SUBJECTS }) }}>অংশ নিন →</button></div></>}
+                : <><h3>আজকের <i>মিশ্র চ্যালেঞ্জ</i></h3><p className="muted">সব বিষয় মিলিয়ে ১০টি প্রশ্ন — ১০ মিনিট। দিনে একবার।</p><div className="cta"><button className="btn primary" onClick={() => { localStorage.setItem('asp_daily', new Date().toDateString()); beginQuiz({ title: 'ডেইলি চ্যালেঞ্জ', tag: 'bcs', subjects: CAT_SUBJECTS.bcs, limit: 10, minutes: 10, fallback: SUBJECTS }) }}>{user ? 'অংশ নিন →' : <><SheetIco id="lock" /> লগইন করে অংশ নিন</>}</button></div></>}
             </div>
           </section>
         </>}
@@ -744,7 +752,7 @@ export function App() {
                 <ul className="facts">{vSel.facts.map(f => <li key={f}>{f}</li>)}</ul>
               </div>
               <div className="cta" style={{ marginTop: 8 }}>
-                <button className="btn primary" onClick={() => beginQuiz({ title: 'ভিজ্যুয়াল জিকে • ' + vSel.title, rows: vSel.mcqs.map(m => ({ question: m.q, options: m.o, answer: m.o[m.a], topic: vSel.title, subject: 'ভিজ্যুয়াল জিকে' })), limit: vSel.mcqs.length, minutes: 5 })}>নিজে যাচাই করো → {BN(vSel.mcqs.length)}টি প্রশ্ন</button>
+                <button className="btn primary" onClick={() => beginQuiz({ title: 'ভিজ্যুয়াল জিকে • ' + vSel.title, rows: vSel.mcqs.map(m => ({ question: m.q, options: m.o, answer: m.o[m.a], topic: vSel.title, subject: 'ভিজ্যুয়াল জিকে' })), limit: vSel.mcqs.length, minutes: 5 })}>{user ? <>নিজে যাচাই করো → {BN(vSel.mcqs.length)}টি প্রশ্ন</> : <><SheetIco id="lock" /> লগইন করে কুইজ দিন</>}</button>
                 <button className="btn ghost" onClick={() => setVSel(null)}>অন্য টপিক দেখো</button>
               </div>
             </div>
@@ -781,14 +789,6 @@ export function App() {
 
         {/* ================= QUIZ (সব প্রশ্ন এক পেজে) ================= */}
         {page === 'quiz' && quiz && <>
-          <div className="pal">
-            <div className="pal-in">
-              {quiz.qs.map((_, i) => (
-                <button key={i} className={`${quiz.ans[i] != null ? 'done' : ''} ${quiz.mark[i] ? 'mk' : ''}`} onClick={() => jump(i)}>{BN(i + 1)}</button>
-              ))}
-            </div>
-          </div>
-
           <section className="sec" style={{ paddingTop: 28, gap: 18 }}>
             <div className="eyebrow">{quiz.title} — {BN(quiz.qs.length)}টি প্রশ্ন • স্লাইড/স্ক্রল করে সব দেখো</div>
             {quiz.qs.map((q, qi) => (
@@ -903,7 +903,7 @@ export function App() {
                     <option value="ntrca">টার্গেট: শিক্ষক নিবন্ধন</option>
                     <option value="primary">টার্গেট: প্রাথমিক</option>
                   </select>
-                  <button className="btn primary" type="submit">ফ্রি অ্যাকাউন্ট তৈরি করুন 🎓</button>
+                  <button className="btn primary" type="submit"><SheetIco id="userPlus" /> ফ্রি অ্যাকাউন্ট তৈরি করুন</button>
                 </form>
               </div>
             </div>
@@ -1074,6 +1074,8 @@ export function App() {
           <div className="sheet-bar" />
           <h3>সব টুলস</h3>
           <div className="sheet-grid">
+            {!user && <button onClick={() => go('login')}><SheetIco id="login" />লগইন</button>}
+            {!user && <button onClick={() => go('signup')}><SheetIco id="userPlus" />সাইন আপ</button>}
             <button onClick={() => go('pricing')}><SheetIco id="gem" />প্ল্যান ও প্রাইসিং</button>
             <button onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
             <button onClick={() => go('daily')}><SheetIco id="flame" />ডেইলি চ্যালেঞ্জ</button>
@@ -1127,3 +1129,4 @@ export function App() {
 }
 
 export default App
+p

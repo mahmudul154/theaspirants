@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+<defs>
+<linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fbfaf5"/><stop offset="1" stop-color="#eee9dc"/>
+</linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#18745b"/><stop offset="1" stop-color="#0a493b"/>
+</linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#48bde9"/><stop offset="1" stop-color="#1178b5"/>
+</linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+  <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#16362e" flood-opacity=".18"/>
+</filter>
+<filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+  <feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs>
+<rect width="1200" height="800" fill="url(#paper)"/>
+
+<path d="M0 155 Q210 95 390 150 T760 125 T1200 150 V800 H0Z" fill="#c6d99b"/>
+<path d="M0 270 Q180 215 345 260 T710 225 T1200 270 V800 H0Z" fill="#8fbd73"/>
+<!-- farm plots -->
+<g opacity=".55">
+ <path d="M40 335h240v145H40z" fill="#d9c76c"/><path d="M70 350h180M70 385h180M70 420h180M70 455h180" stroke="#789856" stroke-width="7"/>
+ <path d="M890 245h250v150H890z" fill="#d9c76c"/><path d="M920 265h190M920 305h190M920 345h190" stroke="#789856" stroke-width="8"/>
+ <path d="M80 600h250v145H80z" fill="#6eaa5e"/><path d="M105 620h200M105 655h200M105 690h200" stroke="#d8d56e" stroke-width="8"/>
+</g>
+<!-- three great river systems and delta branches -->
+<g fill="none" stroke-linecap="round">
+ <path d="M335 -20 C300 125 420 190 390 315 C360 440 470 500 455 820" stroke="#dff6fb" stroke-width="95"/>
+ <path d="M335 -20 C300 125 420 190 390 315 C360 440 470 500 455 820" stroke="url(#blue)" stroke-width="69"/>
+ <path d="M685 -20 C710 125 600 210 655 330 C715 455 610 520 650 820" stroke="#dff6fb" stroke-width="105"/>
+ <path d="M685 -20 C710 125 600 210 655 330 C715 455 610 520 650 820" stroke="url(#blue)" stroke-width="76"/>
+ <path d="M1030 85 C905 205 930 350 825 430 C735 500 755 635 770 820" stroke="#dff6fb" stroke-width="78"/>
+ <path d="M1030 85 C905 205 930 350 825 430 C735 500 755 635 770 820" stroke="url(#blue)" stroke-width="53"/>
+ <!-- tributaries -->
+ <path d="M40 210 C180 230 225 320 380 330M85 520 C230 500 310 455 410 430M1120 300 C985 315 920 410 830 435M1120 620 C930 565 850 540 750 530" stroke="#168bbd" stroke-width="24"/>
+ <path d="M470 525 C350 610 330 690 290 810M545 535 C520 660 545 720 535 810M675 535 C705 650 700 730 690 810M760 520 C875 610 900 690 915 810" stroke="#168bbd" stroke-width="23"/>
+</g>
+<!-- boats -->
+<g filter="url(#shadow)">
+ <path d="M278 274q45 28 90 0l-15 28h-60z" fill="#713b28"/><path d="M312 222v58" stroke="#273d36" stroke-width="5"/><path d="m317 228 40 25h-40z" fill="#f3e7c3"/>
+ <path d="M775 472q38 24 78 0l-13 25h-52z" fill="#713b28"/><path d="M805 430v45" stroke="#273d36" stroke-width="5"/><path d="m810 434 34 22h-34z" fill="#f3e7c3"/>
+</g>
+<!-- bay waves -->
+<g fill="none" stroke="#d6f2f6" stroke-width="7" opacity=".75">
+ <path d="M20 760q35-24 70 0t70 0t70 0"/><path d="M930 735q35-24 70 0t70 0t70 0"/>
+</g>
+
+</svg>

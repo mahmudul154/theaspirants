@@ -44,7 +44,7 @@ nav button.active:after{content:"";position:absolute;bottom:1px;left:12px;right:
 .ibtn.wide{width:auto;border-radius:99px;padding:0 14px;font-size:.75rem;font-weight:600;letter-spacing:.02em;gap:5px;display:flex;align-items:center;color:var(--ink2)}
 .ibtn.wide:hover{color:var(--ink)}
 .burger{display:none}
-@media(max-width:900px){nav{display:none}.burger{display:grid}.hdr-right .wide{display:none}}
+@media(max-width:900px){nav{display:none}.burger{display:grid}.hdr-right .wide{display:none}.hdr-right .wide.auth-login{display:flex}}
 
 /* ---------- buttons ---------- */
 .btn{cursor:pointer;font-size:.86rem;font-weight:600;letter-spacing:.01em;padding:11px 20px;border-radius:99px;border:1px solid var(--line2);background:var(--card);color:var(--ink);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
@@ -99,7 +99,7 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .live-card h3{font-size:1rem;margin-bottom:2px}
 .live-card .top{color:var(--ink3);font-size:.76rem;margin-bottom:14px}
 .live-card .meta{display:flex;gap:14px;color:var(--ink2);font-size:.74rem;border-top:1px dashed var(--line);padding-top:11px}
-.live-card .go{color:var(--accent);font-weight:700;font-size:.76rem;margin-top:12px;display:inline-block}
+.live-card .go{color:var(--accent);font-weight:700;font-size:.76rem;margin-top:12px;display:inline-flex;align-items:center;gap:6px}
 .tag{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:99px;border:1px solid}
 .tag.bcs{color:#3b5ba5;background:color-mix(in srgb,#3b5ba5 8%,transparent);border-color:color-mix(in srgb,#3b5ba5 35%,transparent)}
 .tag.bank{color:#7a4bbf;background:color-mix(in srgb,#7a4bbf 8%,transparent);border-color:color-mix(in srgb,#7a4bbf 35%,transparent)}
@@ -118,9 +118,9 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .cat-card .bd span{display:block;color:var(--ink3);font-size:.74rem;margin-top:3px}
 
 /* ---------- quick tools grid (engenious .quick/.qcard) ---------- */
-.qk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));border-top:1px solid var(--line);gap:0}
-.qk{border:none;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;background:transparent;padding:26px 44px 26px 0;cursor:pointer;text-align:left;position:relative;transition:all .22s}
-.qk:hover{background:color-mix(in srgb,var(--ink) 2.5%,transparent);padding-left:10px}
+.qk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line);gap:0}
+.qk{border:none;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;background:transparent;padding:26px 44px 26px 24px;cursor:pointer;text-align:left;position:relative;transition:all .22s}
+.qk:hover{background:color-mix(in srgb,var(--ink) 2.5%,transparent);padding-left:30px}
 .qk .ic{display:block;width:auto;height:auto;background:none;border-radius:0;filter:grayscale();font-size:1.3rem;margin-bottom:14px;transition:filter .25s}
 .qk:hover .ic{filter:none}
 .qk b{font-size:.98rem;font-weight:600;display:block}
@@ -174,15 +174,6 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .qopt .k{font-family:var(--serif);font-size:1rem;color:var(--ink3);flex:0 0 18px}
 .qopt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
 .qopt.sel .k{color:var(--accent)}
-
-/* palette (question jump strip) */
-.pal{position:sticky;top:66px;z-index:35;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -32px;padding:10px 32px}
-.pal-in{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
-.pal-in::-webkit-scrollbar{display:none}
-.pal button{flex:0 0 34px;height:34px;border-radius:4px;border:1px solid var(--line2);background:var(--card);cursor:pointer;font-size:.78rem;font-weight:700;color:var(--ink2);transition:all .15s}
-.pal button:hover{border-color:var(--ink)}
-.pal button.done{background:var(--accent);border-color:var(--accent);color:#fff}
-.pal button.mk{border-color:var(--amber);color:var(--amber)}
 
 /* bottom quiz bar — tabbar look */
 .qbar{position:fixed;left:0;right:0;bottom:0;z-index:60;height:auto;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:16px}
@@ -401,7 +392,6 @@ footer{border-top:1px solid var(--line);background:color-mix(in srgb,var(--ink) 
   .topbar{display:flex;gap:10px;align-items:center;padding:0 16px 12px;position:relative}
   .hdr-in{height:56px;padding:0 16px}
   main{padding:0 20px 90px}
-  .pal{margin:0 -20px;padding-left:20px;padding-right:20px}
   .hero-panel{padding:44px 0 16px}
   .hero-panel .hero-chips{grid-template-columns:repeat(2,1fr);margin-top:24px}
   .hero-panel .hchip{border-bottom:1px solid var(--line);padding-right:12px}

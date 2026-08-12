@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+<defs>
+<linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fbfaf5"/><stop offset="1" stop-color="#eee9dc"/>
+</linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#18745b"/><stop offset="1" stop-color="#0a493b"/>
+</linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#48bde9"/><stop offset="1" stop-color="#1178b5"/>
+</linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+  <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#16362e" flood-opacity=".18"/>
+</filter>
+<filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+  <feGaussianBlur stdDeviation="18"/>
+</filter>
+
+<linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#e9eee4"/></linearGradient>
+</defs>
+<rect width="1200" height="800" fill="url(#paper)"/>
+
+
+<circle cx="600" cy="400" r="310" fill="#dcebdd"/>
+<!-- flag centerpiece -->
+<g filter="url(#shadow)"><rect x="390" y="255" width="420" height="250" rx="16" fill="#176b50"/><circle cx="575" cy="380" r="82" fill="#e3443c"/></g>
+<!-- six symbol cards -->
+<g fill="url(#card)" stroke="#d8d8cf" stroke-width="4" filter="url(#shadow)">
+ <rect x="55" y="70" width="260" height="250" rx="28"/><rect x="885" y="70" width="260" height="250" rx="28"/>
+ <rect x="55" y="480" width="260" height="250" rx="28"/><rect x="885" y="480" width="260" height="250" rx="28"/>
+ <rect x="350" y="570" width="220" height="180" rx="28"/><rect x="630" y="570" width="220" height="180" rx="28"/>
+</g>
+<!-- water lily -->
+<g transform="translate(185 195)"><ellipse cy="62" rx="92" ry="22" fill="#4e9a67"/><g fill="#fff" stroke="#9cb7a7" stroke-width="3"><ellipse rx="30" ry="78" transform="rotate(0)"/><ellipse rx="30" ry="78" transform="rotate(55)"/><ellipse rx="30" ry="78" transform="rotate(110)"/></g><circle r="22" fill="#efc640"/></g>
+<!-- jackfruit -->
+<g transform="translate(1015 190) rotate(-12)"><path d="M0-100q75 0 75 100T0 112Q-75 100-75 0T0-100Z" fill="#93a840" stroke="#4e6f35" stroke-width="7"/><g fill="#c7cf63"><circle cx="-30" cy="-45" r="6"/><circle cx="20" cy="-55" r="6"/><circle cx="42" cy="-10" r="6"/><circle cx="-35" cy="15" r="6"/><circle cx="15" cy="32" r="6"/><circle cx="-18" cy="70" r="6"/></g><path d="M0-105v-38" stroke="#4e6f35" stroke-width="12"/></g>
+<!-- hilsa -->
+<g transform="translate(185 605)"><path d="M-95 0Q-35-80 65-35L115-78 104-15 120 42 65 15Q-35 80-95 0Z" fill="#b9d3d8" stroke="#4a7079" stroke-width="7"/><path d="M-65 0Q0-25 72-6" fill="none" stroke="#fff" stroke-width="8"/><circle cx="72" cy="-20" r="8" fill="#1e2d30"/></g>
+<!-- tiger face -->
+<g transform="translate(1015 606)"><path d="M-80-80-105-125-45-98Q0-120 45-98l60-27-25 45q42 45 5 120Q45 105 0 112-45 105-85 40q-37-75 5-120z" fill="#e58a2f" stroke="#5c3823" stroke-width="7"/><g fill="none" stroke="#4b2d20" stroke-width="12"><path d="M-52-64-20-34M52-64 20-34M-62 2l35 10M62 2l-35 10M0-83v35"/></g><circle cx="-38" cy="-12" r="8"/><circle cx="38" cy="-12" r="8"/><path d="M-20 35Q0 58 20 35Q0 28-20 35Z" fill="#503126"/></g>
+<!-- doyel bird -->
+<g transform="translate(458 655)"><path d="M-72 25Q-42-80 32-48 74-70 90-50L45-24q10 77-56 65-35 32-78 8z" fill="#1e292b"/><path d="M-48 10Q-5-22 35 5L8 32q-35 15-56-22" fill="#f5f5ef"/><path d="M82-51l36 10-32 13" fill="#d6a33b"/><circle cx="62" cy="-43" r="6" fill="#fff"/><path d="M-30 48-45 80M0 45-2 80" stroke="#4e3b2c" stroke-width="6"/></g>
+<!-- mango branch -->
+<g transform="translate(740 654)"><path d="M-85 58Q-20 0 76-60" stroke="#55753f" stroke-width="12" fill="none"/><g fill="#4f914d"><ellipse cx="-35" cy="16" rx="45" ry="16" transform="rotate(-28 -35 16)"/><ellipse cx="22" cy="-19" rx="45" ry="16" transform="rotate(24 22 -19)"/><ellipse cx="67" cy="-55" rx="40" ry="15" transform="rotate(-30 67 -55)"/></g><path d="M25 4q60-4 58 54-10 52-55 38Q-8 66 25 4Z" fill="#e4b63e" stroke="#8a7c31" stroke-width="6"/></g>
+</svg>
