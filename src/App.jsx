@@ -981,7 +981,7 @@ export function App() {
           <section className="hero-panel">
             <div className="eyebrow">অভ্যাস — Govt Job Exam App</div>
             <h1>চাকরির পরীক্ষায় <i>নিশ্চিত সাফল্য</i>, এক অ্যাপে।</h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। শুরুতে সব ফিচার সম্পূর্ণ ফ্রি; বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
+            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>অনুশীলন শুরু করুন →</button>
               <button className="btn ghost" onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
