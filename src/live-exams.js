@@ -4,7 +4,7 @@ import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-pla
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
 const HOUR_MS = 60 * 60 * 1000
-const LIVE_START_UTC_HOUR = 14 // 20:00 in Asia/Dhaka
+const LIVE_START_UTC_HOUR = 17 // 23:00 in Asia/Dhaka
 const LIVE_WINDOW_MS = HOUR_MS
 
 // Exact, well-populated Supabase topic values. The date serial chooses one
@@ -32,7 +32,7 @@ export const LIVE_TOPIC_ROTATION = [
   { subject: 'নৈতিকতা, মূল্যবোধ ও সুশাসন', topic: 'বাংলাদেশের সংবিধানে অধিকার' }
 ]
 
-// Manually published events sit beside the daily 20:00 routine.  Each plan
+// Manually published events sit beside the daily 23:00 routine. Each plan
 // contains only exact topic values from `mcq_questions_job`; keyword buckets
 // cover the requested sector and March-focused questions inside those topics.
 export const SPECIAL_LIVE_EXAMS = [

@@ -1,4 +1,4 @@
-// Forty consecutive 20:00 Asia/Dhaka model exams. Each daily paper follows
+// Forty consecutive 23:00 Asia/Dhaka model exams. Each daily paper follows
 // the 40 / 30 / 30 format of the published model test and is loaded from the
 // question bank according to the listed BCS-preliminary syllabus topics.
 const part = (subject, label, topics, questions) => ({ subject, label, topics, questions })

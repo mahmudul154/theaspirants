@@ -1167,7 +1167,7 @@ export function App() {
           <section className="sec live-exam-center">
             <div className="head live-center-head">
               <div className="eyebrow">লাইভ পরীক্ষা কেন্দ্র</div>
-              <h2>দৈনিক রাত ৮টা ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
+              <h2>দৈনিক রাত ১১টা ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
               <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা, সঙ্গে প্রকাশিত বিশেষ পরীক্ষা। সব নির্ধারিত পরীক্ষা ফ্রি—অংশ নিতে শুধু লগইন করুন।</p>
             </div>
 
@@ -1219,7 +1219,7 @@ export function App() {
           <section className="sec routine-section">
             <div className="head routine-head">
               <div><div className="eyebrow">{hasFortyDayPlan ? '৪০ দিনের BCS প্রস্তুতি পরিকল্পনা' : 'পরবর্তী সাত দিন'}</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
-              <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ৮:০০</span>
+              <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:০০</span>
             </div>
             <div className="live-routine-list">
               {routineExams.map((exam, index) => (
