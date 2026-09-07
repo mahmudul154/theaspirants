@@ -968,7 +968,11 @@ export function App() {
   const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
   const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
   const liveExam = scheduledExams.find(exam => exam.status === 'live') || null
-  const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming').slice(0, 7)
+  const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming')
+  const hasFortyDayPlan = upcomingExams.some(exam => exam.planned)
+  const routineExams = hasFortyDayPlan
+    ? upcomingExams.filter(exam => exam.planned)
+    : upcomingExams.slice(0, 7)
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
   const featuredExam = liveExam || upcomingExams[0] || null
   const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
@@ -1100,7 +1104,7 @@ export function App() {
                 </button>
               ))}
             </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>৭ দিনের সম্পূর্ণ রুটিন →</button></div>
+            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনের সম্পূর্ণ রুটিন →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
 
           <section className="sec">
@@ -1176,7 +1180,7 @@ export function App() {
             {featuredExam && <div className={`live-feature ${featuredExam.status}`}>
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
-                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : 'পরবর্তী পরীক্ষা'}</span>
+                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExam.planned ? '৪০ দিনের রুটিন' : 'পরবর্তী পরীক্ষা'}</span>
                   <span className="free-badge">ফ্রি</span>
                 </div>
                 <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
@@ -1189,6 +1193,9 @@ export function App() {
                 </div>
                 {featuredExam.distribution && <div className="live-feature-meta exam-distribution" aria-label="বিষয়ভিত্তিক মানবণ্টন">
                   {featuredExam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}
+                </div>}
+                {featuredExam.planned && <div className="live-feature-meta exam-distribution" aria-label="আজকের টপিকভিত্তিক সিলেবাস">
+                  {featuredExam.questionPlan.map(part => <span key={part.label} title={part.label}>{part.label}</span>)}
                 </div>}
               </div>
               <div className="live-feature-action">
@@ -1211,11 +1218,11 @@ export function App() {
 
           <section className="sec routine-section">
             <div className="head routine-head">
-              <div><div className="eyebrow">পরবর্তী সাত দিন</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
+              <div><div className="eyebrow">{hasFortyDayPlan ? '৪০ দিনের BCS প্রস্তুতি পরিকল্পনা' : 'পরবর্তী সাত দিন'}</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
               <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ৮:০০</span>
             </div>
             <div className="live-routine-list">
-              {upcomingExams.map((exam, index) => (
+              {routineExams.map((exam, index) => (
                 <article className="live-routine-card" key={exam.id}>
                   <div className="routine-day"><b>{BN(index + 1)}</b><span>দিন</span></div>
                   <div className="routine-main">
@@ -1223,6 +1230,7 @@ export function App() {
                     <h3>{exam.topic}</h3>
                     <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span>{exam.special && <span>বিশেষ</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
+                    {exam.planned && <div className="routine-meta exam-distribution" aria-label="টপিকভিত্তিক সিলেবাস">{exam.questionPlan.map(part => <span key={part.label} title={part.label}>{part.label}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
                 </article>

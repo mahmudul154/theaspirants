@@ -1,4 +1,5 @@
 import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
+import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -56,6 +57,39 @@ export const SPECIAL_LIVE_EXAMS = [
   }
 ]
 
+const MODEL_LIVE_START_MS = Date.UTC(MODEL_LIVE_START_DATE.year, MODEL_LIVE_START_DATE.month, MODEL_LIVE_START_DATE.day)
+const MODEL_LIVE_END_MS = MODEL_LIVE_START_MS + FORTY_DAY_LIVE_PLAN.length * DAY_MS
+
+function modelLiveExamFor(day) {
+  if (day < MODEL_LIVE_START_MS || day >= MODEL_LIVE_END_MS) return null
+  const index = Math.floor((day - MODEL_LIVE_START_MS) / DAY_MS)
+  const questionPlan = FORTY_DAY_LIVE_PLAN[index]
+  const date = new Date(day)
+  const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
+  const firstPhase = index < 20
+  const phaseTitle = firstPhase
+    ? 'ইংরেজি গ্রামার • আন্তর্জাতিক বিষয়াবলি • গণিত'
+    : 'বাংলা ব্যাকরণ • বাংলাদেশ বিষয়াবলি • মানসিক দক্ষতা'
+  return {
+    id: `bcs-40-day-model-${dateKey}`,
+    dateKey,
+    startsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR),
+    endsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR) + LIVE_WINDOW_MS,
+    subject: `৪০ দিনের BCS রুটিন • দিন ${index + 1}`,
+    topic: phaseTitle,
+    title: `৪০ দিনের BCS মডেল পরীক্ষা • দিন ${index + 1}`,
+    questions: 100,
+    minutes: 60,
+    planned: true,
+    phase: firstPhase ? 'প্রথম ২০ দিন' : 'পরের ২০ দিন',
+    questionPlan,
+    distribution: questionPlan.map(({ subject, questions }) => ({
+      label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
+      questions
+    }))
+  }
+}
+
 const bnDigits = value => String(value).replace(/\d/g, digit => '০১২৩৪৫৬৭৮৯'[digit])
 const padBn = value => bnDigits(String(value).padStart(2, '0'))
 const withStatus = (exam, now) => ({
@@ -68,8 +102,13 @@ export function buildDailyLiveExams(now = Date.now()) {
   const dhakaDay = Date.UTC(dhakaNow.getUTCFullYear(), dhakaNow.getUTCMonth(), dhakaNow.getUTCDate())
   const exams = []
 
-  for (let offset = -14; offset <= 21; offset++) {
+  for (let offset = -14; offset <= 45; offset++) {
     const day = dhakaDay + offset * DAY_MS
+    const plannedModel = modelLiveExamFor(day)
+    if (plannedModel) {
+      exams.push(withStatus(plannedModel, now))
+      continue
+    }
     const date = new Date(day)
     const serial = Math.floor(day / DAY_MS)
     const index = ((serial % LIVE_TOPIC_ROTATION.length) + LIVE_TOPIC_ROTATION.length) % LIVE_TOPIC_ROTATION.length
