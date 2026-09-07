@@ -8,8 +8,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { SSLCZ, isLive, initPayment, genTranId, PAY_METHODS } from './lib/sslcommerz.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, BOARD, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS, PLANS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, BOARD, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 
 const questionCountCache = new Map()
@@ -229,48 +228,6 @@ export function App() {
   const [potImgs, setPotImgs] = useState(() => load('asp_potrika_imgs', {}))
   const [vSel, setVSel] = useState(null)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [plan, setPlan] = useState(() => load('asp_plan', null))
-  const [buyPlan, setBuyPlan] = useState(null)
-  const [payMethod, setPayMethod] = useState('bkash')
-  const [payStage, setPayStage] = useState('select')
-  const [trxId, setTrxId] = useState('')
-
-  /* SSLCommerz রিডাইরেক্ট হ্যান্ডলার (success/fail/cancel) */
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search)
-    const st = p.get('sslcz')
-    if (st) {
-      if (st === 'success') setToastMsg('পেমেন্ট সফল! ভেরিফাই চলছে ✅')
-      if (st === 'fail') setToastMsg('পেমেন্ট ব্যর্থ — আবার চেষ্টা করো')
-      if (st === 'cancel') setToastMsg('পেমেন্ট বাতিল হয়েছে')
-      p.delete('sslcz'); p.delete('tran')
-      window.history.replaceState({}, '', window.location.pathname)
-    }
-  }, [])
-
-  function startCheckout() {
-    const t = genTranId()
-    setTrxId(t)
-    setPayStage('gateway')
-    if (isLive()) {
-      initPayment({ plan: buyPlan, method: payMethod, tranId: t, user })
-        .then(d => { if (d && d.url) window.location.href = d.url })
-        .catch(() => { }) // ব্যর্থ হলে স্যান্ডবক্স গেটওয়েতেই থাকবে
-    }
-  }
-  function confirmPay() {
-    setPayStage('processing')
-    setTimeout(() => {
-      const pl = { id: buyPlan.id, name: buyPlan.name, price: buyPlan.price, per: buyPlan.per, since: new Date().toDateString(), trx: trxId, method: payMethod, via: isLive() ? 'sslcommerz' : 'sandbox' }
-      setPlan(pl); localStorage.setItem('asp_plan', JSON.stringify(pl))
-      try {
-        supabase.from('orders').insert({ user_id: user?.id || null, plan: buyPlan.id, amount: buyPlan.price, trx_id: trxId, method: payMethod, status: 'paid' }).then(() => { }).catch(() => { })
-      } catch (e) { }
-      setPayStage('success')
-      setTimeout(() => { setBuyPlan(null); setPayStage('select'); setToastMsg('পেমেন্ট সফল! প্রিমিয়াম চালু হলো 🎉') }, 1500)
-    }, 1300)
-  }
-
   function onPic(e) {
     const f = e.target.files && e.target.files[0]
     if (!f) return
@@ -986,7 +943,6 @@ export function App() {
             <span className="wordmark">অভ্যাস</span>
           </button>
           <div className="hdr-right">
-            <button className="ibtn wide prem" onClick={() => go('pricing')}><SheetIco id="gem" /> প্ল্যান</button>
             <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
@@ -1025,7 +981,7 @@ export function App() {
           <section className="hero-panel">
             <div className="eyebrow">অভ্যাস — Govt Job Exam App</div>
             <h1>চাকরির পরীক্ষায় <i>নিশ্চিত সাফল্য</i>, এক অ্যাপে।</h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
+            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। শুরুতে সব ফিচার সম্পূর্ণ ফ্রি; বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>অনুশীলন শুরু করুন →</button>
               <button className="btn ghost" onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
@@ -1056,7 +1012,6 @@ export function App() {
                 {localStorage.getItem('asp_daily') !== new Date().toDateString() && <button className="chip" onClick={() => go('daily')}>🔥 ডেইলি চ্যালেঞ্জ</button>}
                 <button className="chip" onClick={() => go('potrika')}>📰 আজকের পত্রিকা</button>
                 <button className="chip" onClick={() => go('visual')}>🖼 ছবি দিয়ে শেখো</button>
-                {(!plan || plan.id === 'free') && <button className="chip" onClick={() => go('pricing')}>💎 প্রিমিয়াম প্ল্যান</button>}
                 <button className="chip" onClick={() => go('exams')}>📘 নতুন টপিক ধরো</button>
                 <button className="chip" onClick={() => go('questionBank')}>🏛 প্রশ্নব্যাংক</button>
               </div>
@@ -1560,34 +1515,6 @@ export function App() {
           </section>
         </>}
 
-        {/* ================= প্ল্যান / প্রাইসিং ================= */}
-        {page === 'pricing' && <>
-          <section className="sec">
-            <div className="head">
-              <div className="eyebrow">প্রাইসিং</div>
-              <h2>সেরা প্রস্তুতি, <i>সাশ্রয়ী</i> দামে।</h2>
-              <p className="muted">দিনে মাত্র কয়েক টাকায় পুরো চাকরি প্রস্তুতি — আনলিমিটেড প্রশ্ন, ব্যাখ্যা, পত্রিকা আর ভিজ্যুয়াল জিকে। কোনো লুকানো খরচ নেই; যেকোনো সময় বাদ দেওয়া যাবে।</p>
-            </div>
-            <div className="note" style={{ borderLeftColor: 'var(--amber)' }}>🎉 <b>লঞ্চ অফার:</b> প্রথম ৫০০ জন সাবস্ক্রাইবারের জন্য এই দাম — তারপর দাম বাড়বে।</div>
-            <div className="price-grid">
-              {PLANS.map(p => (
-                <div className={`price-card ${p.tag ? 'pop' : ''}`} key={p.id}>
-                  {p.tag && <span className="ptag">{p.tag}</span>}
-                  <h4 className="pname">{p.name}</h4>
-                  <div className="price">৳{BN(p.price)}<span className="per">{p.per}</span></div>
-                  <ul className="feat">{p.feats.map(f => <li key={f}>{f}</li>)}</ul>
-                  <button className={`btn ${p.tag ? 'primary' : ''}`} onClick={() => p.price === 0 ? go('exams') : setBuyPlan(p)}>
-                    {p.price === 0 ? (plan && plan.id !== 'free' ? 'আপনার বর্তমান প্ল্যান চলছে ✓' : 'ফ্রিতে শুরু করুন →') : (plan && plan.id === p.id ? '✓ চালু আছে' : p.cta + ' →')}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="paystrip">🔒 <b>SSLCommerz সিকিউর পেমেন্ট</b> — বিকাশ • নগদ • রকেট • ভিসা/মাস্টারকার্ড</div>
-            <div className="note">💡 <b>৭ দিনের মানি-ব্যাক গ্যারান্টি</b> — পছন্দ না হলে পুরো টাকা ফেরত। যেকোনো সমস্যায়: support@ovvash.app</div>
-          </section>
-        </>}
-
         {/* ================= QUIZ (সব প্রশ্ন এক পেজে) ================= */}
         {page === 'quiz' && quiz && <>
           <section className="sec" style={{ paddingTop: 28, gap: 18 }}>
@@ -1781,7 +1708,6 @@ export function App() {
                   {avatar && <button className="btn sm ghost" style={{ marginTop: 6 }} onClick={() => { setAvatar(null); localStorage.removeItem('asp_avatar'); setToastMsg('ছবি মুছে ফেলা হয়েছে') }}>ছবি মুছুন</button>}
                 </div>
                 <div className="hero-chips" style={{ marginLeft: 'auto' }}>
-                  {plan && plan.id !== 'free' && <span className="hchip">💎 <b>{plan.name}</b> প্ল্যান</span>}
                   <span className="hchip">🔥 <b>{BN(streak)}</b> দিন স্ট্রিক</span>
                   <span className="hchip">🎯 {user.user_metadata?.target_exam === 'bank' ? 'ব্যাংক' : 'বিসিএস'}</span>
                 </div>
@@ -1928,7 +1854,7 @@ export function App() {
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'book', 'ভুল পর্যালোচনা'], ['pricing', 'gem', 'প্ল্যান ও প্রাইসিং'], ['profile', 'user', 'প্রোফাইল']
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'book', 'ভুল পর্যালোচনা'], ['profile', 'user', 'প্রোফাইল']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
@@ -1978,43 +1904,6 @@ export function App() {
         </div>
       </div>}
 
-      {/* ================= SSLCommerz চেকআউট ================= */}
-      {buyPlan && payStage === 'select' && <div className="modal-bg" onClick={() => setBuyPlan(null)}>
-        <div className="modal-box" onClick={e => e.stopPropagation()}>
-          <div className="eyebrow">সিকিউর চেকআউট</div>
-          <h3 className="serif" style={{ fontSize: '1.7rem', fontWeight: 400 }}>{buyPlan.name} প্ল্যান — ৳{BN(buyPlan.price)} <span style={{ fontSize: '.85rem', color: 'var(--ink3)' }}>{buyPlan.per}</span></h3>
-          <span className="lbl" style={{ marginBottom: 0 }}>পেমেন্ট মেথড বাছো</span>
-          <div className="payopts">
-            {PAY_METHODS.map(m => (
-              <button key={m.id} className={`payopt ${payMethod === m.id ? 'on' : ''}`} onClick={() => setPayMethod(m.id)}>
-                <b style={{ color: m.color }}>{m.en}</b><span>{m.name}</span>
-              </button>
-            ))}
-          </div>
-          <button className="btn primary" style={{ width: '100%', justifyContent: 'center' }} onClick={startCheckout}>🔒 SSLCommerz দিয়ে পেমেন্ট করুন →</button>
-          <small className="muted" style={{ fontSize: '.74rem', lineHeight: 1.7 }}>
-            {isLive() ? '✓ SSLCommerz লাইভ গেটওয়ে সংযুক্ত' : 'এখন Sandbox মোড — মার্চেন্ট অ্যাকাউন্ট (Store ID) যুক্ত করলেই রিয়েল পেমেন্ট চালু হবে'} · ৭ দিনের মানি-ব্যাক গ্যারান্টি
-          </small>
-          <button className="btn ghost sm" onClick={() => setBuyPlan(null)}>বাতিল</button>
-        </div>
-      </div>}
-
-      {/* ---- SSLCommerz গেটওয়ে স্ক্রিন ---- */}
-      {buyPlan && payStage !== 'select' && <div className="gw-bg">
-        <div className="gw-card">
-          <div className="gw-head"><b>SSL</b>Commerz <span className={`gw-sbx ${isLive() ? 'live' : ''}`}>{isLive() ? 'LIVE' : 'SANDBOX'}</span></div>
-          {payStage === 'gateway' && <>
-            <div className="gw-row"><span>মার্চেন্ট</span><b>{SSLCZ.merchantName}</b></div>
-            <div className="gw-row"><span>ট্রানজেকশন আইডি</span><b className="num">{trxId}</b></div>
-            <div className="gw-row"><span>পেমেন্ট মেথড</span><b>{(PAY_METHODS.find(m => m.id === payMethod) || {}).name}</b></div>
-            <div className="gw-amt">৳{BN(buyPlan.price)}<span>{buyPlan.per}</span></div>
-            <button className="btn primary" style={{ width: '100%', justifyContent: 'center' }} onClick={confirmPay}>✓ পেমেন্ট কনফার্ম করুন</button>
-            <button className="btn ghost sm" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { setPayStage('select'); setToastMsg('পেমেন্ট বাতিল হয়েছে') }}>বাতিল</button>
-          </>}
-          {payStage === 'processing' && <div className="gw-proc"><span className="spin" />গেটওয়ের সাথে যোগাযোগ চলছে…</div>}
-          {payStage === 'success' && <div className="gw-ok"><span>✓</span><b>পেমেন্ট সফল!</b><small className="num">TrxID: {trxId}</small></div>}
-        </div>
-      </div>}
       <div className={`toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
     </div>
   )

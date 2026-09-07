@@ -439,63 +439,9 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .side-info small{color:var(--ink3);font-size:.7rem;line-height:1.45}
 @media(max-width:560px){.side-nav{width:min(346px,92vw)}.side-nav-head{height:60px;flex-basis:60px;padding:0 16px}.side-nav-scroll{padding:16px 14px calc(84px + env(safe-area-inset-bottom))}.side-nav-group{padding:14px 0}.side-nav-group>button{padding:9px 10px}}
 
-/* ---------- প্রাইসিং ---------- */
-.ibtn.wide.prem{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
-.ibtn.wide.prem:hover{color:#fff;background:var(--accent);border-color:var(--accent)}
-.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:16px}
-.price-card{border:1px solid var(--line);border-radius:4px;background:var(--card);padding:30px 26px 26px;display:flex;flex-direction:column;gap:16px;position:relative;transition:all .2s}
-.price-card:hover{border-color:var(--line2)}
-.price-card.pop{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.ptag{position:absolute;top:-11px;left:22px;background:var(--accent);color:#fff;font-size:.64rem;font-weight:700;letter-spacing:.1em;padding:4px 11px;border-radius:99px}
-.price-card .pname{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.price{font-family:var(--serif);font-weight:400;font-size:2.7rem;line-height:1}
-.price .per{font-family:"Hind Siliguri",sans-serif;font-size:.8rem;color:var(--ink3);margin-left:7px}
-.feat{list-style:none;padding:0;display:grid;gap:9px;flex:1}
-.feat li{color:var(--ink2);padding-left:20px;font-size:.86rem;line-height:1.75;position:relative}
-.feat li:before{content:"";position:absolute;left:0;top:.7em;width:9px;height:1.5px;background:var(--accent)}
-
-/* তুলনা টেবিল */
-.cmp{border-top:1px solid var(--line)}
-.cmp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:14px 6px;border-bottom:1px solid var(--line);font-size:.88rem;align-items:baseline}
-.cmp-row .cf{font-weight:600}
-.cmp-row .cl{color:var(--ink3)}
-.cmp-row .cu{color:var(--green);font-weight:600}
-.cmp-h span{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:600}
-@media(max-width:700px){.cmp-row{grid-template-columns:1fr;gap:3px;padding:12px 4px}.cmp-row .cu:before{content:"অভ্যাস: ";font-size:.7rem}.cmp-h{display:none}}
-
-.paystrip{border:1px solid var(--line);border-radius:4px;background:var(--card);padding:16px 22px;color:var(--ink2);font-size:.9rem}
-.paystrip b{color:var(--ink)}
-
-/* ---------- SSLCommerz চেকআউট ---------- */
-.payopts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.payopt{border:1px solid var(--line);border-radius:4px;background:none;cursor:pointer;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .18s;font-family:inherit}
-.payopt b{font-size:.92rem;font-weight:700;letter-spacing:.01em}
-.payopt span{font-size:.7rem;color:var(--ink3)}
-.payopt:hover{border-color:var(--line2)}
-.payopt.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent)}
-
-/* গেটওয়ে ওভারলে */
-.gw-bg{position:fixed;inset:0;z-index:120;background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px}
-.gw-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:26px 26px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 90px -30px #00000066}
-.gw-head{display:flex;align-items:center;gap:8px;font-size:1.15rem;font-weight:400;font-family:var(--serif);border-bottom:1px solid var(--line);padding-bottom:14px}
-.gw-head b{font-weight:700}
-.gw-sbx{margin-left:auto;font-family:Inter,sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.14em;padding:4px 9px;border-radius:99px;color:var(--amber);border:1px solid color-mix(in srgb,var(--amber) 45%,transparent);background:color-mix(in srgb,var(--amber) 8%,transparent)}
-.gw-sbx.live{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent);background:color-mix(in srgb,var(--green) 8%,transparent)}
-.gw-row{display:flex;justify-content:space-between;gap:12px;font-size:.82rem;color:var(--ink2)}
-.gw-row b{color:var(--ink);font-weight:600}
-.gw-amt{font-family:var(--serif);font-size:2.6rem;font-weight:400;line-height:1;padding:6px 0 2px}
-.gw-amt span{font-family:"Hind Siliguri",sans-serif;font-size:.8rem;color:var(--ink3);margin-left:6px}
-.gw-proc{display:flex;align-items:center;justify-content:center;gap:12px;padding:34px 0;color:var(--ink2);font-size:.9rem}
+/* ---------- শেয়ার্ড লোডিং ইন্ডিকেটর ---------- */
 .spin{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--line2);border-top-color:var(--accent);animation:spn .8s linear infinite}
 @keyframes spn{to{transform:rotate(360deg)}}
-.gw-ok{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 0 14px}
-.gw-ok span{width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:1.4rem}
-.gw-ok b{font-size:1.05rem}
-.gw-ok small{color:var(--ink3);font-size:.75rem}
-
-/* কেনার মডাল */
-.modal-bg{position:fixed;inset:0;background:color-mix(in srgb,var(--paper) 80%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;display:grid;place-items:center;padding:20px;overflow-y:auto}
-.modal-box{background:var(--card);border:1px solid var(--line);border-radius:4px;max-width:470px;width:100%;padding:32px;display:flex;flex-direction:column;gap:14px;box-shadow:0 40px 80px -30px #00000038}
 
 /* ---------- review: ভুল মার্ক ---------- */
 .rev-item.ok-item{border-left:2px solid var(--green)}
