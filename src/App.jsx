@@ -13,6 +13,9 @@ import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiv
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
+// A testing link can open a scheduled paper before its start time.
+// It intentionally remains login-gated and never records an official live attempt.
+const LIVE_TEST_EXAM_ID = typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('live-test') || '')
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
@@ -179,7 +182,8 @@ function uniqueWrongQuestions(items) {
 }
 
 export function App() {
-  const [page, setPage] = useState('home')
+  // The supplied testing link should open straight at the relevant test card.
+  const [page, setPage] = useState(() => LIVE_TEST_EXAM_ID ? 'exams' : 'home')
   const [dark, setDark] = useState(false)
   const [user, setUser] = useState(null)
   const [wrong, setWrong] = useState(() => uniqueWrongQuestions(load('asp_wrong', [])))
@@ -501,9 +505,9 @@ export function App() {
     }
   }
 
-  function launchScheduledExam(exam, candidate = null) {
+  function launchScheduledExam(exam, candidate = null, testing = false) {
     beginQuiz({
-      title: exam.title,
+      title: testing ? `${exam.title} • টেস্ট মোড` : exam.title,
       tag: 'bcs',
       subjects: exam.questionPlan ? [...new Set(exam.questionPlan.map(bucket => bucket.subject))] : [exam.subject],
       topics: exam.questionPlan ? [] : [exam.topic],
@@ -517,31 +521,34 @@ export function App() {
       minutes: exam.minutes,
       fallback: exam.questionPlan ? [] : [exam.subject],
       returnPage: 'exams',
-      scheduleId: exam.id,
+      // A test run must not consume or sync the scheduled one-time attempt.
+      scheduleId: testing ? null : exam.id,
       candidate,
+      testing,
       once: true
     })
   }
 
-  function startScheduledExam(exam) {
+  function startScheduledExam(exam, testing = false) {
     if (!user) {
       setToastMsg('🔒 লাইভ পরীক্ষা দিতে আগে লগইন করুন')
       go('login')
       return
     }
-    if (!liveAttemptsReady) { setToastMsg('অ্যাটেম্পট যাচাই হচ্ছে—একটু অপেক্ষা করুন'); return }
-    if (liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
-    if (Date.now() < exam.startsAt) { setToastMsg('⏳ নির্ধারিত সময়ে পরীক্ষাটি শুরু হবে'); return }
+    if (!testing && !liveAttemptsReady) { setToastMsg('অ্যাটেম্পট যাচাই হচ্ছে—একটু অপেক্ষা করুন'); return }
+    if (!testing && liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
+    if (!testing && Date.now() < exam.startsAt) { setToastMsg('⏳ নির্ধারিত সময়ে পরীক্ষাটি শুরু হবে'); return }
     if (exam.collectCandidate) {
       const previous = load(`asp_live_candidate_${user.id}`, {})
       setLiveEntry({
         exam,
+        testing,
         name: previous.name || user.user_metadata?.full_name || user.email?.split('@')[0] || '',
         institution: previous.institution || ''
       })
       return
     }
-    launchScheduledExam(exam)
+    launchScheduledExam(exam, null, testing)
   }
 
   function submitLiveEntry(event) {
@@ -557,9 +564,9 @@ export function App() {
       return
     }
     localStorage.setItem(`asp_live_candidate_${user.id}`, JSON.stringify(candidate))
-    const { exam } = liveEntry
+    const { exam, testing } = liveEntry
     setLiveEntry(null)
-    launchScheduledExam(exam, candidate)
+    launchScheduledExam(exam, candidate, testing)
   }
 
   async function beginQuiz(cfg) {
@@ -792,7 +799,7 @@ export function App() {
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, daily: !!cfg.daily })
     go('quiz')
   }
 
@@ -841,15 +848,19 @@ export function App() {
       }
       rev.push({ ...q, ua: ans[i] })
     })
-    const w = uniqueWrongQuestions(newWrong)
-    setWrong(w); localStorage.setItem('asp_wrong', JSON.stringify(w))
-    setRevMeta(rm); localStorage.setItem('asp_rev', JSON.stringify(rm))
-    const st = { exams: stats.exams + 1, correct: stats.correct + ok, total: stats.total + qs.length }
-    setStats(st); localStorage.setItem('asp_stats', JSON.stringify(st))
     const pct = Math.round((Math.max(0, ok - bad * .5)) / qs.length * 100)
-    const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
-    setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
-    if (quiz.daily) localStorage.setItem('asp_daily', new Date().toDateString())
+    // A link-based test run remains fully functional, but it must not alter the
+    // tester's revision list, profile totals, history, or official live attempt.
+    if (!quiz.testing) {
+      const w = uniqueWrongQuestions(newWrong)
+      setWrong(w); localStorage.setItem('asp_wrong', JSON.stringify(w))
+      setRevMeta(rm); localStorage.setItem('asp_rev', JSON.stringify(rm))
+      const st = { exams: stats.exams + 1, correct: stats.correct + ok, total: stats.total + qs.length }
+      setStats(st); localStorage.setItem('asp_stats', JSON.stringify(st))
+      const h2 = [{ t: quiz.title, s: quiz.subj || 'মিশ্র', p: pct, d: new Date().toDateString() }, ...hist].slice(0, 60)
+      setHist(h2); localStorage.setItem('asp_hist', JSON.stringify(h2))
+      if (quiz.daily) localStorage.setItem('asp_daily', new Date().toDateString())
+    }
     if (quiz.scheduleId && user?.id) {
       const storageKey = `asp_live_attempts_${user.id}`
       const completion = { completedAt: new Date().toISOString(), score: pct }
@@ -869,7 +880,7 @@ export function App() {
     }
     const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
       .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
-    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup, scheduleId: quiz.scheduleId, candidate: quiz.candidate || null })
+    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup, scheduleId: quiz.scheduleId, candidate: quiz.candidate || null, testing: !!quiz.testing })
     setQuiz(null)
     setRevOnlyWrong(false)
     go('result')
@@ -935,6 +946,7 @@ export function App() {
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
   const scheduledExams = buildDailyLiveExams(clock)
+  const isTestExam = exam => !!exam && LIVE_TEST_EXAM_ID === exam.id
   const liveExam = scheduledExams.find(exam => exam.status === 'live') || null
   const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming').slice(0, 7)
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
@@ -1144,7 +1156,7 @@ export function App() {
             {featuredExam && <div className={`live-feature ${featuredExam.status}`}>
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
-                  <span className={`live-status ${featuredExam.status}`}>{featuredExam.status === 'live' ? '● এখন লাইভ' : 'পরবর্তী পরীক্ষা'}</span>
+                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : 'পরবর্তী পরীক্ষা'}</span>
                   <span className="free-badge">ফ্রি</span>
                 </div>
                 <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
@@ -1160,11 +1172,11 @@ export function App() {
                 </div>}
               </div>
               <div className="live-feature-action">
-                <span>{featuredExam.status === 'live' ? 'লাইভ উইন্ডো শেষ হতে' : 'শুরু হতে বাকি'}</span>
-                <strong aria-live="polite">{formatExamCountdown(featuredExam.status === 'live' ? featuredExam.endsAt : featuredExam.startsAt, clock)}</strong>
-                {featuredExam.status === 'live'
-                  ? <button className="btn primary" disabled={!!liveAttempts[featuredExam.id] || (!!user && !liveAttemptsReady)} onClick={() => startScheduledExam(featuredExam)}>
-                      {liveAttempts[featuredExam.id] ? '✓ পরীক্ষা দেওয়া হয়েছে' : !user ? <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</> : !liveAttemptsReady ? 'অ্যাটেম্পট যাচাই হচ্ছে…' : 'এখনই শুরু করুন →'}
+                <span>{isTestExam(featuredExam) ? 'প্রকাশিত প্রশ্নপত্র যাচাই' : featuredExam.status === 'live' ? 'লাইভ উইন্ডো শেষ হতে' : 'শুরু হতে বাকি'}</span>
+                <strong aria-live="polite">{isTestExam(featuredExam) ? 'টেস্ট রান' : formatExamCountdown(featuredExam.status === 'live' ? featuredExam.endsAt : featuredExam.startsAt, clock)}</strong>
+                {featuredExam.status === 'live' || isTestExam(featuredExam)
+                  ? <button className="btn primary" disabled={!isTestExam(featuredExam) && (!!liveAttempts[featuredExam.id] || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(featuredExam, isTestExam(featuredExam))}>
+                      {!user ? <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</> : isTestExam(featuredExam) ? 'টেস্ট মোডে শুরু করুন →' : liveAttempts[featuredExam.id] ? '✓ পরীক্ষা দেওয়া হয়েছে' : !liveAttemptsReady ? 'অ্যাটেম্পট যাচাই হচ্ছে…' : 'এখনই শুরু করুন →'}
                     </button>
                   : <button className="btn countdown-btn" disabled>নির্ধারিত সময়ে চালু হবে</button>}
               </div>
@@ -1206,15 +1218,16 @@ export function App() {
             <p className="muted archive-note">মিস করেছেন? লগইন করে প্রতিটি শেষ হওয়া পরীক্ষা একবার করে ফ্রিতে দিন।</p>
             <div className="past-exam-grid">
               {pastExams.map(exam => {
+                const testing = isTestExam(exam)
                 const attempted = !!liveAttempts[exam.id]
-                return <article className={`past-exam-card ${attempted ? 'attempted' : ''}`} key={exam.id}>
-                  <div className="past-card-head"><span className="past-badge">বিগত</span>{attempted && <span className="done-badge">✓ সম্পন্ন</span>}</div>
+                return <article className={`past-exam-card ${attempted && !testing ? 'attempted' : ''}`} key={exam.id}>
+                  <div className="past-card-head"><span className="past-badge">{testing ? 'টেস্ট মোড' : 'বিগত'}</span>{attempted && !testing && <span className="done-badge">✓ সম্পন্ন</span>}</div>
                   <span className="past-subject"><Ico id={exam.subject} size={16} /> {exam.subject}</span>
                   <h3>{exam.topic}</h3>
                   <time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)} • {formatLiveExamTime(exam.startsAt)}</time>
                   <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span></div>
-                  <button className={`btn ${attempted ? 'ghost' : 'primary'} sm`} disabled={attempted || (!!user && !liveAttemptsReady)} onClick={() => startScheduledExam(exam)}>
-                    {attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !user ? <><SheetIco id="lock" /> লগইন করে দিন</> : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
+                  <button className={`btn ${attempted && !testing ? 'ghost' : 'primary'} sm`} disabled={!testing && (attempted || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(exam, testing)}>
+                    {!user ? <><SheetIco id="lock" /> লগইন করে দিন</> : testing ? 'টেস্ট মোডে শুরু করুন →' : attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
                   </button>
                 </article>
               })}
@@ -1557,6 +1570,7 @@ export function App() {
           <section className="sec" style={{ paddingTop: 28, gap: 18 }}>
             <div className="eyebrow">{quiz.title} — {BN(quiz.qs.length)}টি প্রশ্ন • স্লাইড/স্ক্রল করে সব দেখো</div>
             {quiz.candidate && <div className="live-candidate-line" aria-label="পরীক্ষার্থীর তথ্য"><span>নাম: <b>{quiz.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{quiz.candidate.institution}</b></span></div>}
+            {quiz.testing && <div className="live-candidate-line" role="status"><b>টেস্ট মোড</b><span>এই রানটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলের ফলাফলে যোগ হবে না।</span></div>}
             {quiz.qs.map((q, qi) => (
               <div className="q-card qcard" id={'qcard-' + qi} key={qi} style={{ scrollMarginTop: 130 }}>
                 <div className="qno"><span>প্রশ্ন {BN(qi + 1)}</span>
@@ -1593,6 +1607,7 @@ export function App() {
           <section className="sec" style={{ paddingTop: 44 }}>
             <div className="eyebrow">ফলাফল — {result.title}</div>
             {result.candidate && <div className="live-candidate-line result-candidate-line"><span>নাম: <b>{result.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{result.candidate.institution}</b></span></div>}
+            {result.testing && <div className="live-candidate-line result-candidate-line" role="status"><b>টেস্ট মোড সম্পন্ন</b><span>এই ফলটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলে সংরক্ষিত হয়নি।</span></div>}
             <div className="res-hero"><span className="big">{BN(result.ok)}<i>/</i>{BN(result.ok + result.bad + result.skip)}</span>
               <span className="muted">{result.pct >= 80 ? '🏆 দুর্দান্ত! আপনি প্রস্তুত।' : result.pct >= 60 ? '👍 ভালো! আর একটু ধার দিন।' : '📖 আরও অনুশীলন প্রয়োজন!'}</span>
             </div>
@@ -1921,7 +1936,7 @@ export function App() {
         <div className="ai-modal live-entry-modal" role="dialog" aria-modal="true" aria-labelledby="live-entry-title" onClick={event => event.stopPropagation()}>
           <div className="ai-modal-head">
             <span className="ai-modal-icon"><SheetIco id="book" /></span>
-            <div><span>লাইভ পরীক্ষার উত্তরপত্র</span><h3 id="live-entry-title">নাম ও ইনস্টিটিউট লিখুন</h3></div>
+            <div><span>{liveEntry.testing ? 'প্রশ্নপত্রের টেস্ট রান' : 'লাইভ পরীক্ষার উত্তরপত্র'}</span><h3 id="live-entry-title">নাম ও ইনস্টিটিউট লিখুন</h3></div>
             <button className="ibtn" aria-label="ফরম বন্ধ করুন" onClick={() => setLiveEntry(null)}><SheetIco id="close" /></button>
           </div>
           <div className="live-entry-summary">
@@ -1931,7 +1946,7 @@ export function App() {
           <form className="form live-entry-form" onSubmit={submitLiveEntry}>
             <label>নাম<input name="candidateName" type="text" defaultValue={liveEntry.name} placeholder="আপনার নাম" autoComplete="name" required /></label>
             <label>ইনস্টিটিউট<input name="candidateInstitution" type="text" defaultValue={liveEntry.institution} placeholder="আপনার স্কুল/কলেজ/বিশ্ববিদ্যালয়" required /></label>
-            <p className="muted">এই তথ্য কেবল আপনার লাইভ পরীক্ষার উত্তরপত্রে দেখানো হবে।</p>
+            <p className="muted">{liveEntry.testing ? 'টেস্ট মোডে ফল, ভুল প্রশ্ন, প্রোফাইল পরিসংখ্যান বা অফিসিয়াল লাইভ অ্যাটেম্পট সংরক্ষণ হবে না।' : 'এই তথ্য কেবল আপনার লাইভ পরীক্ষার উত্তরপত্রে দেখানো হবে।'}</p>
             <div className="ai-actions"><button type="button" className="btn ghost" onClick={() => setLiveEntry(null)}>বাতিল</button><button className="btn primary" type="submit"><SheetIco id="book" /> পরীক্ষা শুরু করুন</button></div>
           </form>
         </div>
