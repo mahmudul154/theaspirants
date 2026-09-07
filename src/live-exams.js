@@ -1,7 +1,8 @@
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
+const HOUR_MS = 60 * 60 * 1000
 const LIVE_START_UTC_HOUR = 14 // 20:00 in Asia/Dhaka
-const LIVE_WINDOW_MS = 60 * 60 * 1000
+const LIVE_WINDOW_MS = HOUR_MS
 
 // Exact, well-populated Supabase topic values. The date serial chooses one
 // deterministically, so every visitor sees the same national routine.
@@ -28,8 +29,75 @@ export const LIVE_TOPIC_ROTATION = [
   { subject: 'নৈতিকতা, মূল্যবোধ ও সুশাসন', topic: 'বাংলাদেশের সংবিধানে অধিকার' }
 ]
 
+// Manually published events sit beside the daily 20:00 routine.  Each plan
+// contains only exact topic values from `mcq_questions_job`; keyword buckets
+// cover the requested sector and March-focused questions inside those topics.
+export const SPECIAL_LIVE_EXAMS = [
+  {
+    id: 'special-2026-09-07-2300',
+    dateKey: '2026-09-07',
+    startsAt: Date.UTC(2026, 8, 7, 17), // 23:00 Asia/Dhaka
+    endsAt: Date.UTC(2026, 8, 7, 18),
+    subject: 'বিশেষ মডেল টেস্ট',
+    topic: 'ধ্বনি-বর্ণ • ভাষা আন্দোলন ও মুক্তিযুদ্ধ • মানসিক দক্ষতা',
+    title: 'বিশেষ লাইভ এক্সাম • বাংলা, জিকে ও মানসিক দক্ষতা',
+    questions: 100,
+    minutes: 60,
+    special: true,
+    distribution: [
+      { label: 'বাংলা', questions: 40 },
+      { label: 'জিকে', questions: 30 },
+      { label: 'মানসিক দক্ষতা', questions: 30 }
+    ],
+    questionPlan: [
+      {
+        label: 'বাংলা • ধ্বনি ও বর্ণ + ধ্বনি পরিবর্তন',
+        subject: 'বাংলা',
+        topics: ['ধ্বনি ও বর্ণ', 'ধ্বনি পরিবর্তন'],
+        questions: 40
+      },
+      {
+        label: 'জিকে • ভাষা আন্দোলন',
+        subject: 'বাংলাদেশ বিষয়াবলি',
+        topics: ['ভাষা আন্দোলন'],
+        questions: 10
+      },
+      {
+        label: 'জিকে • মুক্তিযুদ্ধের ১১ সেক্টর',
+        subject: 'বাংলাদেশ বিষয়াবলি',
+        topics: ['মুক্তিযুদ্ধ ও স্বাধীনতা', 'মুক্তিযুদ্ধ ও বাংলাদেশের অভ্যুদয়'],
+        questionTerms: ['সেক্টর'],
+        questions: 10
+      },
+      {
+        label: 'জিকে • মার্চ মাস',
+        subject: 'বাংলাদেশ বিষয়াবলি',
+        topics: ['মুক্তিযুদ্ধ ও স্বাধীনতা', 'মুক্তিযুদ্ধ ও বাংলাদেশের অভ্যুদয়', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'],
+        questionTerms: ['মার্চ', 'March'],
+        questions: 10
+      },
+      {
+        label: 'মানসিক দক্ষতা • জ্যামিতিক সমস্যা',
+        subject: 'মানসিক দক্ষতা',
+        topics: ['জ্যামিতিক যুক্তি', 'জ্যামিতিক সমস্যার সমাধান', 'জ্যামিতি', 'স্থানাঙ্ক জ্যামিতি'],
+        questions: 15
+      },
+      {
+        label: 'মানসিক দক্ষতা • ঘড়ি বিষয়ক সমস্যা',
+        subject: 'মানসিক দক্ষতা',
+        topics: ['ঘড়ি ও কোণ', 'ঘড়ি ও ক্যালেন্ডার', 'দিক ও ঘড়ি'],
+        questions: 15
+      }
+    ]
+  }
+]
+
 const bnDigits = value => String(value).replace(/\d/g, digit => '০১২৩৪৫৬৭৮৯'[digit])
 const padBn = value => bnDigits(String(value).padStart(2, '0'))
+const withStatus = (exam, now) => ({
+  ...exam,
+  status: now < exam.startsAt ? 'upcoming' : now < exam.endsAt ? 'live' : 'past'
+})
 
 export function buildDailyLiveExams(now = Date.now()) {
   const dhakaNow = new Date(now + DHAKA_OFFSET_MS)
@@ -48,23 +116,22 @@ export function buildDailyLiveExams(now = Date.now()) {
     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
     const startsAt = Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR)
     const endsAt = startsAt + LIVE_WINDOW_MS
-    const status = now < startsAt ? 'upcoming' : now < endsAt ? 'live' : 'past'
 
-    exams.push({
+    exams.push(withStatus({
       id: `daily-${dateKey}`,
       dateKey,
       startsAt,
       endsAt,
-      status,
       subject: slot.subject,
       topic: slot.topic,
       questions: 25,
       minutes: 20,
       title: `ডেইলি লাইভ • ${slot.topic}`
-    })
+    }, now))
   }
 
-  return exams
+  return [...exams, ...SPECIAL_LIVE_EXAMS.map(exam => withStatus(exam, now))]
+    .sort((first, second) => first.startsAt - second.startsAt)
 }
 
 export function formatLiveExamDate(timestamp) {
@@ -82,8 +149,8 @@ export function formatLiveExamTime(timestamp) {
 export function formatExamCountdown(target, now = Date.now()) {
   const remaining = Math.max(0, target - now)
   const days = Math.floor(remaining / DAY_MS)
-  const hours = Math.floor((remaining % DAY_MS) / 3600000)
-  const minutes = Math.floor((remaining % 3600000) / 60000)
+  const hours = Math.floor((remaining % DAY_MS) / HOUR_MS)
+  const minutes = Math.floor((remaining % HOUR_MS) / 60000)
   const seconds = Math.floor((remaining % 60000) / 1000)
   return `${days ? `${bnDigits(days)} দিন ` : ''}${padBn(hours)}:${padBn(minutes)}:${padBn(seconds)}`
 }

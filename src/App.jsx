@@ -554,11 +554,13 @@ export function App() {
     beginQuiz({
       title: exam.title,
       tag: 'bcs',
-      subjects: [exam.subject],
-      topics: [exam.topic],
+      subjects: exam.questionPlan ? [...new Set(exam.questionPlan.map(bucket => bucket.subject))] : [exam.subject],
+      topics: exam.questionPlan ? [] : [exam.topic],
+      questionPlan: exam.questionPlan,
+      requireDatabase: !!exam.questionPlan,
       limit: exam.questions,
       minutes: exam.minutes,
-      fallback: [exam.subject],
+      fallback: exam.questionPlan ? [] : [exam.subject],
       returnPage: 'exams',
       scheduleId: exam.id,
       once: true
@@ -583,8 +585,62 @@ export function App() {
     setLoading(true)
     let rows = null
     let databaseRowsArePrioritized = false
+    let fetchError = null
     if (cfg.rows) rows = cfg.rows
     else try {
+      if (cfg.questionPlan?.length) {
+        // A scheduled special exam may prescribe a different number of questions
+        // for each syllabus bucket. Fetch each bucket separately so the published
+        // distribution remains exact, while still preferring named past-exam rows.
+        const plannedQuestionKeys = new Set()
+        const fetchPlanBucket = async bucket => {
+          const sampleSize = Math.max(120, Number(bucket.questions || 0) * 12)
+          const makeQuery = () => {
+            let query = supabase.from('mcq_questions_job').select('*')
+              .eq('is_active', true)
+              .in('subject', dbSubjectsFor([bucket.subject]))
+            if (bucket.topics?.length) query = query.in('topic', [...new Set(bucket.topics)])
+            if (bucket.questionTerms?.length) {
+              query = query.or(bucket.questionTerms.map(term => `question.ilike.%${term}%`).join(','))
+            }
+            return query.order('id', { ascending: true }).order('created_at', { ascending: true }).limit(sampleSize)
+          }
+          const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '')
+          if (namedResult.error) throw namedResult.error
+          const namedRows = uniqueQuestions(namedResult.data || [])
+            .filter(question => !plannedQuestionKeys.has(questionKey(question)))
+          // Keep every available named previous-exam row ahead of the generic
+          // BCS fallback. Mixing the two pools together could otherwise replace
+          // named rows even when they were available for this exact bucket.
+          const selectedNamed = mixQuestions(namedRows, Math.min(bucket.questions, namedRows.length))
+          const remaining = Math.max(0, bucket.questions - selectedNamed.length)
+          let selectedGeneric = []
+          if (remaining) {
+            // A planned bucket can already contain an OR of syllabus keywords;
+            // use the actual generic `bcs` value here instead of adding a second
+            // PostgREST OR filter that could broaden or replace that condition.
+            const genericResult = await makeQuery().ilike('post_name', 'bcs')
+            if (genericResult.error) throw genericResult.error
+            const genericRows = uniqueQuestions(genericResult.data || [])
+              .filter(question => !plannedQuestionKeys.has(questionKey(question)))
+            selectedGeneric = mixQuestions(genericRows, remaining)
+          }
+          const selected = [...selectedNamed, ...selectedGeneric]
+          if (selected.length < bucket.questions) {
+            throw new Error(`${bucket.label}: ${selected.length}/${bucket.questions}`)
+          }
+          return selected
+        }
+
+        const plannedRows = []
+        for (const bucket of cfg.questionPlan) {
+          const bucketRows = await fetchPlanBucket(bucket)
+          plannedRows.push(...bucketRows)
+          bucketRows.forEach(question => plannedQuestionKeys.add(questionKey(question)))
+        }
+        rows = plannedRows.sort(() => Math.random() - .5)
+        databaseRowsArePrioritized = true
+      } else {
       const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []
       const dbSubjects = selectedPostNames.length ? [] : dbSubjectsFor(subjects)
       const selectedTopics = topics && topics.length ? [...new Set(topics)] : []
@@ -713,7 +769,13 @@ export function App() {
         }
       }
       }
-    } catch (e) { console.error('Fetch Error:', e) }
+      }
+    } catch (e) { fetchError = e; console.error('Fetch Error:', e) }
+    if (cfg.requireDatabase && fetchError) {
+      setLoading(false)
+      setToastMsg('বিশেষ পরীক্ষার সিলেবাসভিত্তিক প্রশ্ন এখন লোড করা যায়নি—একটু পরে আবার চেষ্টা করুন')
+      return
+    }
     if (rows && avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     if (!rows) {
       rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(subject => localPool(subject))
@@ -1076,9 +1138,9 @@ export function App() {
         {page === 'exams' && <>
           <section className="sec live-exam-center">
             <div className="head live-center-head">
-              <div className="eyebrow">দৈনিক লাইভ পরীক্ষা</div>
-              <h2>প্রতিদিন রাত ৮টায় <i>টপিকভিত্তিক পরীক্ষা</i></h2>
-              <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা। সব নির্ধারিত পরীক্ষা ফ্রি—অংশ নিতে শুধু লগইন করুন।</p>
+              <div className="eyebrow">লাইভ পরীক্ষা কেন্দ্র</div>
+              <h2>দৈনিক রাত ৮টা ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
+              <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা, সঙ্গে প্রকাশিত বিশেষ পরীক্ষা। সব নির্ধারিত পরীক্ষা ফ্রি—অংশ নিতে শুধু লগইন করুন।</p>
             </div>
 
             <div className={`exam-access-note ${user ? 'signed-in' : ''}`}>
@@ -1101,6 +1163,9 @@ export function App() {
                   <span>📝 {BN(featuredExam.questions)} প্রশ্ন</span>
                   <span>⏱ {BN(featuredExam.minutes)} মিনিট</span>
                 </div>
+                {featuredExam.distribution && <div className="live-feature-meta exam-distribution" aria-label="বিষয়ভিত্তিক মানবণ্টন">
+                  {featuredExam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}
+                </div>}
               </div>
               <div className="live-feature-action">
                 <span>{featuredExam.status === 'live' ? 'লাইভ উইন্ডো শেষ হতে' : 'শুরু হতে বাকি'}</span>
@@ -1123,7 +1188,7 @@ export function App() {
           <section className="sec routine-section">
             <div className="head routine-head">
               <div><div className="eyebrow">পরবর্তী সাত দিন</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
-              <span className="dhaka-time-chip">Asia/Dhaka • রাত ৮:০০</span>
+              <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ৮:০০</span>
             </div>
             <div className="live-routine-list">
               {upcomingExams.map((exam, index) => (
@@ -1132,7 +1197,8 @@ export function App() {
                   <div className="routine-main">
                     <div className="routine-card-top"><span>{exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
                     <h3>{exam.topic}</h3>
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span></div>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span>{exam.special && <span>বিশেষ</span>}</div>
+                    {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
                 </article>
