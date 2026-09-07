@@ -13,9 +13,10 @@ import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiv
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
-// A testing link can open a scheduled paper before its start time.
-// It intentionally remains login-gated and never records an official live attempt.
+// A testing link can open a scheduled paper before its start time. It is enabled
+// only for the configured owner account and never records an official attempt.
 const LIVE_TEST_EXAM_ID = typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('live-test') || '')
+const LIVE_TEST_OWNER_EMAIL = '' // Set only to the owner's Aspirants login email.
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
@@ -287,7 +288,14 @@ export function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null))
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+      // Supabase emits this event after a valid recovery-email link is opened.
+      if (event === 'PASSWORD_RECOVERY') {
+        setPage('updatePassword')
+        window.scrollTo({ top: 0 })
+      }
+    })
     return () => sub.subscription.unsubscribe()
   }, [])
   useEffect(() => {
@@ -314,12 +322,14 @@ export function App() {
     supabase.from('exam_results')
       .select('category')
       .eq('user_id', user.id)
-      .like('category', 'live:%')
+      // Include both real-time and archive records so a past paper remains
+      // one-attempt-only, while only real-time records enter the leaderboard.
+      .like('category', 'live%')
       .then(({ data, error }) => {
         if (!active) return
         const synced = { ...localAttempts }
         if (!error) (data || []).forEach(row => {
-          const scheduleId = String(row.category || '').replace(/^live:/, '')
+          const scheduleId = String(row.category || '').replace(/^live(?:-archive)?:/, '')
           if (scheduleId) synced[scheduleId] = synced[scheduleId] || { synced: true }
         })
         setLiveAttempts(synced)
@@ -506,6 +516,9 @@ export function App() {
   }
 
   function launchScheduledExam(exam, candidate = null, testing = false) {
+    // Archived papers remain available once, but only attempts started in the
+    // scheduled live window can appear on the live leaderboard.
+    const rankingEligible = !testing && Date.now() >= exam.startsAt && Date.now() < exam.endsAt
     beginQuiz({
       title: testing ? `${exam.title} • টেস্ট মোড` : exam.title,
       tag: 'bcs',
@@ -525,6 +538,7 @@ export function App() {
       scheduleId: testing ? null : exam.id,
       candidate,
       testing,
+      rankingEligible,
       once: true
     })
   }
@@ -799,7 +813,7 @@ export function App() {
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily })
     go('quiz')
   }
 
@@ -875,12 +889,12 @@ export function App() {
         user_avatar: user.user_metadata?.avatar_url || null,
         score: pct,
         total_questions: qs.length,
-        category: `live:${quiz.scheduleId}`
+        category: quiz.rankingEligible ? `live:${quiz.scheduleId}` : `live-archive:${quiz.scheduleId}`
       }).then(({ error }) => { if (error) console.warn('Live attempt sync failed:', error.message) })
     }
     const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
       .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
-    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup, scheduleId: quiz.scheduleId, candidate: quiz.candidate || null, testing: !!quiz.testing })
+    setResult({ ok, bad, skip, pct, rev, topicStats, title: quiz.title, origin: quiz.origin, setup: quiz.setup, scheduleId: quiz.scheduleId, candidate: quiz.candidate || null, testing: !!quiz.testing, rankedLive: !!quiz.rankingEligible })
     setQuiz(null)
     setRevOnlyWrong(false)
     go('result')
@@ -889,9 +903,14 @@ export function App() {
   async function fetchLeaderboard() {
     setLbData(null)
     try {
-      const d0 = new Date(); d0.setHours(0, 0, 0, 0)
+      // Leaderboard dates follow the published Asia/Dhaka exam calendar, even
+      // if a visitor opens the app from another timezone.
+      const dhakaNow = new Date(Date.now() + 6 * 60 * 60 * 1000)
+      const d0 = new Date(Date.UTC(dhakaNow.getUTCFullYear(), dhakaNow.getUTCMonth(), dhakaNow.getUTCDate()) - 6 * 60 * 60 * 1000)
       const { data, error } = await supabase.from('exam_results')
         .select('user_name, user_avatar, score, user_id, created_at')
+        // Archive attempts use `live-archive:` and are deliberately excluded.
+        .like('category', 'live:%')
         .gte('created_at', d0.toISOString()).order('created_at', { ascending: true })
       if (error) throw error
       if (data && data.length) {
@@ -946,7 +965,8 @@ export function App() {
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
   const scheduledExams = buildDailyLiveExams(clock)
-  const isTestExam = exam => !!exam && LIVE_TEST_EXAM_ID === exam.id
+  const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
+  const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
   const liveExam = scheduledExams.find(exam => exam.status === 'live') || null
   const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming').slice(0, 7)
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
@@ -1662,7 +1682,9 @@ export function App() {
             </div>}
             {result.scheduleId && <div className="result-return live-result-return">
               <span className="result-return-icon">✓</span>
-              <div><b>লাইভ পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>প্রতি নির্ধারিত পরীক্ষা একবার দেওয়া যায়। পরবর্তী রুটিন ও বিগত পরীক্ষা লাইভ পরীক্ষা কেন্দ্রে দেখুন।</p></div>
+              <div>{result.rankedLive
+                ? <><b>লাইভ পরীক্ষার ফল লিডারবোর্ডে যুক্ত হয়েছে</b><p>আপনার নম্বর স্বয়ংক্রিয়ভাবে আজকের লাইভ র‍্যাংকিংয়ে দেখা যাবে।</p></>
+                : <><b>বিগত পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>নির্ধারিত লাইভ সময় শেষ হওয়ার পরে দেওয়ায় এটি লিডারবোর্ডে যুক্ত হবে না; তবে এই পরীক্ষা আর একবার দেওয়া যাবে না।</p></>}</div>
               <button className="btn primary" onClick={() => go('exams')}>লাইভ পরীক্ষা কেন্দ্রে ফিরুন →</button>
             </div>}
             <div className="cta result-main-actions">
@@ -1707,7 +1729,57 @@ export function App() {
                   <input type="email" name="email" placeholder="ইমেইল" required />
                   <input type="password" name="pass" placeholder="পাসওয়ার্ড" required />
                   <button className="btn primary" type="submit">লগইন →</button>
+                  <small className="muted"><a href="#" style={{ color: 'var(--accent)' }} onClick={e => { e.preventDefault(); go('forgotPassword') }}>পাসওয়ার্ড ভুলে গেছেন?</a></small>
                   <small className="muted">অ্যাকাউন্ট নেই? <a href="#" style={{ color: 'var(--accent)' }} onClick={e => { e.preventDefault(); go('signup') }}>সাইন আপ করুন</a></small>
+                </form>
+              </div>
+            </div>
+          </section>
+        </>}
+
+        {/* ================= PASSWORD RECOVERY ================= */}
+        {page === 'forgotPassword' && <>
+          <section className="sec">
+            <div className="auth-wrap">
+              <div className="side"><h3>পাসওয়ার্ড <i>পুনরুদ্ধার করুন।</i></h3><p className="muted">অ্যাকাউন্টে ব্যবহৃত ইমেইল দিন। নতুন পাসওয়ার্ড দেওয়ার জন্য একটি নিরাপদ লিংক পাঠানো হবে।</p></div>
+              <div className="body"><div className="eyebrow" style={{ marginBottom: 18 }}>পাসওয়ার্ড ভুলে গেছেন?</div>
+                <form className="form" onSubmit={async event => {
+                  event.preventDefault()
+                  const email = String(event.currentTarget.email.value || '').trim()
+                  const redirectTo = `${window.location.origin}${window.location.pathname}`
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+                  if (error) { setToastMsg(error.message); return }
+                  setToastMsg('পাসওয়ার্ড রিসেট লিংক ইমেইলে পাঠানো হয়েছে')
+                  go('login')
+                }}>
+                  <input type="email" name="email" placeholder="আপনার অ্যাকাউন্টের ইমেইল" autoComplete="email" required />
+                  <button className="btn primary" type="submit"><SheetIco id="login" /> রিসেট লিংক পাঠান</button>
+                  <small className="muted">পাসওয়ার্ড মনে পড়েছে? <a href="#" style={{ color: 'var(--accent)' }} onClick={event => { event.preventDefault(); go('login') }}>লগইনে ফিরে যান</a></small>
+                </form>
+              </div>
+            </div>
+          </section>
+        </>}
+
+        {page === 'updatePassword' && <>
+          <section className="sec">
+            <div className="auth-wrap">
+              <div className="side"><h3>নতুন <i>পাসওয়ার্ড দিন।</i></h3><p className="muted">ইমেইলের রিসেট লিংকটি যাচাই হয়েছে। এখন একটি শক্তিশালী নতুন পাসওয়ার্ড দিন।</p></div>
+              <div className="body"><div className="eyebrow" style={{ marginBottom: 18 }}>নতুন পাসওয়ার্ড</div>
+                <form className="form" onSubmit={async event => {
+                  event.preventDefault()
+                  const password = String(event.currentTarget.password.value || '')
+                  const confirmation = String(event.currentTarget.confirmPassword.value || '')
+                  if (password.length < 6) { setToastMsg('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের দিন'); return }
+                  if (password !== confirmation) { setToastMsg('দুটি পাসওয়ার্ড এক নয়'); return }
+                  const { error } = await supabase.auth.updateUser({ password })
+                  if (error) { setToastMsg(error.message); return }
+                  setToastMsg('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে')
+                  go('home')
+                }}>
+                  <input type="password" name="password" placeholder="নতুন পাসওয়ার্ড" autoComplete="new-password" minLength="6" required />
+                  <input type="password" name="confirmPassword" placeholder="নতুন পাসওয়ার্ড আবার লিখুন" autoComplete="new-password" minLength="6" required />
+                  <button className="btn primary" type="submit">পাসওয়ার্ড সংরক্ষণ করুন →</button>
                 </form>
               </div>
             </div>
