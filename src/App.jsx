@@ -988,7 +988,6 @@ export function App() {
             </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
               <span className="hchip"><b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্ন</span>
-              <span className="hchip"><b>১০,০০+</b> শিক্ষার্থী</span>
               <span className="hchip"><b>২২</b> ক্যাটাগরি</span>
               <span className="hchip"><b>১১</b> বিষয়</span>
               <span className="hchip"><b>✓</b> ব্যাখ্যাসহ সমাধান</span>
