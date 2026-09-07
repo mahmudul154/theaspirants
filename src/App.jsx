@@ -1017,7 +1017,11 @@ export function App() {
   const scheduledExams = buildDailyLiveExams(clock)
   const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
   const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
-  const liveExam = scheduledExams.find(exam => exam.status === 'live') || null
+  // A published special paper takes priority when it overlaps the regular 23:00
+  // daily window, so its announced start time always opens the correct exam.
+  const liveExam = scheduledExams.find(exam => exam.status === 'live' && exam.special)
+    || scheduledExams.find(exam => exam.status === 'live')
+    || null
   const upcomingExams = scheduledExams.filter(exam => exam.status === 'upcoming')
   const hasFortyDayPlan = upcomingExams.some(exam => exam.planned)
   const routineExams = hasFortyDayPlan
