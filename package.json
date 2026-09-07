@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "validate:today-model": "node scripts/validate-todays-model-exam.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

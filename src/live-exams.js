@@ -48,6 +48,9 @@ export const SPECIAL_LIVE_EXAMS = [
     minutes: 60,
     special: true,
     collectCandidate: true,
+    // The app verifies this separately seeded Supabase record set at launch and
+    // falls back to the same audited bundle only if the database is unavailable.
+    publishedExamId: 'today-model-test-2026-09-07-2330',
     rows: TODAY_MODEL_EXAM_QUESTIONS,
     distribution: [
       { label: 'বাংলা', questions: 40 },

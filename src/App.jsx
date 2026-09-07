@@ -182,6 +182,42 @@ function uniqueWrongQuestions(items) {
   return [...unique.values()].slice(-100)
 }
 
+// Do not let a partial or altered remote result change a published live paper.
+// A successful database response must be a complete answer-key set in exactly
+// the teacher's fixed display order before it is allowed into the candidate UI.
+function validPublishedModelRows(rows, expectedCount) {
+  if (!Array.isArray(rows) || rows.length !== expectedCount) return false
+  const expectedSubjects = { 'বাংলা': 40, 'বাংলাদেশ বিষয়াবলি': 30, 'মানসিক দক্ষতা': 30 }
+  const actualSubjects = rows.reduce((counts, row) => {
+    counts[row?.subject] = (counts[row?.subject] || 0) + 1
+    return counts
+  }, {})
+  if (Object.entries(expectedSubjects).some(([subject, count]) => actualSubjects[subject] !== count)) return false
+  return rows.every((row, index) => (
+    Number(row?.display_order) === index + 1
+    && typeof row?.question === 'string' && row.question.trim()
+    && Array.isArray(row?.options) && row.options.length === 4
+    && Number.isInteger(Number(row?.answer_index))
+    && row.answer_index >= 0 && row.answer_index < row.options.length
+    && row.options[row.answer_index] === row.answer
+    && typeof row?.explanation === 'string' && row.explanation.trim()
+  ))
+}
+
+async function loadPublishedModelRows(examId, expectedCount) {
+  const { data, error } = await supabase
+    .from('live_model_exam_questions')
+    .select('id, display_order, source_order, subject, topic, question, options, answer, answer_index, explanation, post_name, exam_tag')
+    .eq('exam_id', examId)
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+  if (error) throw error
+  if (!validPublishedModelRows(data, expectedCount)) {
+    throw new Error('Published live-model rows failed integrity validation')
+  }
+  return data
+}
+
 export function App() {
   // The supplied testing link should open straight at the relevant test card.
   const [page, setPage] = useState(() => LIVE_TEST_EXAM_ID ? 'exams' : 'home')
@@ -525,10 +561,13 @@ export function App() {
       subjects: exam.questionPlan ? [...new Set(exam.questionPlan.map(bucket => bucket.subject))] : [exam.subject],
       topics: exam.questionPlan ? [] : [exam.topic],
       rows: exam.rows || null,
+      // For the audited 7 September paper, prefer the dedicated Supabase answer-key
+      // table while retaining the identical bundled set as an offline-safe fallback.
+      publishedExamId: exam.publishedExamId || null,
       preserveOrder: !!exam.rows,
       questionPlan: exam.questionPlan,
-      // Fixed, published model-test questions are intentionally not queried or
-      // shuffled from the database; all candidates receive the same paper.
+      // A published paper retains its fixed order. The audited model test uses
+      // its dedicated table when available and never receives a random shuffle.
       requireDatabase: !exam.rows && !!exam.questionPlan,
       limit: exam.questions,
       minutes: exam.minutes,
@@ -602,7 +641,18 @@ export function App() {
     let rows = null
     let databaseRowsArePrioritized = false
     let fetchError = null
-    if (cfg.rows) rows = cfg.rows
+    if (cfg.publishedExamId) {
+      try {
+        rows = await loadPublishedModelRows(cfg.publishedExamId, requestedLimit)
+        databaseRowsArePrioritized = true
+      } catch (error) {
+        // The published bundle is generated from the same reviewed source and is
+        // deliberately retained as a resilient fallback while the SQL seed has
+        // not yet been run or a visitor is temporarily offline.
+        console.warn('Published live-model table unavailable; using audited bundle:', error?.message || error)
+        rows = cfg.rows || null
+      }
+    } else if (cfg.rows) rows = cfg.rows
     else try {
       if (cfg.questionPlan?.length) {
         // A scheduled special exam may prescribe a different number of questions

@@ -1,5 +1,10 @@
 // Published exactly as supplied for the 7 September 2026 live model test.
 // Answer indexes are zero-based and options preserve the printed ক/খ/গ/ঘ order.
+import {
+  TODAY_MODEL_REVIEW_PARAGRAPHS,
+  TODAY_MODEL_SHUFFLED_ORDER
+} from './todays-model-exam-explanations.js'
+
 const rows = [
   ['বাংলা', 'ধ্বনি ও বর্ণ', 'ভাষার ক্ষুদ্রতম শ্রুতিগ্রাহ্য একক কোনটি?', ['বর্ণ', 'ধ্বনি', 'শব্দ', 'বাক্য'], 1],
   ['বাংলা', 'ধ্বনি ও বর্ণ', 'ধ্বনির লিখিত প্রতীককে কী বলে?', ['বর্ণ', 'অক্ষর', 'শব্দ', 'পদ'], 0],
@@ -62,7 +67,7 @@ const rows = [
   ['বাংলাদেশ বিষয়াবলি', 'মুক্তিযুদ্ধের ১১ সেক্টর', 'সেক্টর ৮-এর প্রাথমিক কমান্ডার কে ছিলেন?', ['মেজর আবু ওসমান চৌধুরী', 'মেজর এম. এ. জলিল', 'মেজর কে. এম. শফিউল্লাহ', 'মেজর মীর শওকত আলী'], 0],
   ['বাংলাদেশ বিষয়াবলি', 'মুক্তিযুদ্ধের ১১ সেক্টর', 'মুক্তিযুদ্ধের সেক্টর ৯-এর কমান্ডার কে ছিলেন?', ['মেজর এম. এ. জলিল', 'মেজর আবু তাহের', 'মেজর নাজমুল হক', 'মেজর জিয়াউর রহমান'], 0],
   ['বাংলাদেশ বিষয়াবলি', 'মুক্তিযুদ্ধের ১১ সেক্টর', 'সেক্টর ১০ মূলত কোন ধরনের অভিযানের জন্য নির্ধারিত ছিল?', ['নৌ-কমান্ডো অভিযান', 'বিমান প্রতিরক্ষা', 'কেবল স্থলযুদ্ধ', 'সীমান্ত শরণার্থী ব্যবস্থাপনা'], 0],
-  ['বাংলাদেশ বিষয়াবলি', 'মুক্তিযুদ্ধের ১১ সেক্টর', 'সেক্টর ১১-এর প্রাথমিক কমান্ডার কে ছিলেন?', ['মেজর আবু তাহের', 'মেজর খালেদ মোশাররফ', 'মেজর এম. এ. জলিল', 'মেজর আবু ওসমান চৌধুরী'], 0],
+  ['বাংলাদেশ বিষয়াবলি', 'মুক্তিযুদ্ধের ১১ সেক্টর', 'মেজর আবু তাহের মুক্তিযুদ্ধের কোন সেক্টরের উল্লেখযোগ্য কমান্ডার ছিলেন?', ['সেক্টর ৪', 'সেক্টর ৬', 'সেক্টর ১১', 'সেক্টর ২'], 2],
   ['বাংলাদেশ বিষয়াবলি', 'মার্চ ১৯৭১', '১৯৭১ সালের ১ মার্চ জাতীয় পরিষদের অধিবেশন অনির্দিষ্টকালের জন্য স্থগিত ঘোষণা করেন কে?', ['জেনারেল ইয়াহিয়া খান', 'জুলফিকার আলী ভুট্টো', 'আইয়ুব খান', 'নূরুল আমিন'], 0],
   ['বাংলাদেশ বিষয়াবলি', 'মার্চ ১৯৭১', '১৯৭১ সালের ৩ মার্চ জাতীয় পরিষদের অধিবেশন কোথায় বসার কথা ছিল?', ['ঢাকায়', 'লাহোরে', 'করাচিতে', 'ইসলামাবাদে'], 0],
   ['বাংলাদেশ বিষয়াবলি', 'মার্চ ১৯৭১', '১৯৭১ সালের ২ মার্চ ঢাকা বিশ্ববিদ্যালয়ে প্রথম স্বাধীন বাংলাদেশের পতাকা উত্তোলন করেন কে?', ['আ স ম আবদুর রব', 'শাজাহান সিরাজ', 'তাজউদ্দীন আহমদ', 'মওলানা ভাসানী'], 0],
@@ -105,16 +110,29 @@ const rows = [
   ['মানসিক দক্ষতা', 'ঘড়ি', 'একটি ঘড়ি দুপুর ১২টায় ১৫ মিনিট এগিয়ে ছিল এবং পরে প্রতি ঘণ্টায় ৫ মিনিট করে পিছিয়ে যায়। কখন ঘড়িটি আবার ঠিক সময় দেখাবে?', ['দুপুর ১টায়', 'দুপুর ২টায়', 'দুপুর ৩টায়', 'দুপুর ৪টায়'], 2]
 ]
 
-export const TODAY_MODEL_EXAM_QUESTIONS = rows.map(([subject, topic, question, options, answerIndex], index) => ({
-  id: `today-model-2026-09-07-${String(index + 1).padStart(3, '0')}`,
-  subject,
-  topic,
-  question,
-  options,
-  answer: options[answerIndex],
-  post_name: 'আজকের মডেল পরীক্ষা',
-  exam_tag: 'model-test'
-}))
+// `TODAY_MODEL_SHUFFLED_ORDER` is intentionally deterministic: it preserves the
+// teacher's supplied order in the live paper and its separate database seed.
+export const TODAY_MODEL_EXAM_QUESTIONS = TODAY_MODEL_SHUFFLED_ORDER.map((sourceIndex, displayIndex) => {
+  const [subject, topic, question, options, answerIndex] = rows[sourceIndex]
+  return {
+    id: `today-model-2026-09-07-${String(displayIndex + 1).padStart(3, '0')}`,
+    display_order: displayIndex + 1,
+    source_order: sourceIndex + 1,
+    subject,
+    topic,
+    question,
+    options,
+    answer: options[answerIndex],
+    answer_index: answerIndex,
+    explanation: TODAY_MODEL_REVIEW_PARAGRAPHS[displayIndex],
+    post_name: 'আজকের মডেল পরীক্ষা',
+    exam_tag: 'model-test'
+  }
+})
+
+if (rows.length !== 100 || TODAY_MODEL_EXAM_QUESTIONS.length !== 100) {
+  throw new Error('Today’s model test must contain exactly 100 questions')
+}
 
 export const TODAY_MODEL_EXAM_COUNTS = {
   total: TODAY_MODEL_EXAM_QUESTIONS.length,
