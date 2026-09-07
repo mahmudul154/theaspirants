@@ -1,3 +1,5 @@
+import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
+
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
 const HOUR_MS = 60 * 60 * 1000
@@ -34,60 +36,22 @@ export const LIVE_TOPIC_ROTATION = [
 // cover the requested sector and March-focused questions inside those topics.
 export const SPECIAL_LIVE_EXAMS = [
   {
-    id: 'special-2026-09-07-2300',
+    id: 'today-model-test-2026-09-07-2330',
     dateKey: '2026-09-07',
-    startsAt: Date.UTC(2026, 8, 7, 17), // 23:00 Asia/Dhaka
-    endsAt: Date.UTC(2026, 8, 7, 18),
-    subject: 'বিশেষ মডেল টেস্ট',
-    topic: 'ধ্বনি-বর্ণ • ভাষা আন্দোলন ও মুক্তিযুদ্ধ • মানসিক দক্ষতা',
-    title: 'বিশেষ লাইভ এক্সাম • বাংলা, জিকে ও মানসিক দক্ষতা',
-    questions: 100,
+    startsAt: Date.UTC(2026, 8, 7, 17, 30), // 23:30 Asia/Dhaka
+    endsAt: Date.UTC(2026, 8, 7, 18, 30),
+    subject: 'আজকের মডেল পরীক্ষা',
+    topic: 'বাংলা • সাধারণ জ্ঞান • মানসিক দক্ষতা',
+    title: 'আজকের মডেল পরীক্ষা • বাংলা, সাধারণ জ্ঞান ও মানসিক দক্ষতা',
+    questions: TODAY_MODEL_EXAM_QUESTIONS.length,
     minutes: 60,
     special: true,
+    collectCandidate: true,
+    rows: TODAY_MODEL_EXAM_QUESTIONS,
     distribution: [
       { label: 'বাংলা', questions: 40 },
-      { label: 'জিকে', questions: 30 },
+      { label: 'সাধারণ জ্ঞান', questions: 30 },
       { label: 'মানসিক দক্ষতা', questions: 30 }
-    ],
-    questionPlan: [
-      {
-        label: 'বাংলা • ধ্বনি ও বর্ণ + ধ্বনি পরিবর্তন',
-        subject: 'বাংলা',
-        topics: ['ধ্বনি ও বর্ণ', 'ধ্বনি পরিবর্তন'],
-        questions: 40
-      },
-      {
-        label: 'জিকে • ভাষা আন্দোলন',
-        subject: 'বাংলাদেশ বিষয়াবলি',
-        topics: ['ভাষা আন্দোলন'],
-        questions: 10
-      },
-      {
-        label: 'জিকে • মুক্তিযুদ্ধের ১১ সেক্টর',
-        subject: 'বাংলাদেশ বিষয়াবলি',
-        topics: ['মুক্তিযুদ্ধ ও স্বাধীনতা', 'মুক্তিযুদ্ধ ও বাংলাদেশের অভ্যুদয়'],
-        questionTerms: ['সেক্টর'],
-        questions: 10
-      },
-      {
-        label: 'জিকে • মার্চ মাস',
-        subject: 'বাংলাদেশ বিষয়াবলি',
-        topics: ['মুক্তিযুদ্ধ ও স্বাধীনতা', 'মুক্তিযুদ্ধ ও বাংলাদেশের অভ্যুদয়', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'],
-        questionTerms: ['মার্চ', 'March'],
-        questions: 10
-      },
-      {
-        label: 'মানসিক দক্ষতা • জ্যামিতিক সমস্যা',
-        subject: 'মানসিক দক্ষতা',
-        topics: ['জ্যামিতিক যুক্তি', 'জ্যামিতিক সমস্যার সমাধান', 'জ্যামিতি', 'স্থানাঙ্ক জ্যামিতি'],
-        questions: 15
-      },
-      {
-        label: 'মানসিক দক্ষতা • ঘড়ি বিষয়ক সমস্যা',
-        subject: 'মানসিক দক্ষতা',
-        topics: ['ঘড়ি ও কোণ', 'ঘড়ি ও ক্যালেন্ডার', 'দিক ও ঘড়ি'],
-        questions: 15
-      }
     ]
   }
 ]
