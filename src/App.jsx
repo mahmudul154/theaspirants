@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -2110,6 +2111,7 @@ export function App() {
       </div>}
 
       <div className={`toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
+      <Analytics />
     </div>
   )
 }
