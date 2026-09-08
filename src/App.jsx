@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -14,6 +15,9 @@ import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, 
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
+// The Android bridge explicitly targets Chrome instead of allowing the Gemini
+// app to claim its own web link. On the web this plugin proxy is never called.
+const ChromeBrowser = registerPlugin('ChromeBrowser')
 // A testing link can open a scheduled paper before its start time. It is enabled
 // only for the configured owner account and never records an official attempt.
 const LIVE_TEST_EXAM_ID = typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('live-test') || '')
@@ -31,7 +35,7 @@ const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
 const ICOS = {
-  book: <><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" /></>,
+  notebook: <><rect x="5" y="3" width="14" height="18" rx="3" /><path d="M9 8h6M9 12h6M9 16h3" /><path d="M8 3v3M12 3v3M16 3v3" /></>,
   pen: <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />,
   flask: <><path d="M9 3h6" /><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3" /></>,
   calc: <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 7h6" /><path d="M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01" /></>,
@@ -43,7 +47,7 @@ const ICOS = {
   mountain: <path d="M8 3l4 8 5-5 5 15H2z" />,
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
-const SUBJ_ICON = { 'English': 'book', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
 const SUBJECT_TEACHERS = {
   'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
   'English': 'ইংরেজি বিষয়ের শিক্ষক',
@@ -65,7 +69,7 @@ const SUBJECT_TEACHERS = {
   'ভিজ্যুয়াল জিকে': 'সাধারণ জ্ঞান বিষয়ের শিক্ষক'
 }
 const Ico = ({ id, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{ICOS[SUBJ_ICON[id] || 'book']}</svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{ICOS[SUBJ_ICON[id] || 'notebook']}</svg>
 )
 
 const APP_CATS = [
@@ -120,7 +124,8 @@ const SHEET_ICONS = {
   sliders: <><path d="M4 21v-7" /><path d="M4 10V3" /><path d="M12 21v-9" /><path d="M12 8V3" /><path d="M20 21v-5" /><path d="M20 12V3" /><path d="M1 14h6" /><path d="M9 8h6" /><path d="M17 16h6" /></>,
   flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
   trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></>,
-  book: <><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" /></>,
+  layers: <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>,
+  clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></>,
   exam: <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 3v3h6V3" /><path d="m8.5 13 2.2 2.2 4.8-5" /></>,
   news: <><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" /><path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" /></>,
   image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></>,
@@ -569,16 +574,23 @@ export function App() {
   function openGeminiExplanation(question) {
     const prompt = geminiPromptFor(question)
     const geminiUrl = `https://gemini.google.com/app?hl=bn&prompt=${encodeURIComponent(prompt.slice(0, 6000))}`
-    // Open while the click is still a user gesture, then preserve an exact
-    // clipboard fallback if Gemini does not prefill the prompt in a browser.
-    window.open(geminiUrl, '_blank', 'noopener,noreferrer')
+    const runningInNativeAndroidApp = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android'
+    // Android explicitly launches this URL through the installed Chrome package,
+    // rather than letting Android route the Gemini link to the Gemini app.
+    if (runningInNativeAndroidApp) {
+      ChromeBrowser.open({ url: geminiUrl }).catch(() => setToastMsg('Chrome খোলা যায়নি। ডিভাইসে Chrome ইনস্টল আছে কি না দেখুন।'))
+    } else {
+      window.open(geminiUrl, '_blank', 'noopener,noreferrer')
+    }
+    // Preserve an exact clipboard fallback if Gemini does not prefill the prompt.
+    const browserLabel = runningInNativeAndroidApp ? 'Chrome' : 'নতুন ট্যাব'
     if (!navigator.clipboard?.writeText) {
-      setToastMsg('Gemini খোলা হয়েছে। প্রম্পট না দেখালে এই প্রশ্নটি আবার খুলে কপি করুন।')
+      setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পট না দেখালে এই প্রশ্নটি আবার খুলে কপি করুন।`)
       return
     }
     navigator.clipboard.writeText(prompt)
-      .then(() => setToastMsg('Gemini খোলা হয়েছে—বিষয়ভিত্তিক প্রম্পটটিও কপি করা আছে।'))
-      .catch(() => setToastMsg('Gemini খোলা হয়েছে। প্রম্পটটি স্বয়ংক্রিয়ভাবে কপি করা যায়নি।'))
+      .then(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে—বিষয়ভিত্তিক প্রম্পটটিও কপি করা আছে।`))
+      .catch(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পটটি স্বয়ংক্রিয়ভাবে কপি করা যায়নি।`))
   }
 
   function launchScheduledExam(exam, candidate = null, testing = false) {
@@ -1080,6 +1092,10 @@ export function App() {
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
   const featuredExam = liveExam || upcomingExams[0] || null
   const featuredExamIsToday = featuredExam?.dateKey === todayLeaderboardDateKey
+  // Keep the home timer focused on today's paper when one is scheduled. If the
+  // window is already live, it naturally changes to the time left to finish.
+  const heroCountdownExam = liveExam || upcomingExams.find(exam => exam.dateKey === todayLeaderboardDateKey) || upcomingExams[0] || null
+  const heroCountdownIsLive = heroCountdownExam?.status === 'live'
   const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
   const selectedQbGroup = QUESTION_BANK.groups.find(group => group.id === qbGroupId) || null
   const qbNeedle = qbQuery.trim().toLocaleLowerCase()
@@ -1158,9 +1174,13 @@ export function App() {
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
-            <div className="eyebrow">লাইভ পরীক্ষা ও কাস্টম কুইজ</div>
             <h1>আজকের লাইভ পরীক্ষা, <i>নিজের কুইজে প্রস্তুতি।</i></h1>
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
+            {heroCountdownExam && <div className={`hero-exam-countdown ${heroCountdownIsLive ? 'is-live' : ''}`} aria-label={heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে বাকি সময়' : 'পরবর্তী পরীক্ষা শুরু হতে বাকি সময়'}>
+              <span className="hero-exam-countdown-icon" aria-hidden="true"><SheetIco id="clock" /></span>
+              <span className="hero-exam-countdown-copy"><small>{heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে' : heroCountdownExam.dateKey === todayLeaderboardDateKey ? 'আজকের পরীক্ষা শুরু হতে' : 'পরবর্তী পরীক্ষা শুরু হতে'}</small><b aria-live="polite">{formatExamCountdown(heroCountdownIsLive ? heroCountdownExam.endsAt : heroCountdownExam.startsAt, clock)}</b></span>
+              <span className="hero-exam-countdown-topic">{heroCountdownExam.topic}</span>
+            </div>}
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
               <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
@@ -1518,7 +1538,7 @@ export function App() {
                   <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
                   <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
                     <summary aria-disabled={!cSubs.length}>
-                      <SheetIco id="book" />
+                      <SheetIco id="layers" />
                       <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
                       <i aria-hidden="true">⌄</i>
                     </summary>
@@ -1618,7 +1638,7 @@ export function App() {
                       ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
                       : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
                     <Expl q={item} />
-                    <button className="ai-help-btn review-ai-help" title="Gemini-তে বুঝুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
+                    <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
                   </article>
                 })}
               </>}
@@ -1815,15 +1835,23 @@ export function App() {
                   <ReviewOptions question={r} selectedIndex={r.ua} />
                   {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
                   <Expl q={r} />
-                  <button className="ai-help-btn review-ai-help" title="Gemini-তে বুঝুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
+                  <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
             </div>}
-            {result.setup && <div className="result-return result-return-bottom">
-              <span className="result-return-icon"><SheetIco id="book" /></span>
-              <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
-              <div className="result-return-actions">
+            {result.setup && <div className="result-return result-return-bottom saved-setup-card">
+              <span className="result-return-icon saved-setup-icon"><SheetIco id="layers" /></span>
+              <div className="saved-setup-copy">
+                <span className="saved-setup-kicker">পরের চেষ্টার জন্য প্রস্তুত</span>
+                <b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b>
+                <p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p>
+                <div className="saved-setup-meta" aria-label="সংরক্ষিত সেটআপের তথ্য">
+                  <span>{BN(result.setup.limit || result.rev.length)} প্রশ্ন</span>
+                  {result.setup.minutes && <span>{BN(result.setup.minutes)} মিনিট</span>}
+                </div>
+              </div>
+              <div className="result-return-actions saved-setup-actions">
                 <button className="btn primary" onClick={() => beginQuiz(result.setup)}>পুনরায় →</button>
                 {!result.setup.rows && <button className="btn ghost danger-outline" onClick={() => resetSeenQuestionProgress(result.setup)}>রিসেট →</button>}
                 {result.origin === 'setup' && <button className="btn ghost" onClick={() => {
@@ -2091,7 +2119,6 @@ export function App() {
           </div>
           <div className="side-nav-scroll">
             <div className="side-intro">
-              <span className="eyebrow">আপনার প্রস্তুতি সহায়ক</span>
               <p>বিসিএস, ব্যাংক ও সরকারি চাকরির প্রশ্নব্যাংক, ব্যাখ্যা ও স্মার্ট রিভিশন—এক জায়গায়।</p>
             </div>
 
@@ -2107,7 +2134,7 @@ export function App() {
             <div className="side-nav-group">
               <span className="side-nav-label">প্রধান মেনু</span>
               {[
-                ['home', 'home', 'হোম'], ['exams', 'book', 'পরীক্ষা'], ['questionBank', 'bank', 'প্রশ্নব্যাংক'], ['potrika', 'news', 'পত্রিকা'],
+                ['home', 'home', 'হোম'], ['exams', 'exam', 'পরীক্ষা'], ['questionBank', 'bank', 'প্রশ্নব্যাংক'], ['potrika', 'news', 'পত্রিকা'],
                 ['visual', 'image', 'ভিজ্যুয়াল জিকে'], ['daily', 'flame', 'ডেইলি চ্যালেঞ্জ'], ['leaderboard', 'trophy', 'লিডারবোর্ড']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
             </div>
@@ -2115,7 +2142,7 @@ export function App() {
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'book', 'ভুল পর্যালোচনা'], ['profile', 'user', 'প্রোফাইল']
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'ভুল পর্যালোচনা'], ['profile', 'user', 'প্রোফাইল']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
