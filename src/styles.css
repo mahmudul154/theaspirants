@@ -657,26 +657,14 @@ html.dark .ai-help-btn{color:#c4a5ff}
 .ai-modal-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#7c3aed;background:color-mix(in srgb,#7c3aed 10%,transparent)}
 .ai-modal-head>div>span{display:block;color:#7c3aed;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .ai-modal-head h3{font-family:var(--serif);font-size:1.55rem;font-weight:400;margin-top:2px}
-.ai-question-preview{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:15px 16px;color:var(--ink);font-size:.9rem;line-height:1.7}
-.ai-question-preview>span{display:block;color:var(--ink3);font-size:.67rem;margin-bottom:5px}.ai-question-preview p{margin:0}
-.ai-exam-safe{display:flex;align-items:flex-start;gap:10px;border:1px solid color-mix(in srgb,var(--amber) 30%,var(--line));border-radius:7px;background:color-mix(in srgb,var(--amber) 7%,var(--card));padding:11px 13px;color:var(--ink2);font-size:.78rem;line-height:1.55}
-.ai-exam-safe svg{width:17px;height:17px;flex:none;color:var(--amber);margin-top:1px}.ai-exam-safe b{color:var(--ink)}
-.ai-loading{display:flex;align-items:center;gap:10px;padding:18px;border:1px solid var(--line);border-radius:7px;color:var(--ink2);font-size:.82rem;line-height:1.55}
-.ai-loading .spin{width:19px;height:19px;flex:none}
-.ai-answer{border:1px solid color-mix(in srgb,#7c3aed 24%,var(--line));border-left:3px solid #7c3aed;border-radius:7px;background:color-mix(in srgb,#7c3aed 4%,var(--card));padding:16px;color:var(--ink2);font-size:.9rem;line-height:1.8}
-.ai-answer>span{display:block;color:#7c3aed;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
-.ai-answer p{margin:0 0 8px}.ai-answer p:last-child{margin-bottom:0}.ai-answer ul,.ai-answer ol{padding-left:21px}
-.ai-answer.error{border-color:color-mix(in srgb,var(--accent) 28%,var(--line));border-left-color:var(--accent);background:var(--accent-soft)}
-.ai-answer.error>span{color:var(--accent)}
 .ai-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ai-actions .btn svg{width:17px;height:17px}.ai-actions .ai-copy{margin-left:auto}
-.ai-privacy-note{padding-top:13px;border-top:1px solid var(--line);color:var(--ink3);font-size:.7rem;line-height:1.65}
+.ai-actions .btn svg{width:17px;height:17px}
 
 @media(max-width:760px){
   .qb-stats>span{padding:16px 13px;display:grid;gap:5px}.qb-stats b{font-size:1.65rem}.qb-stats small{font-size:.67rem}
   .qb-source-head{grid-template-columns:auto minmax(0,1fr);padding:16px;gap:12px}.qb-all-exam{grid-column:1/-1;width:100%}
   .qb-topic-details>summary{padding:10px 16px}.qb-subjects{padding:4px 16px 16px}
-  .ai-modal-bg{padding:10px}.ai-modal{max-height:94vh;padding:18px;border-radius:10px}.ai-actions{display:grid;grid-template-columns:1fr}.ai-actions .btn{justify-content:center}.ai-actions .ai-copy{margin-left:0}
+  .ai-modal-bg{padding:10px}.ai-modal{max-height:94vh;padding:18px;border-radius:10px}.ai-actions{display:grid;grid-template-columns:1fr}.ai-actions .btn{justify-content:center}
 }
 @media(max-width:520px){
   .qb-stats{grid-template-columns:1fr}.qb-stats>span{grid-template-columns:auto 1fr;align-items:center;border-right:0;border-bottom:1px solid var(--line)}.qb-stats>span:last-child{border-bottom:0}
@@ -685,7 +673,7 @@ html.dark .ai-help-btn{color:#c4a5ff}
   .qb-topic-details>summary{grid-template-columns:minmax(0,1fr) auto}.qb-topic-details>summary small{grid-column:1/-1;grid-row:2}.qb-topic-details>summary i{grid-column:2;grid-row:1}
   .qb-topic-list{display:grid}.qb-topic-list button{width:100%;justify-content:space-between;padding:9px 10px}
   .q-card-tools{gap:4px}.ai-help-btn{font-size:0;width:30px;height:30px;justify-content:center;padding:0}.ai-help-btn svg{width:15px;height:15px}.review-ai-help{font-size:.7rem;width:auto;height:auto;padding:7px 10px}
-  .ai-modal-head h3{font-size:1.3rem}.ai-modal-head>div>span{font-size:.59rem}.ai-modal-icon{width:36px;height:36px}.ai-modal{gap:13px}.ai-question-preview{padding:13px;font-size:.84rem}
+  .ai-modal-head h3{font-size:1.3rem}.ai-modal-head>div>span{font-size:.59rem}.ai-modal-icon{width:36px;height:36px}.ai-modal{gap:13px}
 }
 
 /* ---------- fresh-question progress + detailed answer review ---------- */

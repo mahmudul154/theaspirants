@@ -34,6 +34,26 @@ const ICOS = {
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
 const SUBJ_ICON = { 'English': 'book', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const SUBJECT_TEACHERS = {
+  'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
+  'English': 'ইংরেজি বিষয়ের শিক্ষক',
+  'ইংরেজি': 'ইংরেজি বিষয়ের শিক্ষক',
+  'গাণিতিক যুক্তি': 'গাণিতিক যুক্তি বিষয়ের শিক্ষক',
+  'মানসিক দক্ষতা': 'মানসিক দক্ষতা বিষয়ের শিক্ষক',
+  'বাংলাদেশ বিষয়াবলি': 'বাংলাদেশ বিষয়াবলি বিষয়ের শিক্ষক',
+  'বাংলাদেশ বিষয়াবলি': 'বাংলাদেশ বিষয়াবলি বিষয়ের শিক্ষক',
+  'বাংলাদেশ বিষয়াবলী': 'বাংলাদেশ বিষয়াবলি বিষয়ের শিক্ষক',
+  'আন্তর্জাতিক বিষয়াবলি': 'আন্তর্জাতিক বিষয়াবলি বিষয়ের শিক্ষক',
+  'আন্তর্জাতিক বিষয়াবলি': 'আন্তর্জাতিক বিষয়াবলি বিষয়ের শিক্ষক',
+  'আন্তর্জাতিক বিষয়াবলী': 'আন্তর্জাতিক বিষয়াবলি বিষয়ের শিক্ষক',
+  'বিজ্ঞান': 'বিজ্ঞান বিষয়ের শিক্ষক',
+  'কম্পিউটার ও তথ্য প্রযুক্তি': 'কম্পিউটার ও তথ্যপ্রযুক্তি বিষয়ের শিক্ষক',
+  'কম্পিউটার ও তথ্যপ্রযুক্তি': 'কম্পিউটার ও তথ্যপ্রযুক্তি বিষয়ের শিক্ষক',
+  'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'নৈতিকতা, মূল্যবোধ ও সুশাসন বিষয়ের শিক্ষক',
+  'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা বিষয়ের শিক্ষক',
+  'Microcontroller': 'মাইক্রোকন্ট্রোলার বিষয়ের শিক্ষক',
+  'ভিজ্যুয়াল জিকে': 'সাধারণ জ্ঞান বিষয়ের শিক্ষক'
+}
 const Ico = ({ id, size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{ICOS[SUBJ_ICON[id] || 'book']}</svg>
 )
@@ -233,9 +253,6 @@ export function App() {
   const [qbQuery, setQbQuery] = useState('')
   const [qbGroupId, setQbGroupId] = useState(null)
   const [qbVisible, setQbVisible] = useState(40)
-  const [aiHelp, setAiHelp] = useState(null)
-  const [aiAnswer, setAiAnswer] = useState('')
-  const [aiStatus, setAiStatus] = useState('idle')
   const [cCat, setCCat] = useState('bcs')
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cTopics, setCTopics] = useState([])
@@ -493,62 +510,26 @@ export function App() {
     })
   }
 
-  function aiPromptFor(question, revealAnswer = false) {
+  function geminiPromptFor(question) {
+    const subject = String(question?.subject || question?.subj || 'সাধারণ জ্ঞান').trim()
+    const teacher = SUBJECT_TEACHERS[subject] || 'সাধারণ জ্ঞান ও চাকরির প্রস্তুতি বিষয়ের শিক্ষক'
     const options = (question?.options || []).map((option, index) => `${index + 1}. ${option}`).join('\n')
-    const answerInstruction = revealAnswer
-      ? `সঠিক উত্তর: ${question?.answer || 'উল্লেখ নেই'}\nডেটাবেজের ব্যাখ্যা: ${question?.explanation || 'নেই'}`
-      : 'পরীক্ষা এখনো চলছে। সঠিক অপশনের নম্বর বা সরাসরি উত্তর বলবে না; শুধু ধারণা, সূত্র ও সমাধানের পথ বুঝিয়ে দেবে।'
-    return `তুমি বাংলাদেশের চাকরির পরীক্ষার একজন বাংলা শিক্ষক। নিচের MCQ-টি সহজ, নির্ভুল বাংলায় বুঝিয়ে দাও। প্রয়োজন হলে ধাপে ধাপে বোঝাও এবং ভুল অপশনগুলোর ফাঁদ সংক্ষেপে বলো।\n\nবিষয়: ${question?.subject || 'সাধারণ'}\nটপিক: ${question?.topic || 'বিবিধ'}\nপ্রশ্ন: ${question?.question || ''}\nঅপশন:\n${options}\n\n${answerInstruction}`
+    return `তুমি বাংলাদেশের চাকরির পরীক্ষার ${teacher}। নিচের MCQ-টি একজন শিক্ষার্থীকে সহজ, নির্ভুল বাংলায় বুঝিয়ে দাও। শুরুতে সঠিক উত্তরটি স্পষ্ট করে বলো। এরপর বিষয়ের নিয়ম, প্রয়োজন হলে ধাপে ধাপে সমাধান, এবং অন্য অপশনগুলো কেন ঠিক নয় তার সংক্ষিপ্ত ব্যাখ্যা দাও। দেওয়া উত্তর ও ব্যাখ্যার তথ্য কাজে লাগাবে, তবে কোনো অসামঞ্জস্য থাকলে নির্ভরযোগ্য বিষয়ভিত্তিক জ্ঞান অনুযায়ী তা সংশোধন করে জানাবে।\n\nবিষয়: ${subject}\nটপিক: ${question?.topic || 'বিবিধ'}\nপ্রশ্ন: ${question?.question || ''}\nঅপশন:\n${options}\n\nসঠিক উত্তর: ${question?.answer || 'উল্লেখ নেই'}\nদেওয়া ব্যাখ্যা: ${question?.explanation || 'নেই'}`
   }
 
-  function openAiHelp(question, revealAnswer = false) {
-    setAiHelp({ question, revealAnswer })
-    setAiAnswer('')
-    setAiStatus('idle')
-  }
-
-  async function askBuiltInAi() {
-    if (!aiHelp?.question) return
-    setAiStatus('loading')
-    setAiAnswer('')
-    try {
-      let session
-      if (window.LanguageModel) {
-        const availability = await window.LanguageModel.availability()
-        if (availability === 'unavailable') throw new Error('এই ব্রাউজারে বিল্ট-ইন AI পাওয়া যায়নি')
-        session = await window.LanguageModel.create()
-      } else if (window.ai?.languageModel) {
-        const capabilities = await window.ai.languageModel.capabilities()
-        if (capabilities?.available === 'no') throw new Error('এই ব্রাউজারে বিল্ট-ইন AI পাওয়া যায়নি')
-        session = await window.ai.languageModel.create()
-      } else {
-        throw new Error('এই ব্রাউজারে Chrome-এর বিল্ট-ইন AI চালু নেই')
-      }
-      const response = await session.prompt(aiPromptFor(aiHelp.question, aiHelp.revealAnswer))
-      setAiAnswer(String(response || '').trim())
-      setAiStatus('done')
-      session.destroy?.()
-    } catch (error) {
-      setAiAnswer(error?.message || 'বিল্ট-ইন AI চালু করা যায়নি')
-      setAiStatus('error')
+  function openGeminiExplanation(question) {
+    const prompt = geminiPromptFor(question)
+    const geminiUrl = `https://gemini.google.com/app?hl=bn&prompt=${encodeURIComponent(prompt.slice(0, 6000))}`
+    // Open while the click is still a user gesture, then preserve an exact
+    // clipboard fallback if Gemini does not prefill the prompt in a browser.
+    window.open(geminiUrl, '_blank', 'noopener,noreferrer')
+    if (!navigator.clipboard?.writeText) {
+      setToastMsg('Gemini খোলা হয়েছে। প্রম্পট না দেখালে এই প্রশ্নটি আবার খুলে কপি করুন।')
+      return
     }
-  }
-
-  function openExternalAiSearch() {
-    if (!aiHelp?.question) return
-    const prompt = aiPromptFor(aiHelp.question, aiHelp.revealAnswer).slice(0, 1800)
-    window.open(`https://www.google.com/search?udm=50&q=${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer')
-  }
-
-  async function copyAiPrompt() {
-    if (!aiHelp?.question) return
-    const prompt = aiPromptFor(aiHelp.question, aiHelp.revealAnswer)
-    try {
-      await navigator.clipboard.writeText(prompt)
-      setToastMsg('AI প্রম্পট কপি হয়েছে')
-    } catch (error) {
-      setToastMsg('কপি করা যায়নি—Google AI Search ব্যবহার করুন')
-    }
+    navigator.clipboard.writeText(prompt)
+      .then(() => setToastMsg('Gemini খোলা হয়েছে—বিষয়ভিত্তিক প্রম্পটটিও কপি করা আছে।'))
+      .catch(() => setToastMsg('Gemini খোলা হয়েছে। প্রম্পটটি স্বয়ংক্রিয়ভাবে কপি করা যায়নি।'))
   }
 
   function launchScheduledExam(exam, candidate = null, testing = false) {
@@ -1551,7 +1532,7 @@ export function App() {
                       ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
                       : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
                     <Expl q={item} />
-                    <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(item, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
+                    <button className="ai-help-btn review-ai-help" title="Gemini-তে ব্যাখ্যা খুলুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
                   </article>
                 })}
               </>}
@@ -1657,7 +1638,6 @@ export function App() {
               <div className="q-card qcard" id={'qcard-' + qi} key={qi} style={{ scrollMarginTop: 130 }}>
                 <div className="qno"><span>প্রশ্ন {BN(qi + 1)}</span>
                   <div className="q-card-tools">
-                    <button className="ai-help-btn" title="AI দিয়ে সহজ ব্যাখ্যা নিন" onClick={() => openAiHelp(q, false)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন</button>
                     <button className={`flag ${quiz.mark[qi] ? 'on' : ''}`} title="রিভিউয়ের জন্য মার্ক করুন"
                       onClick={() => setQuiz(z => { const m = [...z.mark]; m[qi] = !m[qi]; return { ...z, mark: m } })}>🚩</button>
                   </div>
@@ -1768,7 +1748,7 @@ export function App() {
                   <ReviewOptions question={r} selectedIndex={r.ua} />
                   {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
                   <Expl q={r} />
-                  <button className="ai-help-btn review-ai-help" onClick={() => openAiHelp(r, true)}><SheetIco id="sparkles" /> AI দিয়ে আরও সহজ করে বুঝুন</button>
+                  <button className="ai-help-btn review-ai-help" title="Gemini-তে ব্যাখ্যা খুলুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
@@ -2083,33 +2063,6 @@ export function App() {
             <p className="muted">{liveEntry.testing ? 'টেস্ট মোডে ফল, ভুল প্রশ্ন, প্রোফাইল পরিসংখ্যান বা অফিসিয়াল লাইভ অ্যাটেম্পট সংরক্ষণ হবে না।' : 'এই তথ্য কেবল আপনার লাইভ পরীক্ষার উত্তরপত্রে দেখানো হবে।'}</p>
             <div className="ai-actions"><button type="button" className="btn ghost" onClick={() => setLiveEntry(null)}>বাতিল</button><button className="btn primary" type="submit"><SheetIco id="book" /> পরীক্ষা শুরু করুন</button></div>
           </form>
-        </div>
-      </div>}
-
-      {/* ================= PER-QUESTION FREE AI HELP ================= */}
-      {aiHelp && <div className="ai-modal-bg" onClick={() => setAiHelp(null)}>
-        <div className="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-help-title" onClick={event => event.stopPropagation()}>
-          <div className="ai-modal-head">
-            <span className="ai-modal-icon"><SheetIco id="sparkles" /></span>
-            <div><span>সহায়ক ব্যাখ্যা</span><h3 id="ai-help-title">AI দিয়ে সহজ ব্যাখ্যা</h3></div>
-            <button className="ibtn" aria-label="AI সহায়তা বন্ধ করুন" onClick={() => setAiHelp(null)}><SheetIco id="close" /></button>
-          </div>
-          <div className="ai-question-preview">
-            <span>{aiHelp.question?.subject || 'সাধারণ'} • {aiHelp.question?.topic || 'বিবিধ'}</span>
-            <Md s={aiHelp.question?.question} />
-          </div>
-          {!aiHelp.revealAnswer && <div className="ai-exam-safe"><SheetIco id="lock" /><span><b>পরীক্ষা চলছে:</b> AI-কে সরাসরি উত্তর না বলে শুধু ধারণা ও সমাধানের পথ বোঝাতে বলা হবে।</span></div>}
-          {aiStatus === 'loading' && <div className="ai-loading"><span className="spin" /> বিল্ট-ইন AI উত্তর তৈরি করছে… প্রথমবার মডেল ডাউনলোড হতে পারে।</div>}
-          {aiAnswer && <div className={`ai-answer ${aiStatus === 'error' ? 'error' : ''}`}>
-            <span>{aiStatus === 'error' ? 'বিল্ট-ইন AI চালু হয়নি' : 'AI ব্যাখ্যা'}</span>
-            <Md s={aiAnswer} />
-          </div>}
-          <div className="ai-actions">
-            <button className="btn primary" disabled={aiStatus === 'loading'} onClick={askBuiltInAi}><SheetIco id="sparkles" /> Chrome বিল্ট-ইন AI</button>
-            <button className="btn" onClick={openExternalAiSearch}><SheetIco id="external" /> Google AI Search-এ বুঝুন</button>
-            <button className="btn ghost ai-copy" onClick={copyAiPrompt}><SheetIco id="copy" /> প্রম্পট কপি</button>
-          </div>
-          <p className="ai-privacy-note">Chrome-এর সমর্থিত ডিভাইসে Gemini Nano লোকালভাবে চলে। সেটি না থাকলে Google AI Search নতুন ট্যাবে খুলবে—অভ্যাস কোনো API token সংগ্রহ বা পাঠায় না। AI-এর উত্তর গুরুত্বপূর্ণ সূত্রের সঙ্গে মিলিয়ে নিন।</p>
         </div>
       </div>}
 
