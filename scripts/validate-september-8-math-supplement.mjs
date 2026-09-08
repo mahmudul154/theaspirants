@@ -4,6 +4,7 @@ import {
   SEPTEMBER_8_MATH_SUPPLEMENT_COUNT
 } from '../src/september-8-math-supplement.js'
 import { buildDailyLiveExams } from '../src/live-exams.js'
+import { LIVE_TEST_ALLOWED_EXAM_ID, canRunLiveTest } from '../src/live-test-access.js'
 
 const questions = SEPTEMBER_8_MATH_SUPPLEMENT
 
@@ -57,4 +58,11 @@ assert.deepEqual(exam.distribution, [
 assert.equal(exam.questionPlan.at(-1).questions, 30, 'The original planned 30 Math questions must remain')
 assert.match(exam.questionPlan.at(-1).label, /অতিরিক্ত শতকরা ও লাভ-ক্ষতি/, 'The added Math topic must be visible in the syllabus')
 
-console.log('✓ 8 September live exam validated: 100 planned questions + 7 supplied Math questions, 40/30/37 distribution, one-paragraph explanations, and 23:30–00:30 Asia/Dhaka schedule.')
+// Only the specified admin may open this one paper early through test mode.
+assert.equal(LIVE_TEST_ALLOWED_EXAM_ID, exam.id, 'Early test access must target today’s 8 September paper only')
+assert.ok(canRunLiveTest('aakashh060@gmail.com', exam.id), 'The designated admin must be allowed to test today’s paper')
+assert.ok(canRunLiveTest(' AAKASHH060@GMAIL.COM ', exam.id), 'Admin email checks should tolerate casing and surrounding spaces')
+assert.ok(!canRunLiveTest('other@example.com', exam.id), 'Other accounts must not get early access')
+assert.ok(!canRunLiveTest('aakashh060@gmail.com', 'bcs-40-day-model-2026-09-09'), 'The admin must not get early access to another day')
+
+console.log('✓ 8 September live exam validated: 100 planned questions + 7 supplied Math questions, 40/30/37 distribution, one-paragraph explanations, 23:30–00:30 Asia/Dhaka schedule, and restricted admin test access.')

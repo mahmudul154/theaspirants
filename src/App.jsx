@@ -12,16 +12,16 @@ import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
+import { LIVE_TEST_ALLOWED_EXAM_ID, canRunLiveTest } from './live-test-access.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
 // The Android bridge explicitly targets Chrome instead of allowing the Gemini
 // app to claim its own web link. On the web this plugin proxy is never called.
 const ChromeBrowser = registerPlugin('ChromeBrowser')
-// A testing link can open a scheduled paper before its start time. It is enabled
-// only for the configured owner account and never records an official attempt.
+// The restricted testing link can only activate the explicitly allowlisted
+// pre-launch test configured in `live-test-access.js`.
 const LIVE_TEST_EXAM_ID = typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('live-test') || '')
-const LIVE_TEST_OWNER_EMAIL = '' // Set only to the owner's Aspirants login email.
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const dhakaDateKey = (now = Date.now(), dayOffset = 0) => {
   const dhakaNow = new Date(now + DHAKA_OFFSET_MS)
@@ -1109,8 +1109,9 @@ export function App() {
   const homeLeaderboardDate = dhakaDateLabel(homeLeaderboardDateKey)
   const leaderboardDate = dhakaDateLabel(lbDateKey || todayLeaderboardDateKey)
   const viewingTodayLeaderboard = (lbDateKey || todayLeaderboardDateKey) === todayLeaderboardDateKey
-  const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
-  const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
+  const isTestExam = exam => !!exam
+    && canRunLiveTest(user?.email, LIVE_TEST_EXAM_ID)
+    && exam.id === LIVE_TEST_ALLOWED_EXAM_ID
   // A published special paper takes priority when it overlaps the regular 23:30
   // daily window, so its announced start time always opens the correct exam.
   const liveExam = scheduledExams.find(exam => exam.status === 'live' && exam.special)
