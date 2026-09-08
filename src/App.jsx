@@ -630,16 +630,13 @@ export function App() {
       subjects: exam.questionPlan ? [...new Set(exam.questionPlan.map(bucket => bucket.subject))] : [exam.subject],
       topics: exam.questionPlan ? [] : [exam.topic],
       rows: exam.rows || null,
-      // A scheduled day can retain its normal database paper and still append
-      // reviewed source questions (the 8 September Math supplement).
-      supplementalRows: exam.supplementalRows || null,
       // For the audited 7 September paper, prefer the dedicated Supabase answer-key
       // table while retaining the identical bundled set as an offline-safe fallback.
       publishedExamId: exam.publishedExamId || null,
+      // Source-only papers arrive in a reviewed deterministic shuffled order;
+      // preserve that order instead of requesting unrelated database questions.
       preserveOrder: !!exam.rows,
       questionPlan: exam.questionPlan,
-      // A published paper retains its fixed order. The audited model test uses
-      // its dedicated table when available and never receives a random shuffle.
       requireDatabase: !exam.rows && !!exam.questionPlan,
       limit: exam.questions,
       minutes: exam.minutes,

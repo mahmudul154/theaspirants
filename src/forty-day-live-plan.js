@@ -11,9 +11,11 @@ export const FORTY_DAY_LIVE_PLAN = [
     part('গাণিতিক যুক্তি', 'গণিত: সংখ্যা, দশমিক ও ভগ্নাংশ', ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions'], 30)
   ],
   [
-    part('English', 'ইংরেজি গ্রামার: Article, Determiner ও Adjective', ['Articles', 'The Determiner', 'Determiners / Quantifiers', 'Adjective', 'Adjective Identification', 'Comparison of Adjectives / Degree'], 40),
-    part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: দেশ, আয়তন ও জনসংখ্যা', ['মহাদেশভিত্তিক আয়তন', 'মহাদেশভিত্তিক আয়তনে বৃহত্তম ও ক্ষুদ্রতম দেশ', 'আয়তন ও জনসংখ্যায় বিশ্বের বৃহত্তম ও ক্ষুদ্রতম দেশ'], 30),
-    part('গাণিতিক যুক্তি', 'গণিত: সাধারণ নিয়ম, একক, গ.সা.গু.-ল.সা.গু. • অতিরিক্ত শতকরা ও লাভ-ক্ষতি', ['Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'], 30)
+    // Day 2 — reviewed source-only PDF paper; the exact 30 / 30 / 23 split
+    // is attached in live-exams.js so no unrelated database question is used.
+    part('English', 'ইংরেজি: Tense, Right Form of Verbs ও Conditionals', ['Tense', 'Right Form of Verb', 'Verb and Right form of verb', 'Conditionals'], 30),
+    part('আন্তর্জাতিক বিষয়াবলি', 'সাধারণ জ্ঞান: বিশ্ব সভ্যতা', ['বিশ্ব সভ্যতা', 'প্রাচীন সভ্যতা', 'বিশ্ব ইতিহাস', 'ইতিহাস'], 30),
+    part('গাণিতিক যুক্তি', 'গণিত: শতকরা ও লাভ-ক্ষতি', ['শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'ক্রয়মূল্য নির্ণয়'], 23)
   ],
   [
     // Day 3 — announced syllabus for 9 September 2026. This exact 30 / 30 / 16

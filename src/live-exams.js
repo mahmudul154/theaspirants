@@ -1,5 +1,5 @@
 import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
-import { SEPTEMBER_8_MATH_SUPPLEMENT, SEPTEMBER_8_MATH_SUPPLEMENT_COUNT } from './september-8-math-supplement.js'
+import { SEPTEMBER_8_LIVE_EXAM_COUNTS, SEPTEMBER_8_LIVE_EXAM_QUESTIONS } from './september-8-live-exam.js'
 import { SEPTEMBER_9_LIVE_EXAM_COUNTS, SEPTEMBER_9_LIVE_EXAM_QUESTIONS } from './september-9-live-exam.js'
 import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-plan.js'
 
@@ -77,12 +77,12 @@ function modelLiveExamFor(day) {
   const date = new Date(day)
   const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
   const firstPhase = index < 20
-  const isSeptember8MathSupplementedPaper = dateKey === '2026-09-08'
+  const isSeptember8SourcePaper = dateKey === '2026-09-08'
   const isSeptember9FixedPaper = dateKey === '2026-09-09'
   // The announced Day 2 and Day 3 scope is surfaced directly in every compact
   // schedule card, rather than being hidden behind the generic phase heading.
   const phaseTitle = index === 1
-    ? 'Article, Determiner ও Adjective • দেশ, আয়তন ও জনসংখ্যা • সাধারণ নিয়ম ও শতকরা-লাভক্ষতি'
+    ? 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
     : index === 2
       ? 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
       : firstPhase
@@ -96,32 +96,35 @@ function modelLiveExamFor(day) {
     subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
     topic: phaseTitle,
     title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
-    // Day 3 is a reviewed source-only paper. Its static order is intentionally
-    // shared by every candidate, so it must never enter the database shuffle.
-    // Day 2 retains its scheduled 100-question paper and appends the seven
-    // supplied percentage/profit-loss questions as a visible Math supplement.
-    questions: isSeptember9FixedPaper
-      ? SEPTEMBER_9_LIVE_EXAM_COUNTS.total
-      : isSeptember8MathSupplementedPaper
-        ? 100 + SEPTEMBER_8_MATH_SUPPLEMENT_COUNT
+    // Day 2 uses every reviewed question from the supplied PDFs: 30 English,
+    // 30 world-civilization GK and 23 percentage/profit-loss Math questions.
+    // Its stable pre-shuffled order is shared by every candidate, and no
+    // database questions can replace or supplement the supplied paper.
+    questions: isSeptember8SourcePaper
+      ? SEPTEMBER_8_LIVE_EXAM_COUNTS.total
+      : isSeptember9FixedPaper
+        ? SEPTEMBER_9_LIVE_EXAM_COUNTS.total
         : 100,
     minutes: 60,
     planned: true,
     phase: firstPhase ? 'প্রথম ২০ দিন' : 'পরের ২০ দিন',
     questionPlan,
-    supplementalRows: isSeptember8MathSupplementedPaper ? SEPTEMBER_8_MATH_SUPPLEMENT : null,
-    rows: isSeptember9FixedPaper ? SEPTEMBER_9_LIVE_EXAM_QUESTIONS : null,
-    distribution: isSeptember9FixedPaper
+    rows: isSeptember8SourcePaper
+      ? SEPTEMBER_8_LIVE_EXAM_QUESTIONS
+      : isSeptember9FixedPaper
+        ? SEPTEMBER_9_LIVE_EXAM_QUESTIONS
+        : null,
+    distribution: isSeptember8SourcePaper
       ? [
-          { label: 'English', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.english },
-          { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.generalKnowledge },
-          { label: 'গাণিতিক যুক্তি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.math }
+          { label: 'English', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.english },
+          { label: 'বিশ্ব সভ্যতা', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.generalKnowledge },
+          { label: 'গাণিতিক যুক্তি', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.math }
         ]
-      : isSeptember8MathSupplementedPaper
+      : isSeptember9FixedPaper
         ? [
-            { label: 'ইংরেজি গ্রামার', questions: 40 },
-            { label: 'আন্তর্জাতিক বিষয়াবলি', questions: 30 },
-            { label: 'গাণিতিক যুক্তি', questions: 30 + SEPTEMBER_8_MATH_SUPPLEMENT_COUNT }
+            { label: 'English', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.english },
+            { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.generalKnowledge },
+            { label: 'গাণিতিক যুক্তি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.math }
           ]
         : questionPlan.map(({ subject, questions }) => ({
             label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
