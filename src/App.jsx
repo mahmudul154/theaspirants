@@ -8,7 +8,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, BOARD, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 
 const questionCountCache = new Map()
@@ -1107,18 +1107,18 @@ export function App() {
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
-            <div className="eyebrow">অভ্যাস — Govt Job Exam App</div>
-            <h1>চাকরির পরীক্ষায় <i>নিশ্চিত সাফল্য</i>, এক অ্যাপে।</h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>বিসিএস ও ব্যাংক জবের <b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্নের ব্যাংক থেকে তৈরি করুন কাস্টম কুইজ — প্রতিটি প্রশ্নের <b>ব্যাখ্যাসহ</b>। বিশ্লেষণ করুন দুর্বলতা, এগিয়ে থাকুন প্রতিযোগিতায়।</p>
+            <div className="eyebrow">অভ্যাস — বন্ধুদের প্রস্তুতির পরিসর</div>
+            <h1>চাকরির প্রস্তুতি, <i>একসঙ্গে।</i></h1>
+            <p className="lead muted" style={{ maxWidth: '58ch' }}>বন্ধুদের সঙ্গে নির্ধারিত টপিকে অনুশীলন করুন। নিজের মতো কুইজ দিন, উত্তর ও ব্যাখ্যা দেখে প্রস্তুতি নিন।</p>
             <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => go('exams')}>অনুশীলন শুরু করুন →</button>
-              <button className="btn ghost" onClick={() => go('setup')}>🛠 কাস্টম কুইজ</button>
+              <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
+              <button className="btn ghost" onClick={() => go('setup')}>🛠 নিজের কুইজ তৈরি করুন</button>
             </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>{BN(questionCounts?.total || 93855)}+</b> প্রশ্ন</span>
-              <span className="hchip"><b>২২</b> ক্যাটাগরি</span>
-              <span className="hchip"><b>১১</b> বিষয়</span>
-              <span className="hchip"><b>✓</b> ব্যাখ্যাসহ সমাধান</span>
+              <span className="hchip"><b>নির্ধারিত</b> টপিক</span>
+              <span className="hchip"><b>কাস্টম</b> কুইজ</span>
+              <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
+              <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
             </div>
           </section>
 
@@ -1201,17 +1201,19 @@ export function App() {
 
                     <section className="sec">
             <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>সেরা <i>চাকরিপ্রার্থী</i></h2></div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard')}>সম্পূর্ণ দেখুন →</button>
+              <div><div className="eyebrow">বন্ধুদের ফলাফল</div><h2 style={{ marginTop: 10 }}>আজকের <i>ফলাফল</i></h2></div>
+              <button className="btn sm ghost" onClick={() => go('leaderboard')}>সব দেখুন →</button>
             </div>
-            <div className="lb">{BOARD.slice(0, 4).map(LBRow)}</div>
+            {lbData?.length
+              ? <div className="lb">{lbData.slice(0, 4).map(LBRow)}</div>
+              : <div className="note">আজকের পরীক্ষার ফল এখানে দেখা যাবে।</div>}
           </section>
 
           <section className="sec">
             <div className="cta-band">
               <h2>নিজেকে যাচাই করার জন্য আপনি কি <i>প্রস্তুত?</i></h2>
-              <p>২ লাখেরও বেশি পরীক্ষার্থীর বিশ্বস্ত এই প্ল্যাটফর্মে আজই যুক্ত হোন আপনার বিজয়ের যাত্রায়।</p>
-              <button className="btn primary" onClick={() => go(user ? 'setup' : 'signup')}>🎓 বিনামূল্যে এখনই যুক্ত হোন ➝</button>
+              <p>বন্ধুদের সঙ্গে বিষয় বেছে অনুশীলন করুন এবং নিজের অগ্রগতি দেখুন।</p>
+              <button className="btn primary" onClick={() => go(user ? 'setup' : 'signup')}>🎓 অনুশীলন শুরু করুন ➝</button>
             </div>
           </section>
         </>}
@@ -1222,12 +1224,12 @@ export function App() {
             <div className="head live-center-head">
               <div className="eyebrow">লাইভ পরীক্ষা কেন্দ্র</div>
               <h2>দৈনিক রাত ১১টা ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
-              <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা, সঙ্গে প্রকাশিত বিশেষ পরীক্ষা। সব নির্ধারিত পরীক্ষা ফ্রি—অংশ নিতে শুধু লগইন করুন।</p>
+              <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা, সঙ্গে নির্ধারিত বিশেষ পরীক্ষা। অংশ নিতে লগইন করুন।</p>
             </div>
 
             <div className={`exam-access-note ${user ? 'signed-in' : ''}`}>
               <span className="access-icon"><SheetIco id={user ? 'user' : 'lock'} /></span>
-              <span>{user ? <><b>আপনি লগইন করেছেন</b>—লাইভ ও বিগত পরীক্ষায় কোনো পেমেন্ট ছাড়াই অংশ নিতে পারবেন।</> : <><b>লগইন আবশ্যক</b>—পরীক্ষা সম্পূর্ণ ফ্রি, তবে ফল ও একবারের অ্যাটেম্পট সংরক্ষণে লগইন করতে হবে।</>}</span>
+              <span>{user ? <><b>আপনি লগইন করেছেন</b>—লাইভ ও বিগত পরীক্ষায় অংশ নিতে পারবেন।</> : <><b>লগইন আবশ্যক</b>—ফল ও একবারের অ্যাটেম্পট সংরক্ষণের জন্য লগইন করুন।</>}</span>
               {!user && <button className="btn sm primary" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
             </div>
 
@@ -1235,7 +1237,6 @@ export function App() {
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
                   <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExam.planned ? '৪০ দিনের রুটিন' : 'পরবর্তী পরীক্ষা'}</span>
-                  <span className="free-badge">ফ্রি</span>
                 </div>
                 <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
                 <h3>{featuredExam.topic}</h3>
@@ -1282,7 +1283,7 @@ export function App() {
                   <div className="routine-main">
                     <div className="routine-card-top"><span>{exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
                     <h3>{exam.topic}</h3>
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span>{exam.special && <span>বিশেষ</span>}</div>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span>{exam.special && <span>বিশেষ</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                     {exam.planned && <div className="routine-meta exam-distribution" aria-label="টপিকভিত্তিক সিলেবাস">{exam.questionPlan.map(part => <span key={part.label} title={part.label}>{part.label}</span>)}</div>}
                   </div>
@@ -1297,7 +1298,7 @@ export function App() {
               <div><div className="eyebrow">আর্কাইভ</div><h2>বিগত <i>পরীক্ষা</i></h2></div>
               <span className="once-chip">প্রতি পরীক্ষায় ১ বার</span>
             </div>
-            <p className="muted archive-note">মিস করেছেন? লগইন করে প্রতিটি শেষ হওয়া পরীক্ষা একবার করে ফ্রিতে দিন।</p>
+            <p className="muted archive-note">মিস করেছেন? লগইন করে প্রতিটি শেষ হওয়া পরীক্ষা একবার করে দিন।</p>
             <div className="past-exam-grid">
               {pastExams.map(exam => {
                 const testing = isTestExam(exam)
@@ -1307,7 +1308,7 @@ export function App() {
                   <span className="past-subject"><Ico id={exam.subject} size={16} /> {exam.subject}</span>
                   <h3>{exam.topic}</h3>
                   <time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)} • {formatLiveExamTime(exam.startsAt)}</time>
-                  <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span>ফ্রি</span></div>
+                  <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span></div>
                   <button className={`btn ${attempted && !testing ? 'ghost' : 'primary'} sm`} disabled={!testing && (attempted || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(exam, testing)}>
                     {!user ? <><SheetIco id="lock" /> লগইন করে দিন</> : testing ? 'টেস্ট মোডে শুরু করুন →' : attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
                   </button>
@@ -1390,10 +1391,10 @@ export function App() {
         {/* ================= LEADERBOARD ================= */}
         {page === 'leaderboard' && <>
           <section className="sec">
-            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2>সেরা <i>চাকরিপ্রার্থী</i></h2><p className="muted">আজকের লাইভ র‍্যাংকিং।</p></div>
+            <div className="head"><div className="eyebrow">বন্ধুদের ফলাফল</div><h2>আজকের <i>পরীক্ষার ফল</i></h2><p className="muted">আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।</p></div>
             {lbData === null ? <div className="note">লোড হচ্ছে…</div>
               : lbData.length ? <div className="lb">{lbData.map(LBRow)}</div>
-                : <><div className="note"><b>আজকে এখনো কেউ পরীক্ষা দেয়নি।</b> প্রথম হতে এখনই একটা পরীক্ষা দিন!</div><div className="lb">{BOARD.map(LBRow)}</div></>}
+                : <div className="note"><b>আজকে এখনো কেউ পরীক্ষা দেয়নি।</b> পরীক্ষার ফল এখানে দেখা যাবে।</div>}
           </section>
         </>}
 
@@ -1410,9 +1411,8 @@ export function App() {
             <div className="panel custom-quiz-panel">
               <div className="question-count-status">
                 <span className="live-dot" aria-hidden="true" />
-                <b>Supabase লাইভ কাউন্ট</b>
-                <span>মোট {BN(questionCounts?.total || 0)}টি প্রশ্ন</span>
-                {questionCounts?.updatedAt && <time dateTime={questionCounts.updatedAt}>আপডেট: {new Date(questionCounts.updatedAt).toLocaleString('bn-BD', { dateStyle: 'medium', timeStyle: 'short' })}</time>}
+                <b>প্রশ্নভান্ডার</b>
+                <span>বিষয় ও টপিক বেছে অনুশীলন শুরু করুন</span>
               </div>
               <div><span className="lbl">ক্যাটাগরি</span>
                 <div className="chips">
@@ -1852,8 +1852,8 @@ export function App() {
         {page === 'signup' && <>
           <section className="sec">
             <div className="auth-wrap">
-              <div className="side"><h3>অভ্যাস-এ <i>যোগ দিন</i></h3><p className="muted">আজই আপনার সরকারি চাকরির প্রস্তুতি শুরু করুন — সম্পূর্ণ ফ্রিতে।</p></div>
-              <div className="body"><div className="eyebrow" style={{ marginBottom: 18 }}>ফ্রি অ্যাকাউন্ট</div>
+              <div className="side"><h3>অভ্যাস-এ <i>যোগ দিন</i></h3><p className="muted">বন্ধুদের সঙ্গে পরীক্ষা ও অনুশীলনে অংশ নিতে একটি অ্যাকাউন্ট তৈরি করুন।</p></div>
+              <div className="body"><div className="eyebrow" style={{ marginBottom: 18 }}>নতুন অ্যাকাউন্ট</div>
                 <form className="form" onSubmit={async e => {
                   e.preventDefault()
                   const { error } = await supabase.auth.signUp({
@@ -1873,7 +1873,7 @@ export function App() {
                     <option value="ntrca">টার্গেট: শিক্ষক নিবন্ধন</option>
                     <option value="primary">টার্গেট: প্রাথমিক</option>
                   </select>
-                  <button className="btn primary" type="submit"><SheetIco id="userPlus" /> ফ্রি অ্যাকাউন্ট তৈরি করুন</button>
+                  <button className="btn primary" type="submit"><SheetIco id="userPlus" /> অ্যাকাউন্ট তৈরি করুন</button>
                 </form>
               </div>
             </div>
@@ -2091,7 +2091,7 @@ export function App() {
         <div className="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-help-title" onClick={event => event.stopPropagation()}>
           <div className="ai-modal-head">
             <span className="ai-modal-icon"><SheetIco id="sparkles" /></span>
-            <div><span>ফ্রি • কোনো API key লাগবে না</span><h3 id="ai-help-title">AI দিয়ে সহজ ব্যাখ্যা</h3></div>
+            <div><span>সহায়ক ব্যাখ্যা</span><h3 id="ai-help-title">AI দিয়ে সহজ ব্যাখ্যা</h3></div>
             <button className="ibtn" aria-label="AI সহায়তা বন্ধ করুন" onClick={() => setAiHelp(null)}><SheetIco id="close" /></button>
           </div>
           <div className="ai-question-preview">
