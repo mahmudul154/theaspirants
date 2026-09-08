@@ -1709,34 +1709,10 @@ export function App() {
                 })}
               </div>
             </div>}
-            {result.setup && <div className="result-return">
-              <span className="result-return-icon"><SheetIco id="book" /></span>
-              <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
-              <div className="result-return-actions">
-                <button className="btn primary" onClick={() => beginQuiz(result.setup)}>↻ {result.setup.rows ? 'একই প্রশ্ন আবার দিন' : 'একই সেটআপে নতুন প্রশ্ন দিন'}</button>
-                {!result.setup.rows && <button className="btn ghost danger-outline" onClick={() => resetSeenQuestionProgress(result.setup)}>অগ্রগতি রিসেট করে শুরু করুন</button>}
-                {result.origin === 'setup' && <button className="btn ghost" onClick={() => {
-                  const setup = result.setup
-                  setCCat(setup.tag === 'bank' ? 'bank' : 'bcs')
-                  setCSubs(setup.subjects || [])
-                  setCTopics(setup.topics || [])
-                  setCCount(setup.limit || 25)
-                  setCTime(setup.minutes || 20)
-                  go('setup')
-                }}>← আগের সেটআপে ফিরুন</button>}
-                {result.origin === 'questionBank' && <button className="btn ghost" onClick={() => go('questionBank')}>← প্রশ্নব্যাংকে ফিরুন</button>}
-              </div>
-            </div>}
-            {result.scheduleId && <div className="result-return live-result-return">
-              <span className="result-return-icon">✓</span>
-              <div>{result.rankedLive
-                ? <><b>লাইভ পরীক্ষার ফল লিডারবোর্ডে যুক্ত হয়েছে</b><p>আপনার নম্বর স্বয়ংক্রিয়ভাবে আজকের লাইভ র‍্যাংকিংয়ে দেখা যাবে।</p></>
-                : <><b>বিগত পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>নির্ধারিত লাইভ সময় শেষ হওয়ার পরে দেওয়ায় এটি লিডারবোর্ডে যুক্ত হবে না; তবে এই পরীক্ষা আর একবার দেওয়া যাবে না।</p></>}</div>
-              <button className="btn primary" onClick={() => go('exams')}>লাইভ পরীক্ষা কেন্দ্রে ফিরুন →</button>
-            </div>}
             <div className="cta result-main-actions">
-              <button className="btn" onClick={() => setShowRev(v => !v)}>{showRev ? 'উত্তরপত্র লুকান' : 'উত্তরপত্র দেখুন'}</button>
-              <button className="btn ghost" onClick={() => go('home')}>হোমে ফিরুন</button>
+              <button className="btn primary" aria-expanded={showRev} onClick={() => setShowRev(v => !v)}>উত্তরপত্র {showRev ? '↑' : '→'}</button>
+              {result.scheduleId && <button className="btn" onClick={() => go('leaderboard')}>লিডারবোর্ড →</button>}
+              <button className="btn ghost" onClick={() => go('home')}>হোম →</button>
             </div>
             {showRev && <div style={{ marginTop: 26 }}>
               <div className="chips" style={{ marginBottom: 18 }}>
@@ -1757,6 +1733,31 @@ export function App() {
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
+            </div>}
+            {result.setup && <div className="result-return result-return-bottom">
+              <span className="result-return-icon"><SheetIco id="book" /></span>
+              <div><b>এই পরীক্ষার সেটআপ সংরক্ষিত আছে</b><p>বিষয়, টপিক, প্রশ্নসংখ্যা ও সময় আবার নির্বাচন করতে হবে না।</p></div>
+              <div className="result-return-actions">
+                <button className="btn primary" onClick={() => beginQuiz(result.setup)}>পুনরায় →</button>
+                {!result.setup.rows && <button className="btn ghost danger-outline" onClick={() => resetSeenQuestionProgress(result.setup)}>রিসেট →</button>}
+                {result.origin === 'setup' && <button className="btn ghost" onClick={() => {
+                  const setup = result.setup
+                  setCCat(setup.tag === 'bank' ? 'bank' : 'bcs')
+                  setCSubs(setup.subjects || [])
+                  setCTopics(setup.topics || [])
+                  setCCount(setup.limit || 25)
+                  setCTime(setup.minutes || 20)
+                  go('setup')
+                }}>সেটআপ →</button>}
+                {result.origin === 'questionBank' && <button className="btn ghost" onClick={() => go('questionBank')}>প্রশ্নব্যাংক →</button>}
+              </div>
+            </div>}
+            {result.scheduleId && <div className="result-return result-return-bottom live-result-return">
+              <span className="result-return-icon">✓</span>
+              <div>{result.rankedLive
+                ? <><b>লাইভ পরীক্ষার ফল লিডারবোর্ডে যুক্ত হয়েছে</b><p>আপনার নম্বর স্বয়ংক্রিয়ভাবে আজকের লাইভ র‍্যাংকিংয়ে দেখা যাবে।</p></>
+                : <><b>বিগত পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>নির্ধারিত লাইভ সময় শেষ হওয়ার পরে দেওয়ায় এটি লিডারবোর্ডে যুক্ত হবে না; তবে এই পরীক্ষা আর একবার দেওয়া যাবে না।</p></>}</div>
+              <button className="btn primary" onClick={() => go('exams')}>পরীক্ষা →</button>
             </div>}
           </section>
         </>}
