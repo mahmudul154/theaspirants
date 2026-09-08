@@ -262,6 +262,9 @@ export function App() {
   const [wrong, setWrong] = useState(() => uniqueWrongQuestions(load('asp_wrong', [])))
   const [stats, setStats] = useState(() => load('asp_stats', { exams: 0, correct: 0, total: 0 }))
   const [toastMsg, setToastMsg] = useState('')
+  // Gemini cannot natively accept a prompt from a URL, so reveal a compact
+  // paste cue below the exact question after its prompt has been copied.
+  const [geminiHintKey, setGeminiHintKey] = useState(null)
   const [loading, setLoading] = useState(false)
 
   const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
@@ -571,10 +574,39 @@ export function App() {
     return `তুমি বাংলাদেশের চাকরির পরীক্ষার ${teacher}। নিচের MCQ-টি একজন শিক্ষার্থীকে সহজ, নির্ভুল বাংলায় বুঝিয়ে দাও। শুরুতে সঠিক উত্তরটি স্পষ্ট করে বলো। এরপর বিষয়ের নিয়ম, প্রয়োজন হলে ধাপে ধাপে সমাধান, এবং অন্য অপশনগুলো কেন ঠিক নয় তার সংক্ষিপ্ত ব্যাখ্যা দাও। দেওয়া উত্তর ও ব্যাখ্যার তথ্য কাজে লাগাবে, তবে কোনো অসামঞ্জস্য থাকলে নির্ভরযোগ্য বিষয়ভিত্তিক জ্ঞান অনুযায়ী তা সংশোধন করে জানাবে।\n\nবিষয়: ${subject}\nটপিক: ${question?.topic || 'বিবিধ'}\nপ্রশ্ন: ${question?.question || ''}\nঅপশন:\n${options}\n\nসঠিক উত্তর: ${question?.answer || 'উল্লেখ নেই'}\nদেওয়া ব্যাখ্যা: ${question?.explanation || 'নেই'}`
   }
 
+  function copyGeminiPrompt(prompt) {
+    // Start copying while the tap is still a trusted browser gesture. This is
+    // more reliable on Android than copying after the external browser opens.
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(prompt)
+    return new Promise((resolve, reject) => {
+      const field = document.createElement('textarea')
+      field.value = prompt
+      field.setAttribute('readonly', '')
+      field.style.cssText = 'position:fixed;opacity:0;pointer-events:none'
+      document.body.appendChild(field)
+      field.select()
+      try {
+        document.execCommand('copy') ? resolve() : reject(new Error('Copy unavailable'))
+      } catch (error) {
+        reject(error)
+      } finally {
+        field.remove()
+      }
+    })
+  }
+
   function openGeminiExplanation(question) {
     const prompt = geminiPromptFor(question)
+    const promptKey = questionKey(question)
+    // Gemini does not guarantee native URL prefill. Keep the prompt parameter
+    // for users with a compatible browser helper, and reliably copy it first
+    // for everyone else to paste into Gemini's message field.
     const geminiUrl = `https://gemini.google.com/app?hl=bn&prompt=${encodeURIComponent(prompt.slice(0, 6000))}`
     const runningInNativeAndroidApp = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android'
+    const browserLabel = runningInNativeAndroidApp ? 'Chrome' : 'নতুন ট্যাব'
+    const copyAttempt = copyGeminiPrompt(prompt)
+    setGeminiHintKey(promptKey)
+
     // Android explicitly launches this URL through the installed Chrome package,
     // rather than letting Android route the Gemini link to the Gemini app.
     if (runningInNativeAndroidApp) {
@@ -582,15 +614,9 @@ export function App() {
     } else {
       window.open(geminiUrl, '_blank', 'noopener,noreferrer')
     }
-    // Preserve an exact clipboard fallback if Gemini does not prefill the prompt.
-    const browserLabel = runningInNativeAndroidApp ? 'Chrome' : 'নতুন ট্যাব'
-    if (!navigator.clipboard?.writeText) {
-      setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পট না দেখালে এই প্রশ্নটি আবার খুলে কপি করুন।`)
-      return
-    }
-    navigator.clipboard.writeText(prompt)
-      .then(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে—বিষয়ভিত্তিক প্রম্পটটিও কপি করা আছে।`))
-      .catch(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পটটি স্বয়ংক্রিয়ভাবে কপি করা যায়নি।`))
+    copyAttempt
+      .then(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে—প্রম্পট কপি করা আছে।`))
+      .catch(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পটটি কপি করা যায়নি।`))
   }
 
   function launchScheduledExam(exam, candidate = null, testing = false) {
@@ -1114,6 +1140,14 @@ export function App() {
     </details>
   }
 
+  const GeminiHelp = ({ question }) => {
+    const visible = geminiHintKey === questionKey(question)
+    return <div className="gemini-help">
+      <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(question)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
+      {visible && <small className="gemini-paste-hint" role="status">প্রম্পট কপি করা আছে—Gemini-তে Paste করলেই ব্যাখ্যা আসবে।</small>}
+    </div>
+  }
+
   const LBRow = (x, i) => (
     <div className="lb-row" key={i}>
       <span className="rk">{['🥇', '🥈', ''][i] || <i>✦</i>}</span>
@@ -1218,16 +1252,23 @@ export function App() {
 
           <section className="sec">
             <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
-            <div className="slider">
-              {homeLiveExams.map(exam => (
-                <button className={`live-card ${exam.status}`} key={exam.id} onClick={() => exam.status === 'live' ? startScheduledExam(exam) : go('exams')}>
-                  <span className={`tag ${exam.status === 'live' ? 'live-now' : 'bcs'}`}>{exam.status === 'live' ? '● এখন লাইভ' : 'আগামী পরীক্ষা'}</span>
-                  <h3>{exam.subject}</h3>
+            <div className="slider" aria-label="লাইভ পরীক্ষার সংক্ষিপ্ত তালিকা">
+              {homeLiveExams.map(exam => {
+                const isToday = exam.dateKey === todayLeaderboardDateKey
+                const isLive = exam.status === 'live'
+                const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
+                const planDay = exam.subject.match(/দিন\s+[^•]+$/)?.[0]
+                const compactTitle = exam.planned ? `৪০ দিনে প্রিলি প্রস্তুতি${planDay ? ` • ${planDay}` : ''}` : exam.subject
+                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam) : go('exams')}>
+                  <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
+                  <h3 title={exam.subject}>{isToday ? compactTitle : exam.subject}</h3>
                   <div className="top">{exam.topic}</div>
                   <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
-                  <span className="go">{exam.status === 'live' ? (user ? 'এখনই দিন →' : <><SheetIco id="lock" /> লগইন করে দিন</>) : <>⏳ {formatExamCountdown(exam.startsAt, clock)}</>}</span>
+                  {isToday
+                    ? <span className="today-card-countdown"><small>{isLive ? 'লাইভ শেষ হতে বাকি' : 'শুরু হতে বাকি'}</small><b aria-live="polite">{countdown}</b></span>
+                    : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
                 </button>
-              ))}
+              })}
             </div>
             <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি প্রস্তুতি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
@@ -1638,7 +1679,7 @@ export function App() {
                       ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
                       : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
                     <Expl q={item} />
-                    <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
+                    <GeminiHelp question={item} />
                   </article>
                 })}
               </>}
@@ -1835,7 +1876,7 @@ export function App() {
                   <ReviewOptions question={r} selectedIndex={r.ua} />
                   {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
                   <Expl q={r} />
-                  <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
+                  <GeminiHelp question={r} />
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
