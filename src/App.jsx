@@ -17,6 +17,15 @@ const appearedQuestionCountCache = new Map()
 // only for the configured owner account and never records an official attempt.
 const LIVE_TEST_EXAM_ID = typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('live-test') || '')
 const LIVE_TEST_OWNER_EMAIL = '' // Set only to the owner's Aspirants login email.
+const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
+const dhakaDateKey = (now = Date.now(), dayOffset = 0) => {
+  const dhakaNow = new Date(now + DHAKA_OFFSET_MS)
+  const day = new Date(Date.UTC(dhakaNow.getUTCFullYear(), dhakaNow.getUTCMonth(), dhakaNow.getUTCDate() + dayOffset))
+  return `${day.getUTCFullYear()}-${String(day.getUTCMonth() + 1).padStart(2, '0')}-${String(day.getUTCDate()).padStart(2, '0')}`
+}
+const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
+  timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
+}).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
@@ -273,6 +282,9 @@ export function App() {
   const [result, setResult] = useState(null)
   const [showRev, setShowRev] = useState(false)
   const [lbData, setLbData] = useState(null)
+  // The home-page card is a daily archive: on any day it shows the preceding
+  // Bangladesh-calendar day's official live-exam ranking.
+  const [homeLbData, setHomeLbData] = useState(null)
   const [profData, setProfData] = useState(null)
   const [q, setQ] = useState('')
   const [notifOpen, setNotifOpen] = useState(false)
@@ -427,6 +439,23 @@ export function App() {
     return () => io.disconnect()
   }, [page])
   useEffect(() => { if (!toastMsg) return; const t = setTimeout(() => setToastMsg(''), 2400); return () => clearTimeout(t) }, [toastMsg])
+
+  // Keep the home archive current without a deploy. The key changes at
+  // Bangladesh midnight, so the card automatically switches to the new
+  // previous-day leaderboard as well.
+  const homeLeaderboardDateKey = dhakaDateKey(Date.now(), -1)
+  useEffect(() => {
+    if (page !== 'home') return
+    let active = true
+    const refresh = async () => {
+      const rows = await loadLiveLeaderboard(homeLeaderboardDateKey)
+      if (active) setHomeLbData(rows)
+    }
+    setHomeLbData(null)
+    refresh()
+    const timer = window.setInterval(refresh, 5 * 60 * 1000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [page, homeLeaderboardDateKey])
 
   useEffect(() => {
     if (!quiz || page !== 'quiz') return
@@ -931,32 +960,36 @@ export function App() {
     go('result')
   }
 
-  async function fetchLeaderboard() {
-    setLbData(null)
+  async function loadLiveLeaderboard(dateKey) {
     try {
-      // Leaderboard dates follow the published Asia/Dhaka exam calendar, even
-      // if a visitor opens the app from another timezone.
-      const dhakaNow = new Date(Date.now() + 6 * 60 * 60 * 1000)
-      const d0 = new Date(Date.UTC(dhakaNow.getUTCFullYear(), dhakaNow.getUTCMonth(), dhakaNow.getUTCDate()) - 6 * 60 * 60 * 1000)
       const { data, error } = await supabase.from('exam_results')
         .select('user_name, user_avatar, score, user_id, created_at')
-        // Archive attempts use `live-archive:` and are deliberately excluded.
-        .like('category', 'live:%')
-        .gte('created_at', d0.toISOString()).order('created_at', { ascending: true })
+        // `live-archive:` attempts stay out. The schedule date in the official
+        // live ID is used instead of completion time, so an exam ending after
+        // midnight is still counted with the day on which it was published.
+        .like('category', `live:%${dateKey}%`)
+        .order('created_at', { ascending: true })
       if (error) throw error
-      if (data && data.length) {
-        const g = {}
-        data.forEach(p => {
-          const k = p.user_id || p.user_name
-          g[k] ||= { user_name: p.user_name, user_avatar: p.user_avatar, totalScore: 0, total_exams: 0 }
-          g[k].total_exams += 1; g[k].totalScore += Number(p.score)
-        })
-        setLbData(Object.values(g).map(d => ({ ...d, avgScore: (d.totalScore / d.total_exams).toFixed(1) }))
-          .sort((a, b) => b.totalScore - a.totalScore).slice(0, 20))
-        return
-      }
-    } catch (e) { console.error(e) }
-    setLbData([])
+      const grouped = {}
+      ;(data || []).forEach(row => {
+        const key = row.user_id || row.user_name
+        grouped[key] ||= { user_name: row.user_name, user_avatar: row.user_avatar, totalScore: 0, total_exams: 0 }
+        grouped[key].total_exams += 1
+        grouped[key].totalScore += Number(row.score)
+      })
+      return Object.values(grouped)
+        .map(row => ({ ...row, avgScore: (row.totalScore / row.total_exams).toFixed(1) }))
+        .sort((first, second) => Number(second.avgScore) - Number(first.avgScore) || second.total_exams - first.total_exams)
+        .slice(0, 20)
+    } catch (error) {
+      console.error('Live leaderboard load failed:', error)
+      return []
+    }
+  }
+
+  async function fetchLeaderboard() {
+    setLbData(null)
+    setLbData(await loadLiveLeaderboard(dhakaDateKey()))
   }
 
   async function fetchProfile() {
@@ -996,6 +1029,7 @@ export function App() {
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
   const scheduledExams = buildDailyLiveExams(clock)
+  const homeLeaderboardDate = dhakaDateLabel(homeLeaderboardDateKey)
   const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
   const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
   // A published special paper takes priority when it overlaps the regular 23:00
@@ -1182,12 +1216,14 @@ export function App() {
 
                     <section className="sec">
             <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">বন্ধুদের ফলাফল</div><h2 style={{ marginTop: 10 }}>আজকের <i>ফলাফল</i></h2></div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard')}>সব দেখুন →</button>
+              <div><div className="eyebrow">বন্ধুদের ফলাফল</div><h2 style={{ marginTop: 10 }}>গতকালের <i>লিডারবোর্ড</i></h2><p className="muted">{homeLeaderboardDate} তারিখের লাইভ পরীক্ষার ফলাফল।</p></div>
+              <button className="btn sm ghost" onClick={() => go('leaderboard')}>আজকের ফল →</button>
             </div>
-            {lbData?.length
-              ? <div className="lb">{lbData.slice(0, 4).map(LBRow)}</div>
-              : <div className="note">আজকের পরীক্ষার ফল এখানে দেখা যাবে।</div>}
+            {homeLbData === null
+              ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
+              : homeLbData.length
+                ? <div className="lb">{homeLbData.slice(0, 4).map(LBRow)}</div>
+                : <div className="note">গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।</div>}
           </section>
 
           <section className="sec">
