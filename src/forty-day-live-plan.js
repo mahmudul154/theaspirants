@@ -211,4 +211,4 @@ export const FORTY_DAY_LIVE_PLAN = [
 
 if (FORTY_DAY_LIVE_PLAN.length !== 40) throw new Error('The live syllabus must contain exactly 40 daily papers')
 
-export const MODEL_LIVE_START_DATE = { year: 2026, month: 8, day: 8 } // 8 September 2026, Asia/Dhaka
+export const MODEL_LIVE_START_DATE = { year: 2026, month: 8, day: 7 } // 7 September 2026, Asia/Dhaka — 8 September is day 2

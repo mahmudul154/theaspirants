@@ -1079,6 +1079,7 @@ export function App() {
     : upcomingExams.slice(0, 7)
   const pastExams = scheduledExams.filter(exam => exam.status === 'past').slice(-7).reverse()
   const featuredExam = liveExam || upcomingExams[0] || null
+  const featuredExamIsToday = featuredExam?.dateKey === todayLeaderboardDateKey
   const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
   const selectedQbGroup = QUESTION_BANK.groups.find(group => group.id === qbGroupId) || null
   const qbNeedle = qbQuery.trim().toLocaleLowerCase()
@@ -1162,7 +1163,7 @@ export function App() {
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-              <button className="btn ghost" onClick={() => go('setup')}>🛠 নিজের কুইজ তৈরি করুন</button>
+              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
             </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
               <span className="hchip"><b>{BN(questionCounts.total || 0)}</b> প্রশ্ন আছে</span>
@@ -1289,10 +1290,11 @@ export function App() {
               {!user && <button className="btn sm primary" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
             </div>
 
-            {featuredExam && <div className={`live-feature ${featuredExam.status}`}>
+            {featuredExam && <div className={`live-feature ${featuredExam.status} ${featuredExam.status === 'live' ? 'current-live' : featuredExamIsToday ? 'today-feature' : 'upcoming-feature'}`}>
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
-                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExam.planned ? '৪০ দিনে প্রিলি প্রস্তুতি' : 'পরবর্তী পরীক্ষা'}</span>
+                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExamIsToday ? 'আজকের পরীক্ষা' : 'পরবর্তী পরীক্ষা'}</span>
+                  {featuredExam.planned && <span className="live-plan-status">৪০ দিনে প্রিলি প্রস্তুতি</span>}
                 </div>
                 <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
                 <h3>{featuredExam.topic}</h3>
@@ -1329,7 +1331,7 @@ export function App() {
 
           <section className="sec routine-section">
             <div className="head routine-head">
-              <div><div className="eyebrow">{hasFortyDayPlan ? FORTY_DAY_PRELI_PREPARATION : 'পরবর্তী সাত দিন'}</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
+              <div><div className="eyebrow">{hasFortyDayPlan ? FORTY_DAY_PRELI_PREPARATION : 'পরবর্তী সাত দিন'}</div><h2>পরবর্তী <i>পরীক্ষাসমূহ</i></h2></div>
               <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:০০</span>
             </div>
             <div className="live-routine-list">
@@ -2139,20 +2141,27 @@ export function App() {
       {/* ================= LIVE MODEL-TEST ENTRY ================= */}
       {liveEntry && <div className="ai-modal-bg live-entry-bg" onClick={() => setLiveEntry(null)}>
         <div className="ai-modal live-entry-modal" role="dialog" aria-modal="true" aria-labelledby="live-entry-title" onClick={event => event.stopPropagation()}>
-          <div className="ai-modal-head">
-            <span className="ai-modal-icon"><SheetIco id="book" /></span>
-            <div><span>{liveEntry.testing ? 'প্রশ্নপত্রের টেস্ট রান' : 'লাইভ পরীক্ষার উত্তরপত্র'}</span><h3 id="live-entry-title">নাম ও ইনস্টিটিউট লিখুন</h3></div>
+          <div className="ai-modal-head live-entry-head">
+            <span className="ai-modal-icon"><SheetIco id="exam" /></span>
+            <div><span>{liveEntry.testing ? 'প্রশ্নপত্রের টেস্ট রান' : 'লাইভ পরীক্ষা'}</span><h3 id="live-entry-title">পরিচয় নিশ্চিত করুন</h3></div>
             <button className="ibtn" aria-label="ফরম বন্ধ করুন" onClick={() => setLiveEntry(null)}><SheetIco id="close" /></button>
           </div>
           <div className="live-entry-summary">
+            <div className="live-entry-summary-top"><span className="live-entry-status"><i aria-hidden="true" />{liveEntry.testing ? 'টেস্ট মোড' : 'লাইভ পরীক্ষা'}</span><span>ধাপ ১ / ১</span></div>
             <b>{liveEntry.exam.title}</b>
-            <span>{formatLiveExamDate(liveEntry.exam.startsAt)} • {formatLiveExamTime(liveEntry.exam.startsAt)} • {BN(liveEntry.exam.questions)} প্রশ্ন • {BN(liveEntry.exam.minutes)} মিনিট</span>
+            <div className="live-entry-meta-grid">
+              <span><small>তারিখ ও সময়</small><strong>{formatLiveExamDate(liveEntry.exam.startsAt)} • {formatLiveExamTime(liveEntry.exam.startsAt)}</strong></span>
+              <span><small>প্রশ্ন ও সময়</small><strong>{BN(liveEntry.exam.questions)} প্রশ্ন • {BN(liveEntry.exam.minutes)} মিনিট</strong></span>
+            </div>
           </div>
           <form className="form live-entry-form" onSubmit={submitLiveEntry}>
-            <label>নাম<input name="candidateName" type="text" defaultValue={liveEntry.name} placeholder="আপনার নাম" autoComplete="name" required /></label>
-            <label>ইনস্টিটিউট<input name="candidateInstitution" type="text" defaultValue={liveEntry.institution} placeholder="আপনার স্কুল/কলেজ/বিশ্ববিদ্যালয়" required /></label>
-            <p className="muted">{liveEntry.testing ? 'টেস্ট মোডে ফল, ভুল প্রশ্ন, প্রোফাইল পরিসংখ্যান বা অফিসিয়াল লাইভ অ্যাটেম্পট সংরক্ষণ হবে না।' : 'এই তথ্য কেবল আপনার লাইভ পরীক্ষার উত্তরপত্রে দেখানো হবে।'}</p>
-            <div className="ai-actions"><button type="button" className="btn ghost" onClick={() => setLiveEntry(null)}>বাতিল</button><button className="btn primary" type="submit"><SheetIco id="book" /> পরীক্ষা শুরু করুন</button></div>
+            <p className="live-entry-intro">উত্তরপত্রে আপনার পরিচয় দেখাতে নিচের তথ্য দিন।</p>
+            <div className="live-entry-fields">
+              <label><span>পূর্ণ নাম</span><input name="candidateName" type="text" defaultValue={liveEntry.name} placeholder="আপনার নাম লিখুন" autoComplete="name" required /></label>
+              <label><span>ইনস্টিটিউট</span><input name="candidateInstitution" type="text" defaultValue={liveEntry.institution} placeholder="স্কুল, কলেজ বা বিশ্ববিদ্যালয়" required /></label>
+            </div>
+            <p className="live-entry-privacy">{liveEntry.testing ? 'টেস্ট মোডে ফল, ভুল প্রশ্ন, প্রোফাইল পরিসংখ্যান বা অফিসিয়াল লাইভ অ্যাটেম্পট সংরক্ষণ হবে না।' : 'তথ্যটি শুধু আপনার লাইভ পরীক্ষার উত্তরপত্রে ব্যবহৃত হবে।'}</p>
+            <div className="live-entry-actions"><button type="button" className="btn ghost" onClick={() => setLiveEntry(null)}>এখন নয়</button><button className="btn live-entry-start-btn" type="submit">শুরু করুন <span aria-hidden="true">→</span></button></div>
           </form>
         </div>
       </div>}
