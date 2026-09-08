@@ -630,6 +630,9 @@ export function App() {
       subjects: exam.questionPlan ? [...new Set(exam.questionPlan.map(bucket => bucket.subject))] : [exam.subject],
       topics: exam.questionPlan ? [] : [exam.topic],
       rows: exam.rows || null,
+      // A scheduled day can retain its normal database paper and still append
+      // reviewed source questions (the 8 September Math supplement).
+      supplementalRows: exam.supplementalRows || null,
       // For the audited 7 September paper, prefer the dedicated Supabase answer-key
       // table while retaining the identical bundled set as an offline-safe fallback.
       publishedExamId: exam.publishedExamId || null,
@@ -773,7 +776,9 @@ export function App() {
           plannedRows.push(...bucketRows)
           bucketRows.forEach(question => plannedQuestionKeys.add(questionKey(question)))
         }
-        rows = plannedRows.sort(() => Math.random() - .5)
+        // Keep supplied additions alongside the planned database selection; they
+        // use the same canonical question shape and count toward the live limit.
+        rows = uniqueQuestions([...plannedRows, ...(cfg.supplementalRows || [])]).sort(() => Math.random() - .5)
         databaseRowsArePrioritized = true
       } else {
       const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []

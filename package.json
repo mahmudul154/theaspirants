@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "validate:today-model": "node scripts/validate-todays-model-exam.mjs",
+    "validate:september-8-live": "node scripts/validate-september-8-math-supplement.mjs",
     "validate:september-9-live": "node scripts/validate-september-9-live-exam.mjs",
     "preview": "vite preview"
   },

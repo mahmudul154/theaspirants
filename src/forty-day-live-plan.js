@@ -13,7 +13,7 @@ export const FORTY_DAY_LIVE_PLAN = [
   [
     part('English', 'ইংরেজি গ্রামার: Article, Determiner ও Adjective', ['Articles', 'The Determiner', 'Determiners / Quantifiers', 'Adjective', 'Adjective Identification', 'Comparison of Adjectives / Degree'], 40),
     part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: দেশ, আয়তন ও জনসংখ্যা', ['মহাদেশভিত্তিক আয়তন', 'মহাদেশভিত্তিক আয়তনে বৃহত্তম ও ক্ষুদ্রতম দেশ', 'আয়তন ও জনসংখ্যায় বিশ্বের বৃহত্তম ও ক্ষুদ্রতম দেশ'], 30),
-    part('গাণিতিক যুক্তি', 'গণিত: সাধারণ নিয়ম, একক, গ.সা.গু.-ল.সা.গু.', ['Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'], 30)
+    part('গাণিতিক যুক্তি', 'গণিত: সাধারণ নিয়ম, একক, গ.সা.গু.-ল.সা.গু. • অতিরিক্ত শতকরা ও লাভ-ক্ষতি', ['Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'], 30)
   ],
   [
     // Day 3 — announced syllabus for 9 September 2026. This exact 30 / 30 / 16
