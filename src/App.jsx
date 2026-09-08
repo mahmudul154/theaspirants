@@ -1026,7 +1026,12 @@ export function App() {
     return m && m.due <= Date.now()
   })
   const revisionQuizRows = dueList.length ? dueList : wrong
-  const greet = () => { const h = new Date().getHours(); return h < 5 ? 'শুভ রাত্রি' : h < 12 ? 'সুপ্রভাত' : h < 17 ? 'শুভ দুপুর' : h < 20 ? 'শুভ সন্ধ্যা' : 'শুভ রাত্রি' }
+  // Use Bangladesh time rather than the device timezone, so greetings stay correct
+  // for everyone taking the exam from Bangladesh.
+  const greet = () => {
+    const h = new Date(clock + DHAKA_OFFSET_MS).getUTCHours()
+    return h < 5 ? 'শুভ রাত্রি' : h < 12 ? 'সুপ্রভাত' : h < 15 ? 'শুভ দুপুর' : h < 18 ? 'শুভ বিকাল' : h < 20 ? 'শুভ সন্ধ্যা' : 'শুভ রাত্রি'
+  }
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
   const scheduledExams = buildDailyLiveExams(clock)
@@ -1148,7 +1153,7 @@ export function App() {
                   <span className="hchip">🔥 <b>{BN(streak)}</b> স্ট্রিক</span>
                 </div>
               </div>
-              <span className="lbl" style={{ margin: 0 }}>আজকের স্মার্ট প্ল্যান — তোমার ডেটা থেকে বানানো</span>
+              <span className="lbl" style={{ margin: 0 }}>চাকরির পরীক্ষায় এগিয়ে থাকতে আজকের প্রস্তুতি গুছিয়ে নিন</span>
               <div className="chips">
                 {dueList.length > 0 && <button className="chip on" onClick={() => beginQuiz({ title: 'স্মার্ট রিভিশন', rows: dueList, limit: Math.min(10, dueList.length), minutes: 10 })}>🔁 {BN(dueList.length)}টি রিভিশন due</button>}
                 {subjBars.length > 0 && subjBars[subjBars.length - 1].avg < 80 && <button className="chip" onClick={() => beginQuiz({ title: 'দুর্বল বিষয় • ' + subjBars[subjBars.length - 1].s, tag: 'bcs', subjects: [subjBars[subjBars.length - 1].s], limit: 10, minutes: 10, fallback: [subjBars[subjBars.length - 1].s] })}>🎯 {subjBars[subjBars.length - 1].s} দুর্বল — ১০ প্রশ্ন</button>}
