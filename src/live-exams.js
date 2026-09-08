@@ -7,6 +7,10 @@ const HOUR_MS = 60 * 60 * 1000
 const LIVE_START_UTC_HOUR = 17 // 23:00 in Asia/Dhaka
 const LIVE_WINDOW_MS = HOUR_MS
 
+// The shared syllabus supports government-job preliminary preparation beyond
+// one exam track, while keeping the existing schedule IDs stable.
+export const FORTY_DAY_PRELI_PREPARATION = '৪০ দিনে প্রিলি প্রস্তুতি (পিএসসি, বিসিএস, ব্যাংক, এনটিআরসিএ, প্রাথমিক ও অন্যান্য)'
+
 // Exact, well-populated Supabase topic values. The date serial chooses one
 // deterministically, so every visitor sees the same national routine.
 export const LIVE_TOPIC_ROTATION = [
@@ -78,9 +82,9 @@ function modelLiveExamFor(day) {
     dateKey,
     startsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR),
     endsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR) + LIVE_WINDOW_MS,
-    subject: `৪০ দিনের BCS রুটিন • দিন ${index + 1}`,
+    subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
     topic: phaseTitle,
-    title: `৪০ দিনের BCS মডেল পরীক্ষা • দিন ${index + 1}`,
+    title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
     questions: 100,
     minutes: 60,
     planned: true,

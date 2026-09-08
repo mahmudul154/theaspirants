@@ -10,7 +10,7 @@ import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
-import { buildDailyLiveExams, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
+import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -1174,7 +1174,7 @@ export function App() {
                 </button>
               ))}
             </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনের সম্পূর্ণ রুটিন →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
+            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি প্রস্তুতি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
 
           <section className="sec">
@@ -1254,7 +1254,7 @@ export function App() {
             {featuredExam && <div className={`live-feature ${featuredExam.status}`}>
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
-                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExam.planned ? '৪০ দিনের রুটিন' : 'পরবর্তী পরীক্ষা'}</span>
+                  <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExam.planned ? '৪০ দিনে প্রিলি প্রস্তুতি' : 'পরবর্তী পরীক্ষা'}</span>
                 </div>
                 <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
                 <h3>{featuredExam.topic}</h3>
@@ -1291,7 +1291,7 @@ export function App() {
 
           <section className="sec routine-section">
             <div className="head routine-head">
-              <div><div className="eyebrow">{hasFortyDayPlan ? '৪০ দিনের BCS প্রস্তুতি পরিকল্পনা' : 'পরবর্তী সাত দিন'}</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
+              <div><div className="eyebrow">{hasFortyDayPlan ? FORTY_DAY_PRELI_PREPARATION : 'পরবর্তী সাত দিন'}</div><h2>লাইভ পরীক্ষার <i>রুটিন</i></h2></div>
               <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:০০</span>
             </div>
             <div className="live-routine-list">
