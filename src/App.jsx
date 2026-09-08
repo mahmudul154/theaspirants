@@ -1174,7 +1174,7 @@ export function App() {
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
-            <h1>আজকের লাইভ পরীক্ষা, <i>নিজের কুইজে প্রস্তুতি।</i></h1>
+            <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
             {heroCountdownExam && <div className={`hero-exam-countdown ${heroCountdownIsLive ? 'is-live' : ''}`} aria-label={heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে বাকি সময়' : 'পরবর্তী পরীক্ষা শুরু হতে বাকি সময়'}>
               <span className="hero-exam-countdown-icon" aria-hidden="true"><SheetIco id="clock" /></span>
