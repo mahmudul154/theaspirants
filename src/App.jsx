@@ -121,6 +121,7 @@ const SHEET_ICONS = {
   flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
   trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></>,
   book: <><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" /></>,
+  exam: <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 3v3h6V3" /><path d="m8.5 13 2.2 2.2 4.8-5" /></>,
   news: <><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" /><path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" /></>,
   image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></>,
   login: <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /></>,
@@ -283,8 +284,7 @@ export function App() {
   const [result, setResult] = useState(null)
   const [showRev, setShowRev] = useState(false)
   const [lbData, setLbData] = useState(null)
-  // The home-page card is a daily archive: on any day it shows the preceding
-  // Bangladesh-calendar day's official live-exam ranking.
+  const [lbDateKey, setLbDateKey] = useState(null)
   const [homeLbData, setHomeLbData] = useState(null)
   const [profData, setProfData] = useState(null)
   const [q, setQ] = useState('')
@@ -301,6 +301,15 @@ export function App() {
   const [potImgs, setPotImgs] = useState(() => load('asp_potrika_imgs', {}))
   const [vSel, setVSel] = useState(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  // A running live paper switches the home card to today's, live-updating
+  // ranking. Once the paper ends, it returns to the complete previous-day list.
+  const scheduledExams = buildDailyLiveExams(clock)
+  const liveLeaderboardActive = scheduledExams.some(exam => exam.status === 'live')
+  const todayLeaderboardDateKey = dhakaDateKey(clock)
+  const homeLeaderboardDateKey = dhakaDateKey(clock, liveLeaderboardActive ? 0 : -1)
+  const homeLeaderboardRefreshMs = liveLeaderboardActive ? 60 * 1000 : 5 * 60 * 1000
+
   function onPic(e) {
     const f = e.target.files && e.target.files[0]
     if (!f) return
@@ -368,7 +377,7 @@ export function App() {
     setSeenQuestions(user?.id ? load(`asp_seen_questions_v1_${user.id}`, []) : [])
   }, [user?.id])
   useEffect(() => {
-    if (page !== 'home' && page !== 'exams') return
+    if (!['home', 'exams', 'leaderboard'].includes(page)) return
     setClock(Date.now())
     const timer = setInterval(() => setClock(Date.now()), 1000)
     return () => clearInterval(timer)
@@ -441,10 +450,6 @@ export function App() {
   }, [page])
   useEffect(() => { if (!toastMsg) return; const t = setTimeout(() => setToastMsg(''), 2400); return () => clearTimeout(t) }, [toastMsg])
 
-  // Keep the home archive current without a deploy. The key changes at
-  // Bangladesh midnight, so the card automatically switches to the new
-  // previous-day leaderboard as well.
-  const homeLeaderboardDateKey = dhakaDateKey(Date.now(), -1)
   useEffect(() => {
     if (page !== 'home') return
     let active = true
@@ -454,9 +459,23 @@ export function App() {
     }
     setHomeLbData(null)
     refresh()
-    const timer = window.setInterval(refresh, 5 * 60 * 1000)
+    const timer = window.setInterval(refresh, homeLeaderboardRefreshMs)
     return () => { active = false; window.clearInterval(timer) }
-  }, [page, homeLeaderboardDateKey])
+  }, [page, homeLeaderboardDateKey, homeLeaderboardRefreshMs])
+
+  // The dedicated board stays up to date while today's live exam is running.
+  useEffect(() => {
+    if (page !== 'leaderboard' || !lbDateKey) return
+    let active = true
+    const refresh = async () => {
+      const rows = await loadLiveLeaderboard(lbDateKey)
+      if (active) setLbData(rows)
+    }
+    refresh()
+    const isLiveToday = lbDateKey === todayLeaderboardDateKey && liveLeaderboardActive
+    const timer = window.setInterval(refresh, isLiveToday ? 60 * 1000 : 5 * 60 * 1000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [page, lbDateKey, todayLeaderboardDateKey, liveLeaderboardActive])
 
   useEffect(() => {
     if (!quiz || page !== 'quiz') return
@@ -465,11 +484,11 @@ export function App() {
   }, [quiz?.title, page])
   useEffect(() => { if (quiz && quiz.left <= 0) finish() }, [quiz?.left])
 
-  function go(p) {
+  function go(p, options = {}) {
     if (p === 'profile' && !user) p = 'login'
     setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
     if (p !== 'visual') setVSel(null)
-    if (p === 'leaderboard') fetchLeaderboard()
+    if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || todayLeaderboardDateKey)
     if (p === 'profile') fetchProfile()
   }
 
@@ -963,16 +982,25 @@ export function App() {
 
   async function loadLiveLeaderboard(dateKey) {
     try {
-      const { data, error } = await supabase.from('exam_results')
-        .select('user_name, user_avatar, score, user_id, created_at')
-        // `live-archive:` attempts stay out. The schedule date in the official
-        // live ID is used instead of completion time, so an exam ending after
-        // midnight is still counted with the day on which it was published.
-        .like('category', `live:%${dateKey}%`)
-        .order('created_at', { ascending: true })
-      if (error) throw error
+      // Supabase returns at most a page of rows. Read every page so “সব ফল”
+      // genuinely includes every participant from that live-exam date.
+      const pageSize = 1000
+      const allRows = []
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase.from('exam_results')
+          .select('user_name, user_avatar, score, user_id, created_at')
+          // `live-archive:` attempts stay out. The schedule date in the official
+          // live ID is used instead of completion time, so an exam ending after
+          // midnight is still counted with the day on which it was published.
+          .like('category', `live:%${dateKey}%`)
+          .order('created_at', { ascending: true })
+          .range(from, from + pageSize - 1)
+        if (error) throw error
+        allRows.push(...(data || []))
+        if (!data || data.length < pageSize) break
+      }
       const grouped = {}
-      ;(data || []).forEach(row => {
+      allRows.forEach(row => {
         const key = row.user_id || row.user_name
         grouped[key] ||= { user_name: row.user_name, user_avatar: row.user_avatar, totalScore: 0, total_exams: 0 }
         grouped[key].total_exams += 1
@@ -981,16 +1009,16 @@ export function App() {
       return Object.values(grouped)
         .map(row => ({ ...row, avgScore: (row.totalScore / row.total_exams).toFixed(1) }))
         .sort((first, second) => Number(second.avgScore) - Number(first.avgScore) || second.total_exams - first.total_exams)
-        .slice(0, 20)
     } catch (error) {
       console.error('Live leaderboard load failed:', error)
       return []
     }
   }
 
-  async function fetchLeaderboard() {
+  async function fetchLeaderboard(dateKey = todayLeaderboardDateKey) {
+    setLbDateKey(dateKey)
     setLbData(null)
-    setLbData(await loadLiveLeaderboard(dhakaDateKey()))
+    setLbData(await loadLiveLeaderboard(dateKey))
   }
 
   async function fetchProfile() {
@@ -1034,8 +1062,9 @@ export function App() {
   }
   const goalDays = goal && goal.date ? Math.max(0, Math.ceil((new Date(goal.date) - new Date()) / 864e5)) : null
   const trend = (() => { if (hist.length < 2) return null; const a = hist.slice(0, 3), b = hist.slice(3, 6); if (!b.length) return null; const av = x => x.reduce((t, h) => t + h.p, 0) / x.length; return Math.round(av(a) - av(b)) })()
-  const scheduledExams = buildDailyLiveExams(clock)
   const homeLeaderboardDate = dhakaDateLabel(homeLeaderboardDateKey)
+  const leaderboardDate = dhakaDateLabel(lbDateKey || todayLeaderboardDateKey)
+  const viewingTodayLeaderboard = (lbDateKey || todayLeaderboardDateKey) === todayLeaderboardDateKey
   const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
   const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
   // A published special paper takes priority when it overlaps the regular 23:00
@@ -1220,16 +1249,20 @@ export function App() {
             </div>
           </section>
 
-                    <section className="sec">
+          <section className="sec">
             <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">লাইভ ফলাফল</div><h2 style={{ marginTop: 10 }}>গতকালের <i>লিডারবোর্ড</i></h2><p className="muted">{homeLeaderboardDate} তারিখের লাইভ পরীক্ষার ফলাফল।</p></div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard')}>আজকের ফল →</button>
+              <div>
+                <div className="eyebrow">লাইভ ফলাফল</div>
+                <h2 style={{ marginTop: 10 }}>{liveLeaderboardActive ? <>আজকের <i>লিডারবোর্ড</i></> : <>গতকালের <i>লিডারবোর্ড</i></>}</h2>
+                <p className="muted">{liveLeaderboardActive ? 'লাইভ পরীক্ষা চলাকালীন নতুন ফল জমা হলে র‍্যাঙ্কিং প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} তারিখে যারা লাইভ পরীক্ষা দিয়েছেন তাদের ফলাফল।`}</p>
+              </div>
+              <button className="btn sm ghost" onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
             </div>
             {homeLbData === null
               ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
               : homeLbData.length
                 ? <div className="lb">{homeLbData.slice(0, 4).map(LBRow)}</div>
-                : <div className="note">গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।</div>}
+                : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
           </section>
 
           <section className="sec">
@@ -1414,10 +1447,19 @@ export function App() {
         {/* ================= LEADERBOARD ================= */}
         {page === 'leaderboard' && <>
           <section className="sec">
-            <div className="head"><div className="eyebrow">লাইভ ফলাফল</div><h2>আজকের <i>পরীক্ষার ফল</i></h2><p className="muted">আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।</p></div>
+            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
+              <div>
+                <div className="eyebrow">লাইভ ফলাফল</div>
+                <h2>{viewingTodayLeaderboard ? <>আজকের <i>পরীক্ষার ফল</i></> : <><i>লাইভ পরীক্ষার ফল</i></>}</h2>
+                <p className="muted">{viewingTodayLeaderboard
+                  ? (liveLeaderboardActive ? 'লাইভ পরীক্ষা চলাকালীন নতুন ফল জমা হলে এই তালিকা প্রতি মিনিটে আপডেট হবে।' : 'আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।')
+                  : `${leaderboardDate} তারিখে যারা লাইভ পরীক্ষা দিয়েছেন তাদের সম্পূর্ণ ফলাফল।`}</p>
+              </div>
+              {!viewingTodayLeaderboard && <button className="btn sm ghost" onClick={() => go('leaderboard')}>আজকের ফল →</button>}
+            </div>
             {lbData === null ? <div className="note">লোড হচ্ছে…</div>
               : lbData.length ? <div className="lb">{lbData.map(LBRow)}</div>
-                : <div className="note"><b>আজকে এখনো কেউ পরীক্ষা দেয়নি।</b> পরীক্ষার ফল এখানে দেখা যাবে।</div>}
+                : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'পরীক্ষার ফল এখানে দেখা যাবে।' : ''}</div>}
           </section>
         </>}
 
@@ -2032,10 +2074,10 @@ export function App() {
 
       {page !== 'quiz' && <nav className="bnav" aria-label="দ্রুত নেভিগেশন">
         <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
-        <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="book" />পরীক্ষা</button>
+        <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="exam" />পরীক্ষা</button>
         <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
+        <button className={page === 'questionBank' ? 'on' : ''} onClick={() => go('questionBank')}><SheetIco id="bank" />প্রশ্নব্যাংক</button>
         <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
-        <button className={page === 'visual' ? 'on' : ''} onClick={() => go('visual')}><SheetIco id="image" />ভিজ্যুয়াল</button>
       </nav>}
 
       {page !== 'quiz' && <>
