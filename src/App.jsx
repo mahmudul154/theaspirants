@@ -1123,15 +1123,15 @@ export function App() {
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
-            <div className="eyebrow">অভ্যাস — বন্ধুদের প্রস্তুতির পরিসর</div>
-            <h1>চাকরির প্রস্তুতি, <i>একসঙ্গে।</i></h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>বন্ধুদের সঙ্গে নির্ধারিত টপিকে অনুশীলন করুন। নিজের মতো কুইজ দিন, উত্তর ও ব্যাখ্যা দেখে প্রস্তুতি নিন।</p>
+            <div className="eyebrow">লাইভ পরীক্ষা ও কাস্টম কুইজ</div>
+            <h1>আজকের লাইভ পরীক্ষা, <i>নিজের কুইজে প্রস্তুতি।</i></h1>
+            <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
               <button className="btn ghost" onClick={() => go('setup')}>🛠 নিজের কুইজ তৈরি করুন</button>
             </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>নির্ধারিত</b> টপিক</span>
+              <span className="hchip"><b>{BN(questionCounts.total || 0)}</b> প্রশ্ন আছে</span>
               <span className="hchip"><b>কাস্টম</b> কুইজ</span>
               <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
               <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
@@ -1217,7 +1217,7 @@ export function App() {
 
                     <section className="sec">
             <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">বন্ধুদের ফলাফল</div><h2 style={{ marginTop: 10 }}>গতকালের <i>লিডারবোর্ড</i></h2><p className="muted">{homeLeaderboardDate} তারিখের লাইভ পরীক্ষার ফলাফল।</p></div>
+              <div><div className="eyebrow">লাইভ ফলাফল</div><h2 style={{ marginTop: 10 }}>গতকালের <i>লিডারবোর্ড</i></h2><p className="muted">{homeLeaderboardDate} তারিখের লাইভ পরীক্ষার ফলাফল।</p></div>
               <button className="btn sm ghost" onClick={() => go('leaderboard')}>আজকের ফল →</button>
             </div>
             {homeLbData === null
@@ -1230,7 +1230,7 @@ export function App() {
           <section className="sec">
             <div className="cta-band">
               <h2>নিজেকে যাচাই করার জন্য আপনি কি <i>প্রস্তুত?</i></h2>
-              <p>বন্ধুদের সঙ্গে বিষয় বেছে অনুশীলন করুন এবং নিজের অগ্রগতি দেখুন।</p>
+              <p>বিষয় বেছে অনুশীলন করুন এবং নিজের অগ্রগতি দেখুন।</p>
               <button className="btn primary" onClick={() => go(user ? 'setup' : 'signup')}>🎓 অনুশীলন শুরু করুন ➝</button>
             </div>
           </section>
@@ -1409,7 +1409,7 @@ export function App() {
         {/* ================= LEADERBOARD ================= */}
         {page === 'leaderboard' && <>
           <section className="sec">
-            <div className="head"><div className="eyebrow">বন্ধুদের ফলাফল</div><h2>আজকের <i>পরীক্ষার ফল</i></h2><p className="muted">আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।</p></div>
+            <div className="head"><div className="eyebrow">লাইভ ফলাফল</div><h2>আজকের <i>পরীক্ষার ফল</i></h2><p className="muted">আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।</p></div>
             {lbData === null ? <div className="note">লোড হচ্ছে…</div>
               : lbData.length ? <div className="lb">{lbData.map(LBRow)}</div>
                 : <div className="note"><b>আজকে এখনো কেউ পরীক্ষা দেয়নি।</b> পরীক্ষার ফল এখানে দেখা যাবে।</div>}
@@ -1875,7 +1875,7 @@ export function App() {
         {page === 'signup' && <>
           <section className="sec">
             <div className="auth-wrap">
-              <div className="side"><h3>অভ্যাস-এ <i>যোগ দিন</i></h3><p className="muted">বন্ধুদের সঙ্গে পরীক্ষা ও অনুশীলনে অংশ নিতে একটি অ্যাকাউন্ট তৈরি করুন।</p></div>
+              <div className="side"><h3>অভ্যাস-এ <i>যোগ দিন</i></h3><p className="muted">পরীক্ষা ও অনুশীলনে অংশ নিতে একটি অ্যাকাউন্ট তৈরি করুন।</p></div>
               <div className="body"><div className="eyebrow" style={{ marginBottom: 18 }}>নতুন অ্যাকাউন্ট</div>
                 <form className="form" onSubmit={async e => {
                   e.preventDefault()
