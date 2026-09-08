@@ -126,6 +126,7 @@ const SHEET_ICONS = {
   trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></>,
   layers: <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>,
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></>,
+  timer: <><path d="M9 2h6" /><path d="m5.2 5.2-2.7-2.7" /><path d="m18.8 5.2 2.7-2.7" /><circle cx="12" cy="13" r="8" /><path d="M12 9v4.5l3 1.8" /><path d="M8.4 21.3 7 22.7M15.6 21.3l1.4 1.4" /></>,
   exam: <><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 3v3h6V3" /><path d="m8.5 13 2.2 2.2 4.8-5" /></>,
   news: <><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" /><path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" /></>,
   image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></>,
@@ -1211,7 +1212,7 @@ export function App() {
             <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
             {heroCountdownExam && <div className={`hero-exam-countdown ${heroCountdownIsLive ? 'is-live' : ''}`} aria-label={heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে বাকি সময়' : 'পরবর্তী পরীক্ষা শুরু হতে বাকি সময়'}>
-              <span className="hero-exam-countdown-icon" aria-hidden="true"><SheetIco id="clock" /></span>
+              <span className="hero-exam-countdown-icon" aria-hidden="true"><SheetIco id="timer" /></span>
               <span className="hero-exam-countdown-copy"><small>{heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে' : heroCountdownExam.dateKey === todayLeaderboardDateKey ? 'আজকের পরীক্ষা শুরু হতে' : 'পরবর্তী পরীক্ষা শুরু হতে'}</small><b aria-live="polite">{formatExamCountdown(heroCountdownIsLive ? heroCountdownExam.endsAt : heroCountdownExam.startsAt, clock)}</b></span>
               <span className="hero-exam-countdown-topic">{heroCountdownExam.topic}</span>
             </div>}

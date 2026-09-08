@@ -66,14 +66,14 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .hero-panel h1{font-family:var(--serif);font-weight:400;letter-spacing:-.03em;font-size:clamp(2.6rem,7.4vw,5.6rem);line-height:1.02;max-width:15ch;margin:0}
 .hero-panel .lead{color:var(--ink2);font-size:1.06rem;line-height:1.9;max-width:52ch;margin-top:12px}
 .hero-panel .lead b{color:var(--ink);font-weight:600}
-.hero-exam-countdown{align-self:flex-start;display:flex;align-items:center;gap:10px;max-width:100%;padding:8px 12px 8px 8px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,var(--card)),var(--card));box-shadow:0 10px 24px -23px var(--accent);color:var(--accent)}
-.hero-exam-countdown.is-live{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--card)),var(--card));}
-.hero-exam-countdown-icon{width:31px;height:31px;display:grid;place-items:center;flex:none;border-radius:9px;background:linear-gradient(135deg,var(--accent),#a63322);color:#fff;box-shadow:0 7px 15px -9px var(--accent)}
-.hero-exam-countdown.is-live .hero-exam-countdown-icon{background:linear-gradient(135deg,#b43d29,#7e2419);box-shadow:0 7px 15px -9px var(--accent)}
-.hero-exam-countdown-icon svg{width:16px;height:16px}.hero-exam-countdown-copy{display:grid;gap:0;line-height:1.15}.hero-exam-countdown-copy small{font-size:.64rem;font-weight:700;letter-spacing:.055em;color:var(--ink3)}
-.hero-exam-countdown-copy b{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;font-size:.9rem;letter-spacing:.025em;color:var(--ink)}
-.hero-exam-countdown-topic{max-width:28ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:10px;border-left:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));color:var(--ink2);font-size:.7rem;font-weight:600}
-.hero-exam-countdown.is-live .hero-exam-countdown-topic{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+.hero-exam-countdown{align-self:flex-start;display:grid;grid-template-columns:42px auto minmax(0,1fr);align-items:center;gap:11px;max-width:100%;min-height:64px;padding:9px 15px 9px 10px;border:1px solid color-mix(in srgb,var(--accent) 36%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--accent) 5%,var(--card));box-shadow:none;color:var(--accent)}
+.hero-exam-countdown.is-live{border-color:color-mix(in srgb,var(--accent) 58%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--card))}
+.hero-exam-countdown-icon{width:42px;height:42px;display:grid;place-items:center;flex:none;border:1px solid color-mix(in srgb,#fff 28%,transparent);border-radius:14px;background:var(--accent);color:#fff}
+.hero-exam-countdown.is-live .hero-exam-countdown-icon{background:#a83224}
+.hero-exam-countdown-icon svg{width:22px;height:22px;stroke-width:2.15}.hero-exam-countdown-copy{display:grid;gap:3px;min-width:max-content;line-height:1.08}.hero-exam-countdown-copy small{font-size:.68rem;font-weight:750;letter-spacing:0;color:var(--ink2)}
+.hero-exam-countdown-copy b{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;font-size:1.04rem;font-weight:800;letter-spacing:.04em;color:var(--ink)}
+.hero-exam-countdown-topic{min-width:0;max-width:31ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:13px;border-left:1px solid color-mix(in srgb,var(--accent) 27%,var(--line));color:var(--ink2);font-size:.72rem;font-weight:700;line-height:1.35}
+.hero-exam-countdown.is-live .hero-exam-countdown-topic{border-color:color-mix(in srgb,var(--accent) 36%,var(--line))}
 html.dark .hero-exam-countdown{color:#ffb8ad}
 .hero-panel .hero-custom-quiz-btn{border-color:color-mix(in srgb,var(--accent) 34%,var(--line2));background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--card)),var(--card));color:var(--accent);box-shadow:0 8px 22px -20px var(--accent)}
 .hero-panel .hero-custom-quiz-btn:hover{border-color:var(--accent);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 15%,var(--card)),var(--card));color:#a63322}
