@@ -16,12 +16,11 @@ export const FORTY_DAY_LIVE_PLAN = [
     part('গাণিতিক যুক্তি', 'গণিত: সাধারণ নিয়ম, একক, গ.সা.গু.-ল.সা.গু.', ['Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'], 30)
   ],
   [
-    // Day 3 — announced syllabus for 9 September 2026. The supplied English
-    // and world-civilization papers are being held for the final fixed paper;
-    // this topic plan keeps the announced scope and randomised database order.
-    part('English', 'ইংরেজি: Tense, Right Form of Verb ও Conditionals', ['Tense', 'Right Form of Verb', 'Verb and Right form of verb', 'Conditionals'], 40),
+    // Day 3 — announced syllabus for 9 September 2026. This exact 30 / 30 / 16
+    // source-only distribution is published as a fixed paper in live-exams.js.
+    part('English', 'ইংরেজি: Tense, Right Form of Verbs ও Conditionals', ['Tense', 'Right Form of Verb', 'Verb and Right form of verb', 'Conditionals'], 30),
     part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: বিশ্ব সভ্যতা', ['বিশ্ব সভ্যতা', 'প্রাচীন সভ্যতা', 'বিশ্ব ইতিহাস', 'ইতিহাস'], 30),
-    part('গাণিতিক যুক্তি', 'গণিত: শতকরা ও লাভ-ক্ষতি', ['শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'ক্রয়মূল্য নির্ণয়'], 30)
+    part('গাণিতিক যুক্তি', 'গণিত: শতকরা ও লাভ-ক্ষতি', ['শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'ক্রয়মূল্য নির্ণয়'], 16)
   ],
   [
     part('English', 'ইংরেজি গ্রামার: Agreement, Voice ও Narration', ['Subject-Verb Agreement', 'Voice, Narration and One Word'], 40),

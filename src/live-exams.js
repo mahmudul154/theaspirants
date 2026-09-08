@@ -1,4 +1,5 @@
 import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
+import { SEPTEMBER_9_LIVE_EXAM_COUNTS, SEPTEMBER_9_LIVE_EXAM_QUESTIONS } from './september-9-live-exam.js'
 import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
@@ -75,10 +76,11 @@ function modelLiveExamFor(day) {
   const date = new Date(day)
   const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
   const firstPhase = index < 20
+  const isSeptember9FixedPaper = dateKey === '2026-09-09'
   // The announced Day 3 scope is surfaced directly in every compact schedule
   // card, rather than being hidden behind the generic first-phase heading.
   const phaseTitle = index === 2
-    ? 'Tense, Right Form ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
+    ? 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
     : firstPhase
       ? 'ইংরেজি গ্রামার • আন্তর্জাতিক বিষয়াবলি • গণিত'
       : 'বাংলা ব্যাকরণ • বাংলাদেশ বিষয়াবলি • মানসিক দক্ষতা'
@@ -90,15 +92,24 @@ function modelLiveExamFor(day) {
     subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
     topic: phaseTitle,
     title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
-    questions: 100,
+    // Day 3 is a reviewed source-only paper. Its static order is intentionally
+    // shared by every candidate, so it must never enter the database shuffle.
+    questions: isSeptember9FixedPaper ? SEPTEMBER_9_LIVE_EXAM_COUNTS.total : 100,
     minutes: 60,
     planned: true,
     phase: firstPhase ? 'প্রথম ২০ দিন' : 'পরের ২০ দিন',
     questionPlan,
-    distribution: questionPlan.map(({ subject, questions }) => ({
-      label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
-      questions
-    }))
+    rows: isSeptember9FixedPaper ? SEPTEMBER_9_LIVE_EXAM_QUESTIONS : null,
+    distribution: isSeptember9FixedPaper
+      ? [
+          { label: 'English', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.english },
+          { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.generalKnowledge },
+          { label: 'গাণিতিক যুক্তি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.math }
+        ]
+      : questionPlan.map(({ subject, questions }) => ({
+          label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
+          questions
+        }))
   }
 }
 
