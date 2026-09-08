@@ -1,4 +1,4 @@
-// Forty consecutive 23:00 Asia/Dhaka model exams. Each daily paper follows
+// Forty consecutive 23:30 Asia/Dhaka model exams. Each daily paper follows
 // the 40 / 30 / 30 format of the published model test and is loaded from the
 // question bank according to the listed shared preliminary-preparation topics.
 const part = (subject, label, topics, questions) => ({ subject, label, topics, questions })
@@ -16,9 +16,12 @@ export const FORTY_DAY_LIVE_PLAN = [
     part('গাণিতিক যুক্তি', 'গণিত: সাধারণ নিয়ম, একক, গ.সা.গু.-ল.সা.গু.', ['Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'], 30)
   ],
   [
-    part('English', 'ইংরেজি গ্রামার: Verb, Right Form ও Tense', ['Verb', 'Verb forms', 'Verb and Right form of verb', 'Right Form of Verb', 'Tense'], 40),
-    part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: রাজধানী, মুদ্রা ও জাতীয় প্রতীক', ['রাজধানী', 'মুদ্রা ও দেশ', 'জাতীয় প্রতীক', 'বিশ্বের বিভিন্ন দেশের জাতীয় প্রতীক'], 30),
-    part('গাণিতিক যুক্তি', 'গণিত: অনুপাত ও সমানুপাত', ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত'], 30)
+    // Day 3 — announced syllabus for 9 September 2026. The supplied English
+    // and world-civilization papers are being held for the final fixed paper;
+    // this topic plan keeps the announced scope and randomised database order.
+    part('English', 'ইংরেজি: Tense, Right Form of Verb ও Conditionals', ['Tense', 'Right Form of Verb', 'Verb and Right form of verb', 'Conditionals'], 40),
+    part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: বিশ্ব সভ্যতা', ['বিশ্ব সভ্যতা', 'প্রাচীন সভ্যতা', 'বিশ্ব ইতিহাস', 'ইতিহাস'], 30),
+    part('গাণিতিক যুক্তি', 'গণিত: শতকরা ও লাভ-ক্ষতি', ['শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'ক্রয়মূল্য নির্ণয়'], 30)
   ],
   [
     part('English', 'ইংরেজি গ্রামার: Agreement, Voice ও Narration', ['Subject-Verb Agreement', 'Voice, Narration and One Word'], 40),

@@ -1105,7 +1105,7 @@ export function App() {
   const viewingTodayLeaderboard = (lbDateKey || todayLeaderboardDateKey) === todayLeaderboardDateKey
   const isTestOwner = !!LIVE_TEST_OWNER_EMAIL && String(user?.email || '').trim().toLowerCase() === LIVE_TEST_OWNER_EMAIL.toLowerCase()
   const isTestExam = exam => !!exam && isTestOwner && LIVE_TEST_EXAM_ID === exam.id
-  // A published special paper takes priority when it overlaps the regular 23:00
+  // A published special paper takes priority when it overlaps the regular 23:30
   // daily window, so its announced start time always opens the correct exam.
   const liveExam = scheduledExams.find(exam => exam.status === 'live' && exam.special)
     || scheduledExams.find(exam => exam.status === 'live')
@@ -1341,7 +1341,7 @@ export function App() {
           <section className="sec live-exam-center">
             <div className="head live-center-head">
               <div className="eyebrow">লাইভ পরীক্ষা কেন্দ্র</div>
-              <h2>দৈনিক রাত ১১টা ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
+              <h2>দৈনিক রাত ১১:৩০ ও <i>বিশেষ লাইভ পরীক্ষা</i></h2>
               <p className="muted">বাংলাদেশ সময়ে প্রতিদিন একটি নতুন পরীক্ষা, সঙ্গে নির্ধারিত বিশেষ পরীক্ষা। অংশ নিতে লগইন করুন।</p>
             </div>
 
@@ -1393,7 +1393,7 @@ export function App() {
           <section className="sec routine-section">
             <div className="head routine-head">
               <div><div className="eyebrow">{hasFortyDayPlan ? FORTY_DAY_PRELI_PREPARATION : 'পরবর্তী সাত দিন'}</div><h2>পরবর্তী <i>পরীক্ষাসমূহ</i></h2></div>
-              <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:০০</span>
+              <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:৩০</span>
             </div>
             <div className="live-routine-list">
               {routineExams.map((exam, index) => (

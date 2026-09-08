@@ -110,9 +110,8 @@ html.dark .hero-panel .hero-custom-quiz-btn{color:#ffb8ad}
 .live-card h3{font-size:1rem;line-height:1.45;margin-bottom:3px}
 .live-card .top{color:var(--ink3);font-size:.76rem;line-height:1.55;margin-bottom:14px}
 .live-card .meta{display:flex;gap:8px 13px;flex-wrap:wrap;color:var(--ink2);font-size:.72rem;border-top:1px dashed var(--line);padding-top:11px}
-.live-card.today-card{position:relative;isolation:isolate;overflow:hidden;flex:0 0 min(365px,calc(100vw - 52px));min-height:270px;border-color:color-mix(in srgb,var(--accent) 36%,var(--line));border-radius:12px;background:radial-gradient(circle at 104% -12%,color-mix(in srgb,var(--accent) 17%,transparent) 0 23%,transparent 23.5%),linear-gradient(125deg,color-mix(in srgb,var(--accent) 9%,var(--card)),var(--card) 57%,color-mix(in srgb,#d6a24b 6%,var(--card)));box-shadow:0 22px 44px -36px color-mix(in srgb,var(--accent) 85%,transparent)}
-.live-card.today-card:after{content:"";position:absolute;z-index:-1;right:-44px;bottom:-68px;width:180px;height:180px;border:1px solid color-mix(in srgb,var(--accent) 15%,transparent);border-radius:50%}
-.live-card.today-card:hover{border-color:color-mix(in srgb,var(--accent) 65%,var(--line));box-shadow:0 24px 48px -34px color-mix(in srgb,var(--accent) 88%,transparent)}
+.live-card.today-card{flex:0 0 min(365px,calc(100vw - 52px));min-height:270px;border-color:color-mix(in srgb,var(--accent) 42%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--accent) 6%,var(--card))}
+.live-card.today-card:hover{border-color:color-mix(in srgb,var(--accent) 65%,var(--line));box-shadow:none}
 .today-card h3{font-family:var(--serif);font-size:1.4rem;font-weight:400;line-height:1.18;max-width:16ch}
 .today-card .top{max-width:29ch;color:var(--ink2);font-weight:600}
 .today-card .meta{width:100%;margin-top:auto;border-color:color-mix(in srgb,var(--accent) 20%,var(--line))}

@@ -4,7 +4,8 @@ import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-pla
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
 const HOUR_MS = 60 * 60 * 1000
-const LIVE_START_UTC_HOUR = 17 // 23:00 in Asia/Dhaka
+const LIVE_START_UTC_HOUR = 17
+const LIVE_START_UTC_MINUTE = 30 // 23:30 in Asia/Dhaka
 const LIVE_WINDOW_MS = HOUR_MS
 
 // The shared syllabus supports government-job preliminary preparation beyond
@@ -36,7 +37,7 @@ export const LIVE_TOPIC_ROTATION = [
   { subject: 'নৈতিকতা, মূল্যবোধ ও সুশাসন', topic: 'বাংলাদেশের সংবিধানে অধিকার' }
 ]
 
-// Manually published events sit beside the daily 23:00 routine. Each plan
+// Manually published events sit beside the daily 23:30 routine. Each plan
 // contains only exact topic values from `mcq_questions_job`; keyword buckets
 // cover the requested sector and March-focused questions inside those topics.
 export const SPECIAL_LIVE_EXAMS = [
@@ -74,14 +75,18 @@ function modelLiveExamFor(day) {
   const date = new Date(day)
   const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
   const firstPhase = index < 20
-  const phaseTitle = firstPhase
-    ? 'ইংরেজি গ্রামার • আন্তর্জাতিক বিষয়াবলি • গণিত'
-    : 'বাংলা ব্যাকরণ • বাংলাদেশ বিষয়াবলি • মানসিক দক্ষতা'
+  // The announced Day 3 scope is surfaced directly in every compact schedule
+  // card, rather than being hidden behind the generic first-phase heading.
+  const phaseTitle = index === 2
+    ? 'Tense, Right Form ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
+    : firstPhase
+      ? 'ইংরেজি গ্রামার • আন্তর্জাতিক বিষয়াবলি • গণিত'
+      : 'বাংলা ব্যাকরণ • বাংলাদেশ বিষয়াবলি • মানসিক দক্ষতা'
   return {
     id: `bcs-40-day-model-${dateKey}`,
     dateKey,
-    startsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR),
-    endsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR) + LIVE_WINDOW_MS,
+    startsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE),
+    endsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE) + LIVE_WINDOW_MS,
     subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
     topic: phaseTitle,
     title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
@@ -124,7 +129,7 @@ export function buildDailyLiveExams(now = Date.now()) {
     const month = date.getUTCMonth()
     const dayOfMonth = date.getUTCDate()
     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
-    const startsAt = Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR)
+    const startsAt = Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE)
     const endsAt = startsAt + LIVE_WINDOW_MS
 
     exams.push(withStatus({
