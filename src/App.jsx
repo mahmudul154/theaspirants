@@ -1021,7 +1021,7 @@ export function App() {
   const Expl = ({ q }) => {
     const explanation = q?.explanation || q?.explanation_bn || ''
     return <details className="explanation-details">
-      <summary><span>ব্যাখ্যা দেখুন</span><small>খুলতে চাপুন</small></summary>
+      <summary><span>ব্যাখ্যা</span></summary>
       <div className="expl explanation-content">
         {explanation ? <Md s={explanation} /> : <>সঠিক উত্তর — <b>{q?.answer}</b></>}
       </div>
@@ -1532,7 +1532,7 @@ export function App() {
                       ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
                       : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
                     <Expl q={item} />
-                    <button className="ai-help-btn review-ai-help" title="Gemini-তে ব্যাখ্যা খুলুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
+                    <button className="ai-help-btn review-ai-help" title="Gemini-তে বুঝুন" onClick={() => openGeminiExplanation(item)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
                   </article>
                 })}
               </>}
@@ -1653,14 +1653,19 @@ export function App() {
             ))}
           </section>
 
-          <div className="qbar">
-            <button className="btn ghost sm" onClick={quitTap}>{quitArm ? 'নিশ্চিত?' : '✕'}</button>
-            <span className={`q-timer ${quiz.left < 30 ? 'warn' : ''}`}>⏱ {mmss}</span>
-            <span className="muted" style={{ fontSize: '.8rem' }}>{BN(quiz.ans.filter(a => a != null).length)}/{BN(quiz.qs.length)} উত্তর হয়েছে</span>
-            <button className={`btn ${arm ? 'danger' : 'primary'}`} onClick={() => {
+          <div className="qbar" role="region" aria-label="পরীক্ষা নিয়ন্ত্রণ">
+            <button className={`qbar-quit ${quitArm ? 'confirming' : ''}`} aria-label={quitArm ? 'বের হওয়া নিশ্চিত করতে আবার চাপুন' : 'পরীক্ষা থেকে বের হন'} onClick={quitTap}>
+              <SheetIco id="close" /><span>{quitArm ? 'নিশ্চিত?' : 'বের হন'}</span>
+            </button>
+            <div className="qbar-status" aria-live="polite">
+              <span className={`q-timer ${quiz.left < 30 ? 'warn' : ''}`}>⏱ {mmss}</span>
+              <span className="qbar-progress"><b>{BN(quiz.ans.filter(a => a != null).length)}/{BN(quiz.qs.length)}</b><small>উত্তর হয়েছে</small></span>
+            </div>
+            <p className={`qbar-guide ${arm ? 'confirming' : ''}`}><span aria-hidden="true">✦</span>{arm ? 'নিশ্চিত করতে আবার সাবমিটে ট্যাপ করুন' : 'সব উত্তর মিলিয়ে তারপর সাবমিট করুন'}</p>
+            <button className={`btn qbar-submit ${arm ? 'danger' : 'primary'}`} onClick={() => {
               if (!arm) { setArm(true); setTimeout(() => setArm(false), 2500); return }
               finish()
-            }}>{arm ? 'নিশ্চিত? আবার চাপো' : 'সাবমিট করুন ✓'}</button>
+            }}><span>{arm ? 'নিশ্চিত করুন' : 'সাবমিট করুন'}</span><b aria-hidden="true">{arm ? '!' : '✓'}</b></button>
           </div>
         </>}
 
@@ -1730,7 +1735,7 @@ export function App() {
               <button className="btn primary" onClick={() => go('exams')}>লাইভ পরীক্ষা কেন্দ্রে ফিরুন →</button>
             </div>}
             <div className="cta result-main-actions">
-              <button className="btn" onClick={() => setShowRev(v => !v)}>{showRev ? 'ব্যাখ্যা লুকান' : 'উত্তর ও ব্যাখ্যা দেখুন'}</button>
+              <button className="btn" onClick={() => setShowRev(v => !v)}>{showRev ? 'উত্তরপত্র লুকান' : 'উত্তরপত্র দেখুন'}</button>
               <button className="btn ghost" onClick={() => go('home')}>হোমে ফিরুন</button>
             </div>
             {showRev && <div style={{ marginTop: 26 }}>
@@ -1748,7 +1753,7 @@ export function App() {
                   <ReviewOptions question={r} selectedIndex={r.ua} />
                   {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
                   <Expl q={r} />
-                  <button className="ai-help-btn review-ai-help" title="Gemini-তে ব্যাখ্যা খুলুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
+                  <button className="ai-help-btn review-ai-help" title="Gemini-তে বুঝুন" onClick={() => openGeminiExplanation(r)}><SheetIco id="sparkles" /> Gemini দিয়ে বুঝুন ↗</button>
                 </div>
               })}
               {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
@@ -1982,7 +1987,8 @@ export function App() {
         {loading && <div className="toast show">প্রশ্ন লোড হচ্ছে…</div>}
       </main>
 
-      {page !== 'quiz' && <nav className="bnav">
+      {page !== 'quiz' && <nav className="bnav" aria-label="দ্রুত নেভিগেশন">
+        <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
         <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="book" />পরীক্ষা</button>
         <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
         <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
