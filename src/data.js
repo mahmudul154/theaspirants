@@ -41,6 +41,16 @@ export const dbSubjectsFor = subjects => {
   return expanded
 }
 
+// The selector uses learner-friendly topic names while older question records
+// retain the historical topic labels. Expand those names at query time so a
+// selected topic never leads to an empty quiz.
+const DB_TOPIC_ALIASES = {
+  'বিশ্ব সভ্যতা': ['বিশ্ব সভ্যতা', 'প্রাচীন সভ্যতা', 'বিশ্ব ইতিহাস', 'ইতিহাস']
+}
+export const dbTopicsFor = topics => [...new Set(
+  (topics || []).flatMap(topic => DB_TOPIC_ALIASES[topic] || [topic])
+)]
+
 /* হোমপেজের ৫টি কার্ড — আগের অ্যাপের মতো */
 export const HOME_SUBJS = [
   { id: 'English', label: 'English', icon: '📒', tint: '#4f46e5' },

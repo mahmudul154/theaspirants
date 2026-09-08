@@ -10,7 +10,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 
 const questionCountCache = new Map()
@@ -277,7 +277,7 @@ export function App() {
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
-  const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + (questionCounts?.subjects?.[subject]?.topics?.[topic] || 0), 0)
+  const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + dbTopicsFor([topic]).reduce((topicTotal, dbTopic) => topicTotal + (questionCounts?.subjects?.[subject]?.topics?.[dbTopic] || 0), 0), 0)
   const [clock, setClock] = useState(Date.now())
   const [liveAttempts, setLiveAttempts] = useState({})
   const [liveAttemptsReady, setLiveAttemptsReady] = useState(false)
@@ -751,7 +751,7 @@ export function App() {
       } else {
       const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []
       const dbSubjects = selectedPostNames.length ? [] : dbSubjectsFor(subjects)
-      const selectedTopics = topics && topics.length ? [...new Set(topics)] : []
+      const selectedTopics = topics && topics.length ? dbTopicsFor(topics) : []
       const isAllBcs = !selectedPostNames.length && !selectedTopics.length && subjects?.length === CAT_SUBJECTS.bcs.length
         && CAT_SUBJECTS.bcs.every(subject => subjects.includes(subject))
       const applyQuestionFilters = query => {
