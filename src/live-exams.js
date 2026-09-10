@@ -191,8 +191,9 @@ export function buildDailyLiveExams(now = Date.now()) {
     }, now))
   }
 
-  return [...exams, ...SPECIAL_LIVE_EXAMS.map(exam => withStatus(exam, now))]
-    .sort((first, second) => first.startsAt - second.startsAt)
+  const uniqueExams = new Map()
+  for (const exam of [...exams, ...SPECIAL_LIVE_EXAMS.map(exam => withStatus(exam, now))]) uniqueExams.set(exam.id, exam)
+  return [...uniqueExams.values()].sort((first, second) => first.startsAt - second.startsAt)
 }
 
 export function formatLiveExamDate(timestamp) {

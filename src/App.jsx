@@ -320,9 +320,13 @@ export function App() {
   // A running live paper switches the home card to today's, live-updating
   // ranking. Once the paper ends, it returns to the complete previous-day list.
   const scheduledExams = buildDailyLiveExams(clock)
-  const liveLeaderboardActive = scheduledExams.some(exam => exam.status === 'live')
+  const activeLiveExam = scheduledExams.find(exam => exam.status === 'live') || null
+  const liveLeaderboardActive = !!activeLiveExam
+  const activeLiveLeaderboardDateKey = activeLiveExam?.dateKey || null
   const todayLeaderboardDateKey = dhakaDateKey(clock)
-  const homeLeaderboardDateKey = dhakaDateKey(clock, liveLeaderboardActive ? 0 : -1)
+  // The 23:30 paper continues after midnight. Keep showing that paper's board
+  // until it finishes; only then switch to the next relevant exam date.
+  const homeLeaderboardDateKey = activeLiveLeaderboardDateKey || dhakaDateKey(clock, -1)
   const homeLeaderboardRefreshMs = liveLeaderboardActive ? 60 * 1000 : 5 * 60 * 1000
 
   function onPic(e) {
@@ -480,17 +484,22 @@ export function App() {
 
   // The dedicated board stays up to date while today's live exam is running.
   useEffect(() => {
-    if (page !== 'leaderboard' || !lbDateKey) return
+    if (page !== 'leaderboard' || !homeLeaderboardDateKey) return
+    // When the next paper starts, move the board to that paper automatically.
+    if (lbDateKey !== homeLeaderboardDateKey) {
+      fetchLeaderboard(homeLeaderboardDateKey)
+      return
+    }
     let active = true
     const refresh = async () => {
       const rows = await loadLiveLeaderboard(lbDateKey)
       if (active) setLbData(rows)
     }
     refresh()
-    const isLiveToday = lbDateKey === todayLeaderboardDateKey && liveLeaderboardActive
-    const timer = window.setInterval(refresh, isLiveToday ? 60 * 1000 : 5 * 60 * 1000)
+    const isActiveLiveBoard = activeLiveLeaderboardDateKey === lbDateKey && liveLeaderboardActive
+    const timer = window.setInterval(refresh, isActiveLiveBoard ? 60 * 1000 : 5 * 60 * 1000)
     return () => { active = false; window.clearInterval(timer) }
-  }, [page, lbDateKey, todayLeaderboardDateKey, liveLeaderboardActive])
+  }, [page, lbDateKey, homeLeaderboardDateKey, activeLiveLeaderboardDateKey, liveLeaderboardActive])
 
   useEffect(() => {
     if (!quiz || page !== 'quiz') return
@@ -549,7 +558,7 @@ export function App() {
     if (p === 'profile' && !user) p = 'login'
     setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
     if (p !== 'visual') setVSel(null)
-    if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || todayLeaderboardDateKey)
+    if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey)
     if (p === 'profile') fetchProfile()
   }
 
@@ -1463,7 +1472,6 @@ export function App() {
                     {exam.planned && <div className="routine-topic-detail"><b>সিলেবাস:</b> {exam.topic}</div>}
                     <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
-                    {exam.planned && <div className="routine-meta exam-distribution" aria-label="টপিকভিত্তিক সিলেবাস">{exam.questionPlan.map(part => <span key={part.label} title={part.label}>{part.label}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
                 </article>

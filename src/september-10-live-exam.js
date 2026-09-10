@@ -113,7 +113,13 @@ const sourceRows = [
 ]
 
 const toBanglaDigits = value => String(value).replace(/\d/g, digit => '০১২৩৪৫৬৭৮৯'[digit])
-const order = Array.from({ length: sourceRows.length }, (_, index) => index)
+const englishOrder = sourceRows.map((row, index) => row.subject === 'ইংরেজি' ? index : null).filter(index => index !== null)
+const generalKnowledgeOrder = sourceRows.map((row, index) => row.subject === 'আন্তর্জাতিক বিষয়াবলি' ? index : null).filter(index => index !== null)
+const order = []
+for (let index = 0; index < Math.max(englishOrder.length, generalKnowledgeOrder.length); index++) {
+  if (englishOrder[index] !== undefined) order.push(englishOrder[index])
+  if (generalKnowledgeOrder[index] !== undefined) order.push(generalKnowledgeOrder[index])
+}
 
 if (sourceRows.length !== 100) throw new Error(`The 10 September live paper must contain exactly 100 questions, found ${sourceRows.length}`)
 
