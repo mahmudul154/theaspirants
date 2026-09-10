@@ -12,7 +12,7 @@ import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
-import { LIVE_TEST_ALLOWED_EXAM_ID, canRunLiveTest } from './live-test-access.js'
+import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest } from './live-test-access.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -48,6 +48,12 @@ const ICOS = {
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
 const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const ROUTINE_SUBJECT_LABELS = {
+  English: 'ইংরেজি',
+  'গাণিতিক যুক্তি': 'গণিত'
+}
+const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
+
 const SUBJECT_TEACHERS = {
   'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
   'English': 'ইংরেজি বিষয়ের শিক্ষক',
@@ -491,6 +497,52 @@ export function App() {
     const t = setInterval(() => setQuiz(q => q ? { ...q, left: q.left - 1 } : q), 1000)
     return () => clearInterval(t)
   }, [quiz?.title, page])
+  useEffect(() => {
+    if (!quiz?.liveExamSecurity || page !== 'quiz') return
+    let submitted = false
+    const autoSubmit = reason => {
+      if (submitted) return
+      submitted = true
+      setToastMsg(`${reason} — লাইভ পরীক্ষা স্বয়ংক্রিয়ভাবে জমা দেওয়া হয়েছে`)
+      finish()
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') autoSubmit('অন্য অ্যাপ বা ট্যাব খোলা হয়েছে')
+    }
+    const onWindowBlur = () => {
+      // Android Home/Overview and browser/app switching can emit blur before
+      // visibilitychange. The short delay avoids racing the browser event.
+      window.setTimeout(() => {
+        if (document.visibilityState === 'hidden' || !document.hasFocus()) autoSubmit('পরীক্ষার উইন্ডো থেকে বের হওয়া হয়েছে')
+      }, 0)
+    }
+    const onPageHide = () => autoSubmit('পরীক্ষার পেজ বন্ধ বা পরিবর্তন করা হয়েছে')
+    const blockClipboard = event => event.preventDefault()
+    const blockContextMenu = event => event.preventDefault()
+    const blockShortcuts = event => {
+      const key = String(event.key || '').toLowerCase()
+      if ((event.ctrlKey || event.metaKey) && ['c', 'v', 'x', 'u', 's', 'p'].includes(key)) event.preventDefault()
+      if (key === 'f12' || key === 'printscreen') event.preventDefault()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    document.addEventListener('copy', blockClipboard)
+    document.addEventListener('cut', blockClipboard)
+    document.addEventListener('paste', blockClipboard)
+    document.addEventListener('contextmenu', blockContextMenu)
+    document.addEventListener('keydown', blockShortcuts, true)
+    window.addEventListener('blur', onWindowBlur)
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      document.removeEventListener('copy', blockClipboard)
+      document.removeEventListener('cut', blockClipboard)
+      document.removeEventListener('paste', blockClipboard)
+      document.removeEventListener('contextmenu', blockContextMenu)
+      document.removeEventListener('keydown', blockShortcuts, true)
+      window.removeEventListener('blur', onWindowBlur)
+      window.removeEventListener('pagehide', onPageHide)
+    }
+  }, [quiz, page])
   useEffect(() => { if (quiz && quiz.left <= 0) finish() }, [quiz?.left])
 
   function go(p, options = {}) {
@@ -647,6 +699,7 @@ export function App() {
       candidate,
       testing,
       rankingEligible,
+      liveExamSecurity: !testing && rankingEligible,
       once: true
     })
   }
@@ -934,7 +987,7 @@ export function App() {
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, liveExamSecurity: !!cfg.liveExamSecurity, daily: !!cfg.daily })
     go('quiz')
   }
 
@@ -1107,8 +1160,9 @@ export function App() {
   const leaderboardDate = dhakaDateLabel(lbDateKey || todayLeaderboardDateKey)
   const viewingTodayLeaderboard = (lbDateKey || todayLeaderboardDateKey) === todayLeaderboardDateKey
   const isTestExam = exam => !!exam
-    && canRunLiveTest(user?.email, LIVE_TEST_EXAM_ID)
-    && exam.id === LIVE_TEST_ALLOWED_EXAM_ID
+    && [LIVE_TEST_ALLOWED_EXAM_ID, ...LIVE_TEST_ADDITIONAL_EXAM_IDS].includes(exam.id)
+    && canRunLiveTest(user?.email, exam.id)
+    && (!LIVE_TEST_EXAM_ID || LIVE_TEST_EXAM_ID === exam.id)
   // A published special paper takes priority when it overlaps the regular 23:30
   // daily window, so its announced start time always opens the correct exam.
   const liveExam = scheduledExams.find(exam => exam.status === 'live' && exam.special)
@@ -1402,11 +1456,12 @@ export function App() {
             <div className="live-routine-list">
               {routineExams.map((exam, index) => (
                 <article className="live-routine-card" key={exam.id}>
-                  <div className="routine-day"><b>{BN(index + 1)}</b><span>দিন</span></div>
+                  <div className="routine-day"><b>{BN(exam.planDay || index + 1)}</b><span>দিন</span></div>
                   <div className="routine-main">
-                    <div className="routine-card-top"><span>{exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
-                    <h3>{exam.topic}</h3>
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span>{exam.special && <span>বিশেষ</span>}</div>
+                    <div className="routine-card-top"><span>{exam.planned ? 'লাইভ পরীক্ষা' : exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
+                    <h3>{exam.planned ? liveExamSubjectHeading(exam) : exam.topic}</h3>
+                    {exam.planned && <div className="routine-topic-detail"><b>সিলেবাস:</b> {exam.topic}</div>}
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                     {exam.planned && <div className="routine-meta exam-distribution" aria-label="টপিকভিত্তিক সিলেবাস">{exam.questionPlan.map(part => <span key={part.label} title={part.label}>{part.label}</span>)}</div>}
                   </div>
@@ -1785,6 +1840,7 @@ export function App() {
             <div className="eyebrow">{quiz.title} — {BN(quiz.qs.length)}টি প্রশ্ন • স্লাইড/স্ক্রল করে সব দেখো</div>
             {quiz.candidate && <div className="live-candidate-line" aria-label="পরীক্ষার্থীর তথ্য"><span>নাম: <b>{quiz.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{quiz.candidate.institution}</b></span></div>}
             {quiz.testing && <div className="live-candidate-line" role="status"><b>টেস্ট মোড</b><span>এই রানটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলের ফলাফলে যোগ হবে না।</span></div>}
+            {quiz.liveExamSecurity && <div className="live-security-notice" role="alert"><b>⚠ লাইভ পরীক্ষা নিরাপত্তা</b><span>অন্য অ্যাপ/ট্যাব, Home/Overview button বা পরীক্ষার উইন্ডো থেকে বের হলে পরীক্ষা সঙ্গে সঙ্গে জমা হয়ে যাবে। কপি, পেস্ট ও সাধারণ শর্টকাট বন্ধ আছে।</span></div>}
             {quiz.qs.map((q, qi) => (
               <div className="q-card qcard" id={'qcard-' + qi} key={qi} style={{ scrollMarginTop: 130 }}>
                 <div className="qno"><span>প্রশ্ন {BN(qi + 1)}</span>

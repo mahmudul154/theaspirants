@@ -1,7 +1,8 @@
 import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
 import { SEPTEMBER_8_LIVE_EXAM_COUNTS, SEPTEMBER_8_LIVE_EXAM_QUESTIONS } from './september-8-live-exam.js'
 import { SEPTEMBER_9_LIVE_EXAM_COUNTS, SEPTEMBER_9_LIVE_EXAM_QUESTIONS } from './september-9-live-exam.js'
-import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE } from './forty-day-live-plan.js'
+import { SEPTEMBER_10_LIVE_EXAM_COUNTS, SEPTEMBER_10_LIVE_EXAM_QUESTIONS } from './september-10-live-exam.js'
+import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE, SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -73,47 +74,56 @@ const MODEL_LIVE_END_MS = MODEL_LIVE_START_MS + FORTY_DAY_LIVE_PLAN.length * DAY
 function modelLiveExamFor(day) {
   if (day < MODEL_LIVE_START_MS || day >= MODEL_LIVE_END_MS) return null
   const index = Math.floor((day - MODEL_LIVE_START_MS) / DAY_MS)
-  const questionPlan = FORTY_DAY_LIVE_PLAN[index]
   const date = new Date(day)
-  const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
+  const year = date.getUTCFullYear()
+  const month = date.getUTCMonth()
+  const dayOfMonth = date.getUTCDate()
+  const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
+  const routineOverride = SEPTEMBER_2026_ROUTINE[dateKey]
+  const questionPlan = routineOverride?.questionPlan || FORTY_DAY_LIVE_PLAN[index]
+  const planDay = routineOverride?.day || index + 1
   const firstPhase = index < 20
   const isSeptember8SourcePaper = dateKey === '2026-09-08'
   const isSeptember9FixedPaper = dateKey === '2026-09-09'
-  // The announced Day 2 and Day 3 scope is surfaced directly in every compact
-  // schedule card, rather than being hidden behind the generic phase heading.
-  const phaseTitle = index === 1
+  const isSeptember10FixedPaper = dateKey === '2026-09-10'
+  // The older source-only papers retain their published compact headings. New
+  // date-specific routine entries use the learner's full syllabus title.
+  const legacyPhaseTitle = index === 1
     ? 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
     : index === 2
       ? 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি'
       : firstPhase
         ? 'ইংরেজি গ্রামার • আন্তর্জাতিক বিষয়াবলি • গণিত'
         : 'বাংলা ব্যাকরণ • বাংলাদেশ বিষয়াবলি • মানসিক দক্ষতা'
+  const phaseTitle = routineOverride?.title || legacyPhaseTitle
   return {
     id: `bcs-40-day-model-${dateKey}`,
     dateKey,
-    startsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE),
-    endsAt: Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE) + LIVE_WINDOW_MS,
-    subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
+    startsAt: Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE),
+    endsAt: Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE) + LIVE_WINDOW_MS,
+    subject: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${bnDigits(planDay)}`,
     topic: phaseTitle,
-    title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${index + 1}`,
-    // Day 2 uses every reviewed question from the supplied PDFs: 30 English,
-    // 30 world-civilization GK and 23 percentage/profit-loss Math questions.
-    // Its stable pre-shuffled order is shared by every candidate, and no
-    // database questions can replace or supplement the supplied paper.
+    title: `${FORTY_DAY_PRELI_PREPARATION} • দিন ${bnDigits(planDay)}`,
     questions: isSeptember8SourcePaper
       ? SEPTEMBER_8_LIVE_EXAM_COUNTS.total
       : isSeptember9FixedPaper
         ? SEPTEMBER_9_LIVE_EXAM_COUNTS.total
-        : 100,
+        : isSeptember10FixedPaper
+          ? SEPTEMBER_10_LIVE_EXAM_COUNTS.total
+          : questionPlan.reduce((total, bucket) => total + Number(bucket.questions || 0), 0),
     minutes: 60,
     planned: true,
+    revision: !!routineOverride?.revision,
+    planDay,
     phase: firstPhase ? 'প্রথম ২০ দিন' : 'পরের ২০ দিন',
     questionPlan,
     rows: isSeptember8SourcePaper
       ? SEPTEMBER_8_LIVE_EXAM_QUESTIONS
       : isSeptember9FixedPaper
         ? SEPTEMBER_9_LIVE_EXAM_QUESTIONS
-        : null,
+        : isSeptember10FixedPaper
+          ? SEPTEMBER_10_LIVE_EXAM_QUESTIONS
+          : null,
     distribution: isSeptember8SourcePaper
       ? [
           { label: 'English', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.english },
@@ -126,7 +136,12 @@ function modelLiveExamFor(day) {
             { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.generalKnowledge },
             { label: 'গাণিতিক যুক্তি', questions: SEPTEMBER_9_LIVE_EXAM_COUNTS.math }
           ]
-        : questionPlan.map(({ subject, questions }) => ({
+        : isSeptember10FixedPaper
+          ? [
+              { label: 'ইংরেজি', questions: SEPTEMBER_10_LIVE_EXAM_COUNTS.english },
+              { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_10_LIVE_EXAM_COUNTS.generalKnowledge }
+            ]
+          : questionPlan.map(({ subject, questions }) => ({
             label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
             questions
           }))
