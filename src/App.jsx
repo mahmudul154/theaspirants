@@ -708,7 +708,7 @@ export function App() {
       candidate,
       testing,
       rankingEligible,
-      liveExamSecurity: !testing && rankingEligible,
+      liveExamSecurity: !!rankingEligible || !!testing,
       once: true
     })
   }
