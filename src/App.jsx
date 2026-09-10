@@ -541,7 +541,14 @@ export function App() {
     document.addEventListener('keydown', blockShortcuts, true)
     window.addEventListener('blur', onWindowBlur)
     window.addEventListener('pagehide', onPageHide)
+    // Some Android WebViews do not dispatch blur/visibility events reliably
+    // when the Home/Overview control opens another app. Poll focus as a final
+    // guard so Gemini or any external app still causes an immediate submit.
+    const focusWatcher = window.setInterval(() => {
+      if (document.visibilityState === 'hidden' || !document.hasFocus()) autoSubmit('পরীক্ষার উইন্ডো থেকে বের হওয়া হয়েছে')
+    }, 250)
     return () => {
+      window.clearInterval(focusWatcher)
       document.removeEventListener('visibilitychange', onVisibilityChange)
       document.removeEventListener('copy', blockClipboard)
       document.removeEventListener('cut', blockClipboard)
