@@ -10,7 +10,9 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const HOUR_MS = 60 * 60 * 1000
 const LIVE_START_UTC_HOUR = 17
 const LIVE_START_UTC_MINUTE = 30 // 23:30 in Asia/Dhaka
-const LIVE_WINDOW_MS = HOUR_MS
+// Every daily/model paper opens at 23:30 Asia/Dhaka and remains available
+// until 14:00 the following day (a 14-hour-30-minute response window).
+const LIVE_WINDOW_MS = 14 * HOUR_MS + 30 * 60 * 1000
 
 // The shared syllabus supports government-job preliminary preparation beyond
 // one exam track, while keeping the existing schedule IDs stable.
