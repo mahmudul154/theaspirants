@@ -77,13 +77,13 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 32px 120px}
 .hero-exam-countdown-topic{min-width:0;max-width:31ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:13px;border-left:1px solid color-mix(in srgb,var(--accent) 27%,var(--line));color:var(--ink2);font-size:.72rem;font-weight:700;line-height:1.35}
 .hero-exam-countdown.is-live .hero-exam-countdown-topic{border-color:color-mix(in srgb,var(--accent) 36%,var(--line))}
 html.dark .hero-exam-countdown{color:#ffb8ad}
-.hero-panel .cta{position:relative;z-index:1;gap:12px}
-.hero-panel .cta .btn{min-height:46px;border-radius:12px;padding:12px 18px;box-shadow:0 10px 22px -18px var(--ink)}
+.hero-panel .cta{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:min(100%,660px)}
+.hero-panel .cta .btn{width:100%;min-width:0;min-height:46px;border-radius:12px;padding:12px 14px;justify-content:center;box-shadow:0 10px 22px -18px var(--ink);white-space:nowrap}
 .hero-panel .cta .btn.primary{background:linear-gradient(135deg,#202125,#3b3d44);border-color:#202125}
 .hero-panel .cta .btn.primary:hover{background:linear-gradient(135deg,var(--accent),#a63322)}
 .hero-panel .hero-custom-quiz-btn{border-color:color-mix(in srgb,var(--accent) 34%,var(--line2));background:color-mix(in srgb,#fff 62%,var(--card));color:var(--accent);box-shadow:0 8px 22px -20px var(--accent)}
 .hero-panel .hero-custom-quiz-btn:hover{border-color:var(--accent);background:var(--card);color:#a63322}
-.hero-custom-quiz-icon{width:22px;height:22px;display:grid;place-items:center;flex:none;border-radius:7px;color:#fff;background:linear-gradient(135deg,var(--accent),#a63322);box-shadow:0 5px 12px -7px var(--accent)}
+.hero-custom-quiz-icon{width:22px;height:22px;display:grid;place-items:center;flex:none;border-radius:7px;color:currentColor;background:transparent;box-shadow:none}
 .hero-custom-quiz-icon svg{width:14px;height:14px}
 html.dark .hero-panel .hero-custom-quiz-btn{color:#ffb8ad}
 
@@ -554,6 +554,9 @@ html.dark .saved-setup-kicker,html.dark .saved-setup-meta span{color:#ffb8ad}
   .cta-band{padding:32px 24px}
 }
 @media(max-width:560px){
+  .hero-panel .cta{gap:8px}
+  .hero-panel .cta .btn{padding:10px 7px;font-size:.72rem;letter-spacing:-.01em}
+  .hero-panel .hero-custom-quiz-icon{width:18px;height:18px}
   .hdr-left,.hdr-right{gap:4px}.header-notif-btn{width:32px;height:32px}
   .hdr-right .auth-login{width:34px;padding:0;font-size:0}.hdr-right .auth-login svg{width:17px;height:17px}
 }
