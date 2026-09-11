@@ -1284,15 +1284,15 @@ export function App() {
           <section className="hero-panel">
             <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
-            <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
-            </div>
             <div className="hero-chips" style={{ marginTop: 10 }}>
               <span className="hchip"><b>{BN(questionCounts.total || 0)}</b> প্রশ্ন আছে</span>
               <span className="hchip"><b>কাস্টম</b> কুইজ</span>
               <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
               <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
+            </div>
+            <div className="cta" style={{ marginTop: 6 }}>
+              <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
+              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
             </div>
           </section>
 
