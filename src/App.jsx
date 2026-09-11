@@ -1241,11 +1241,11 @@ export function App() {
             <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
               <span className="wordmark">অভ্যাস</span>
             </button>
+          </div>
+          <div className="hdr-right">
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
             </button>
-          </div>
-          <div className="hdr-right">
             <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
@@ -1284,11 +1284,6 @@ export function App() {
           <section className="hero-panel">
             <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
             <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
-            {heroCountdownExam && <div className={`hero-exam-countdown ${heroCountdownIsLive ? 'is-live' : ''}`} aria-label={heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে বাকি সময়' : 'পরবর্তী পরীক্ষা শুরু হতে বাকি সময়'}>
-              <span className="hero-exam-countdown-icon" aria-hidden="true"><SheetIco id="timer" /></span>
-              <span className="hero-exam-countdown-copy"><small>{heroCountdownIsLive ? 'লাইভ পরীক্ষা শেষ হতে' : heroCountdownExam.dateKey === todayLeaderboardDateKey ? 'আজকের পরীক্ষা শুরু হতে' : 'পরবর্তী পরীক্ষা শুরু হতে'}</small><b aria-live="polite">{formatExamCountdown(heroCountdownIsLive ? heroCountdownExam.endsAt : heroCountdownExam.startsAt, clock)}</b></span>
-              <span className="hero-exam-countdown-topic">{heroCountdownExam.topic}</span>
-            </div>}
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
               <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
