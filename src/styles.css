@@ -85,7 +85,11 @@ html.dark .hero-exam-countdown{color:#ffb8ad}
 .hero-panel .hero-custom-quiz-btn:hover{border-color:var(--accent);background:var(--card);color:#a63322}
 .hero-custom-quiz-icon{width:22px;height:22px;display:grid;place-items:center;flex:none;border-radius:7px;color:currentColor;background:transparent;box-shadow:none}
 .hero-custom-quiz-icon svg{width:14px;height:14px}
-html.dark .hero-panel .hero-custom-quiz-btn{color:#ffb8ad}
+html.dark .hero-panel{border-color:color-mix(in srgb,#c89367 30%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,#2b211a 92%,var(--card)),color-mix(in srgb,#171b25 94%,var(--card)));box-shadow:0 24px 60px -48px rgb(0 0 0 / .8)}
+html.dark .hero-panel:before{background:radial-gradient(circle at 35% 35%,color-mix(in srgb,#a66b3e 34%,transparent),color-mix(in srgb,#7c4a2d 18%,transparent) 48%,transparent 70%)}
+html.dark .hero-panel:after{border-color:color-mix(in srgb,#c89367 28%,transparent);background:color-mix(in srgb,#3b2b21 32%,transparent)}
+html.dark .hero-panel .hchip{border-color:color-mix(in srgb,#c89367 18%,var(--line));color:var(--ink2)}
+html.dark .hero-panel .hero-custom-quiz-btn{color:#ffb8ad;background:color-mix(in srgb,#2b211a 78%,var(--card));border-color:color-mix(in srgb,#c89367 38%,var(--line2))}
 
 /* hero stat strip — engenious .stats look */
 .hero-panel .hero-chips{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-top:1px solid color-mix(in srgb,#bd8a62 22%,var(--line));margin-top:28px;gap:0}
