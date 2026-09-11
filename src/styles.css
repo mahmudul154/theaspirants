@@ -885,6 +885,8 @@ html.dark .live-feature:after{display:none}
 .live-feature h3{font-size:clamp(1.7rem,3vw,3rem);line-height:1.12;letter-spacing:-.015em;max-width:19ch;overflow-wrap:anywhere;margin:0;color:var(--ink)}
 .live-feature-meta{font-size:.78rem;gap:7px 17px;margin-top:2px;color:var(--ink3)}
 .live-feature-meta span{display:inline-flex;align-items:center;gap:5px}
+.live-feature-meta .live-window-note{color:var(--accent);font-weight:700}
+.exam-window-label{color:var(--accent)!important;font-weight:700}
 .live-feature-action{min-width:0;border-left:1px solid color-mix(in srgb,#ad8666 22%,var(--line));padding-left:clamp(22px,3vw,40px);justify-content:center;gap:11px}
 .live-feature-action>span{font-size:.74rem;color:var(--ink3);letter-spacing:.02em}
 .live-feature-action>strong{font-size:clamp(1.55rem,2.4vw,2.6rem);font-family:var(--num);font-weight:400;letter-spacing:-.01em;line-height:1.1;margin:0 0 12px;color:var(--ink)}

@@ -1430,7 +1430,8 @@ export function App() {
                 <h3>{featuredExam.topic}</h3>
                 <div className="live-feature-meta">
                   <span>📅 {formatLiveExamDate(featuredExam.startsAt)}</span>
-                  <span>🕗 {formatLiveExamTime(featuredExam.startsAt)}</span>
+                  <span>🕗 শুরু {formatLiveExamTime(featuredExam.startsAt)}</span>
+                  <span className="live-window-note">🕑 উত্তর: পরদিন দুপুর ২টা পর্যন্ত</span>
                   <span>📝 {BN(featuredExam.questions)} প্রশ্ন</span>
                   <span>⏱ {BN(featuredExam.minutes)} মিনিট</span>
                 </div>
@@ -1472,7 +1473,7 @@ export function App() {
                     <div className="routine-card-top"><span>{exam.planned ? 'লাইভ পরীক্ষা' : exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
                     <h3>{exam.planned ? liveExamSubjectHeading(exam) : exam.topic}</h3>
                     {exam.planned && <div className="routine-topic-detail"><b>সিলেবাস:</b> {exam.topic}</div>}
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span className="exam-window-label">পরদিন ২টা পর্যন্ত</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
