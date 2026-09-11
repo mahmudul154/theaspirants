@@ -33,7 +33,7 @@ header{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--paper
 .hdr-in{position:relative;max-width:var(--maxw);margin:0 auto;height:66px;padding:0 32px;display:flex;align-items:center;gap:18px}
 .logo{display:flex;align-items:baseline;gap:9px;font-weight:700;font-size:1.02rem;letter-spacing:-.02em;cursor:pointer;background:none;border:none;color:var(--ink)}
 .logo em{font-style:normal;font-weight:500;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
-.hdr-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
+.hdr-logo{position:static;transform:none;z-index:auto;flex:none;margin-left:2px}
 .hdr-right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .ibtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:grid;place-items:center;font-size:.8rem;transition:all .18s}
 .ibtn:hover{border-color:var(--ink);transform:translateY(-1px)}

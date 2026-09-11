@@ -1238,13 +1238,13 @@ export function App() {
             <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
               <SheetIco id="menu" />
             </button>
+            <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
+              <span className="wordmark">অভ্যাস</span>
+            </button>
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
             </button>
           </div>
-          <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
-            <span className="wordmark">অভ্যাস</span>
-          </button>
           <div className="hdr-right">
             <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
