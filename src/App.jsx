@@ -1380,12 +1380,12 @@ export function App() {
             </div>
           </section>
 
-          <section className="sec">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
+          <section className="sec leaderboard-section">
+            <div className="head leaderboard-head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
               <div>
                 <div className="eyebrow">লাইভ ফলাফল</div>
                 <h2 style={{ marginTop: 10 }}>{liveLeaderboardActive ? <>আজকের <i>লিডারবোর্ড</i></> : <>গতকালের <i>লিডারবোর্ড</i></>}</h2>
-                <p className="muted">{liveLeaderboardActive ? 'লাইভ পরীক্ষা চলাকালীন নতুন ফল জমা হলে র‍্যাঙ্কিং প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} তারিখে যারা লাইভ পরীক্ষা দিয়েছেন তাদের ফলাফল।`}</p>
+                <p className="muted leaderboard-copy">{liveLeaderboardActive ? 'ফল জমা হলে প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} • লাইভ ফলাফল`}</p>
               </div>
               <button className="btn sm ghost" onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
             </div>
@@ -1578,20 +1578,20 @@ export function App() {
 
         {/* ================= LEADERBOARD ================= */}
         {page === 'leaderboard' && <>
-          <section className="sec">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
+          <section className="sec leaderboard-section">
+            <div className="head leaderboard-head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
               <div>
                 <div className="eyebrow">লাইভ ফলাফল</div>
                 <h2>{viewingTodayLeaderboard ? <>আজকের <i>পরীক্ষার ফল</i></> : <><i>লাইভ পরীক্ষার ফল</i></>}</h2>
-                <p className="muted">{viewingTodayLeaderboard
-                  ? (liveLeaderboardActive ? 'লাইভ পরীক্ষা চলাকালীন নতুন ফল জমা হলে এই তালিকা প্রতি মিনিটে আপডেট হবে।' : 'আজকের লাইভ পরীক্ষায় যারা অংশ নিয়েছেন।')
-                  : `${leaderboardDate} তারিখে যারা লাইভ পরীক্ষা দিয়েছেন তাদের সম্পূর্ণ ফলাফল।`}</p>
+                <p className="muted leaderboard-copy">{viewingTodayLeaderboard
+                  ? (liveLeaderboardActive ? 'ফল আপডেট হচ্ছে।' : 'আজকের পরীক্ষার্থীদের ফলাফল।')
+                  : `${leaderboardDate} • লাইভ ফলাফল`}</p>
               </div>
               {!viewingTodayLeaderboard && <button className="btn sm ghost" onClick={() => go('leaderboard')}>আজকের ফল →</button>}
             </div>
             {lbData === null ? <div className="note">লোড হচ্ছে…</div>
-              : lbData.length ? <div className="lb">{lbData.map(LBRow)}</div>
-                : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'পরীক্ষার ফল এখানে দেখা যাবে।' : ''}</div>}
+              : lbData.length ? <div className="lb leaderboard-list">{lbData.map(LBRow)}</div>
+                : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'ফল এখানে দেখা যাবে।' : ''}</div>}
           </section>
         </>}
 
@@ -2216,8 +2216,8 @@ export function App() {
       {page !== 'quiz' && <nav className="bnav" aria-label="দ্রুত নেভিগেশন">
         <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
         <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="exam" />পরীক্ষা</button>
-        <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম কুইজ</button>
-        <button className={page === 'questionBank' ? 'on' : ''} onClick={() => go('questionBank')}><SheetIco id="bank" />প্রশ্নব্যাংক</button>
+        <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম</button>
+        <button className={page === 'questionBank' ? 'on' : ''} onClick={() => go('questionBank')}><SheetIco id="bank" />ব্যাংক</button>
         <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
       </nav>}
 
@@ -2246,14 +2246,14 @@ export function App() {
               <span className="side-nav-label">প্রধান মেনু</span>
               {[
                 ['home', 'home', 'হোম'], ['exams', 'exam', 'পরীক্ষা'], ['questionBank', 'bank', 'প্রশ্নব্যাংক'], ['potrika', 'news', 'পত্রিকা'],
-                ['visual', 'image', 'ভিজ্যুয়াল জিকে'], ['daily', 'flame', 'ডেইলি চ্যালেঞ্জ'], ['leaderboard', 'trophy', 'লিডারবোর্ড']
+                ['visual', 'image', 'ভিজ্যুয়াল'], ['daily', 'flame', 'ডেইলি'], ['leaderboard', 'trophy', 'র‍্যাংকিং']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
             </div>
 
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'ভুল পর্যালোচনা'], ['profile', 'user', 'প্রোফাইল']
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন'], ['profile', 'user', 'প্রোফাইল']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
