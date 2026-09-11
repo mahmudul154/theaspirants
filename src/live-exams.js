@@ -2,6 +2,7 @@ import { TODAY_MODEL_EXAM_QUESTIONS } from './todays-model-exam.js'
 import { SEPTEMBER_8_LIVE_EXAM_COUNTS, SEPTEMBER_8_LIVE_EXAM_QUESTIONS } from './september-8-live-exam.js'
 import { SEPTEMBER_9_LIVE_EXAM_COUNTS, SEPTEMBER_9_LIVE_EXAM_QUESTIONS } from './september-9-live-exam.js'
 import { SEPTEMBER_10_LIVE_EXAM_COUNTS, SEPTEMBER_10_LIVE_EXAM_QUESTIONS } from './september-10-live-exam.js'
+import { SEPTEMBER_11_LIVE_EXAM_COUNTS, SEPTEMBER_11_LIVE_EXAM_QUESTIONS } from './september-11-live-exam.js'
 import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE, SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
@@ -86,6 +87,7 @@ function modelLiveExamFor(day) {
   const isSeptember8SourcePaper = dateKey === '2026-09-08'
   const isSeptember9FixedPaper = dateKey === '2026-09-09'
   const isSeptember10FixedPaper = dateKey === '2026-09-10'
+  const isSeptember11FixedPaper = dateKey === '2026-09-11'
   // The older source-only papers retain their published compact headings. New
   // date-specific routine entries use the learner's full syllabus title.
   const legacyPhaseTitle = index === 1
@@ -110,7 +112,9 @@ function modelLiveExamFor(day) {
         ? SEPTEMBER_9_LIVE_EXAM_COUNTS.total
         : isSeptember10FixedPaper
           ? SEPTEMBER_10_LIVE_EXAM_COUNTS.total
-          : questionPlan.reduce((total, bucket) => total + Number(bucket.questions || 0), 0),
+          : isSeptember11FixedPaper
+            ? SEPTEMBER_11_LIVE_EXAM_COUNTS.total
+            : questionPlan.reduce((total, bucket) => total + Number(bucket.questions || 0), 0),
     minutes: 60,
     planned: true,
     revision: !!routineOverride?.revision,
@@ -123,7 +127,9 @@ function modelLiveExamFor(day) {
         ? SEPTEMBER_9_LIVE_EXAM_QUESTIONS
         : isSeptember10FixedPaper
           ? SEPTEMBER_10_LIVE_EXAM_QUESTIONS
-          : null,
+          : isSeptember11FixedPaper
+            ? SEPTEMBER_11_LIVE_EXAM_QUESTIONS
+            : null,
     distribution: isSeptember8SourcePaper
       ? [
           { label: 'English', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.english },
@@ -140,6 +146,11 @@ function modelLiveExamFor(day) {
           ? [
               { label: 'ইংরেজি', questions: SEPTEMBER_10_LIVE_EXAM_COUNTS.english },
               { label: 'আন্তর্জাতিক বিষয়াবলি', questions: SEPTEMBER_10_LIVE_EXAM_COUNTS.generalKnowledge }
+            ]
+        : isSeptember11FixedPaper
+          ? [
+              { label: 'বাংলা', questions: SEPTEMBER_11_LIVE_EXAM_COUNTS.bangla },
+              { label: 'বাংলাদেশ বিষয়াবলি', questions: SEPTEMBER_11_LIVE_EXAM_COUNTS.bangladesh }
             ]
           : questionPlan.map(({ subject, questions }) => ({
             label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
