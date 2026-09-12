@@ -305,6 +305,12 @@ export function App() {
   const cMathTopicGroups = MATH_TOPIC_GROUPS
     .map(group => ({ ...group, topics: group.topics.filter(topic => cVisibleTopics.includes(topic)) }))
     .filter(group => group.topics.length)
+  const toggleMathTopicGroup = groupTopics => setCTopics(current => {
+    const isSelected = groupTopics.every(topic => current.includes(topic))
+    return isSelected
+      ? current.filter(topic => !groupTopics.includes(topic))
+      : [...new Set([...current, ...groupTopics])]
+  })
   const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + dbTopicsFor([topic]).reduce((topicTotal, dbTopic) => topicTotal + (questionCounts?.subjects?.[subject]?.topics?.[dbTopic] || 0), 0), 0)
   const [clock, setClock] = useState(Date.now())
   const [liveAttempts, setLiveAttempts] = useState({})
@@ -1684,7 +1690,10 @@ export function App() {
                         {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
                           ? cMathTopicGroups.map(group => (
                               <div className="topic-check-group" key={group.label}>
-                                <div className="topic-check-group-title"><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয়</small></div>
+                                <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
+                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleMathTopicGroup(group.topics)} />
+                                  <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
+                                </label>
                                 {group.topics.map(topic => (
                                   <label className="topic-check-option" key={topic}>
                                     <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
