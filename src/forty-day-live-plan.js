@@ -270,12 +270,16 @@ export const FORTY_DAY_LIVE_PLAN = [
   ]
 ]
 
+// Day 5 is a single published paper: every learner receives the same
+// deterministic question set and option order for this scheduled exam.
+const DAY5_FIXED_PLAN = SEPTEMBER_2026_PLAN[2].map(bucket => ({ ...bucket, fixed: true }))
+
 // Explicit dates supplied for the next published routine. The live-exam
 // builder uses these before falling back to the generic 40-day sequence.
 export const SEPTEMBER_2026_ROUTINE = {
   '2026-09-10': { day: 3, title: 'ইংরেজি ব্যাকরণ: Parts of Speech • আন্তর্জাতিক: রেনেসাঁ, ওয়েস্টফেলিয়া শান্তি চুক্তি, শিল্পবিপ্লব, আমেরিকার স্বাধীনতা যুদ্ধ, ফরাসি বিপ্লব, আফিম যুদ্ধসমূহ, ক্রিমিয়া যুদ্ধ, রাশিয়া–ইউক্রেন যুদ্ধ ও প্রথম বিশ্বযুদ্ধ', questionPlan: SEPTEMBER_2026_PLAN[0] },
   '2026-09-11': { day: 4, title: 'বাংলা ব্যাকরণ: শব্দ ও শব্দের প্রকারভেদ • বাংলাদেশ: বঙ্গভঙ্গ, স্বদেশী আন্দোলন, বাংলার সশস্ত্র বিপ্লবী আন্দোলন, দেশভাগের প্রেক্ষাপট, যুক্তফ্রন্ট ও ১৯৫৪-এর নির্বাচন', questionPlan: SEPTEMBER_2026_PLAN[1] },
-  '2026-09-12': { day: 5, title: 'ইংরেজি ব্যাকরণ: Narration • গণিত: গড় ও বয়স • আন্তর্জাতিক: জাতিপুঞ্জ, সাম্রাজ্যের পতন, দ্বিতীয় বিশ্বযুদ্ধ, স্নায়ুযুদ্ধ, কোরিয়া সংকট, যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', questionPlan: SEPTEMBER_2026_PLAN[2] },
+  '2026-09-12': { day: 5, title: 'ইংরেজি ব্যাকরণ: Narration • গণিত: গড় ও বয়স • আন্তর্জাতিক: জাতিপুঞ্জ, সাম্রাজ্যের পতন, দ্বিতীয় বিশ্বযুদ্ধ, স্নায়ুযুদ্ধ, কোরিয়া সংকট, যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', questionPlan: DAY5_FIXED_PLAN },
   '2026-09-13': { day: 6, title: 'রিভিশন পরীক্ষা • দিন ৩–৫-এর পুরো সপ্তাহ', revision: true, questionPlan: SEPTEMBER_2026_PLAN[3] },
   '2026-09-14': { day: 7, title: 'ইংরেজি ব্যাকরণ: Right Form of Verb • গণিত: গতি ও দূরত্ব • আন্তর্জাতিক: ভারত–পাকিস্তান যুদ্ধ, ভিয়েতনাম যুদ্ধ, আরব–ইসরাইল যুদ্ধ, রুশ ও চীন বিপ্লব, আরব বসন্ত', questionPlan: SEPTEMBER_2026_PLAN[4] },
   '2026-09-15': { day: 8, title: 'বাংলা ব্যাকরণ: সন্ধি • বাংলাদেশ: মওলানা ভাসানী, ৬ দফা, ৬৯-এর গণঅভ্যুত্থান, ১৯৭০-এর নির্বাচন, মুক্তিযুদ্ধকালীন অপারেশন, অস্থায়ী/প্রবাসী সরকার, স্বাধীন বাংলা বেতার কেন্দ্র ও সামরিক প্রশাসন', questionPlan: SEPTEMBER_2026_PLAN[5] },

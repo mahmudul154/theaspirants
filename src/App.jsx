@@ -840,7 +840,11 @@ export function App() {
           // Keep every available named previous-exam row ahead of the generic
           // BCS fallback. Mixing the two pools together could otherwise replace
           // named rows even when they were available for this exact bucket.
-          const selectedNamed = mixQuestions(namedRows, Math.min(bucket.questions, namedRows.length))
+          // Published fixed papers use the stable database order and preserve
+          // the stored option order so every learner receives the same paper.
+          const selectedNamed = bucket.fixed
+            ? namedRows.slice(0, Math.min(bucket.questions, namedRows.length)).map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
+            : mixQuestions(namedRows, Math.min(bucket.questions, namedRows.length))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
@@ -851,7 +855,9 @@ export function App() {
             if (genericResult.error) throw genericResult.error
             const genericRows = uniqueQuestions(genericResult.data || [])
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
-            selectedGeneric = mixQuestions(genericRows, remaining)
+            selectedGeneric = bucket.fixed
+              ? genericRows.slice(0, remaining).map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
+              : mixQuestions(genericRows, remaining)
           }
           const selected = [...selectedNamed, ...selectedGeneric]
           if (selected.length < bucket.questions) {
@@ -868,7 +874,9 @@ export function App() {
         }
         // Keep supplied additions alongside the planned database selection; they
         // use the same canonical question shape and count toward the live limit.
-        rows = uniqueQuestions([...plannedRows, ...(cfg.supplementalRows || [])]).sort(() => Math.random() - .5)
+        const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
+        rows = uniqueQuestions([...plannedRows, ...(cfg.supplementalRows || [])])
+        if (!fixedPaper) rows.sort(() => Math.random() - .5)
         databaseRowsArePrioritized = true
       } else {
       const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []
