@@ -51,7 +51,8 @@ export const SPECIAL_LIVE_EXAMS = [
     id: 'today-model-test-2026-09-07-2330',
     dateKey: '2026-09-07',
     startsAt: Date.UTC(2026, 8, 7, 17, 30), // 23:30 Asia/Dhaka
-    endsAt: Date.UTC(2026, 8, 7, 18, 30),
+    // The 60-minute paper stays available for submission until 14:00 the next day.
+    endsAt: Date.UTC(2026, 8, 8, 8, 0),
     subject: 'আজকের মডেল পরীক্ষা',
     topic: 'বাংলা • সাধারণ জ্ঞান • মানসিক দক্ষতা',
     title: 'আজকের মডেল পরীক্ষা • বাংলা, সাধারণ জ্ঞান ও মানসিক দক্ষতা',

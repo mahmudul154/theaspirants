@@ -328,6 +328,7 @@ export function App() {
   const [showRev, setShowRev] = useState(false)
   const [lbData, setLbData] = useState(null)
   const [lbDateKey, setLbDateKey] = useState(null)
+  const [lbIncludesArchive, setLbIncludesArchive] = useState(false)
   const [homeLbData, setHomeLbData] = useState(null)
   const [profData, setProfData] = useState(null)
   const [q, setQ] = useState('')
@@ -409,14 +410,26 @@ export function App() {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
+    const recoveryParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const recoveryLink = recoveryParams.get('type') === 'recovery' || new URLSearchParams(window.location.search).get('recovery') === '1'
+    const openPasswordRecovery = () => {
+      setPage('updatePassword')
+      window.scrollTo({ top: 0 })
+      // Do not let a refresh reuse the one-time recovery fragment.
+      if (window.location.hash || window.location.search.includes('recovery=1')) {
+        window.history.replaceState({}, document.title, `${window.location.pathname}`)
+      }
+    }
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null)
+      if (recoveryLink && data.session) openPasswordRecovery()
+    })
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
-      // Supabase emits this event after a valid recovery-email link is opened.
-      if (event === 'PASSWORD_RECOVERY') {
-        setPage('updatePassword')
-        window.scrollTo({ top: 0 })
-      }
+      // Supabase emits PASSWORD_RECOVERY after a valid email link. Some
+      // browsers emit SIGNED_IN first, so the URL-fragment fallback above is
+      // also checked to keep the reset form from being skipped.
+      if (event === 'PASSWORD_RECOVERY' || (recoveryLink && session)) openPasswordRecovery()
     })
     return () => sub.subscription.unsubscribe()
   }, [])
@@ -514,20 +527,20 @@ export function App() {
   useEffect(() => {
     if (page !== 'leaderboard' || !homeLeaderboardDateKey) return
     // When the next paper starts, move the board to that paper automatically.
-    if (lbDateKey !== homeLeaderboardDateKey) {
+    if (lbDateKey !== homeLeaderboardDateKey && !lbIncludesArchive) {
       fetchLeaderboard(homeLeaderboardDateKey)
       return
     }
     let active = true
     const refresh = async () => {
-      const rows = await loadLiveLeaderboard(lbDateKey)
+      const rows = await loadLiveLeaderboard(lbDateKey, lbIncludesArchive)
       if (active) setLbData(rows)
     }
     refresh()
-    const isActiveLiveBoard = activeLiveLeaderboardDateKey === lbDateKey && liveLeaderboardActive
+    const isActiveLiveBoard = !lbIncludesArchive && activeLiveLeaderboardDateKey === lbDateKey && liveLeaderboardActive
     const timer = window.setInterval(refresh, isActiveLiveBoard ? 60 * 1000 : 5 * 60 * 1000)
     return () => { active = false; window.clearInterval(timer) }
-  }, [page, lbDateKey, homeLeaderboardDateKey, activeLiveLeaderboardDateKey, liveLeaderboardActive])
+  }, [page, lbDateKey, lbIncludesArchive, homeLeaderboardDateKey, activeLiveLeaderboardDateKey, liveLeaderboardActive])
 
   useEffect(() => {
     if (!quiz || page !== 'quiz') return
@@ -593,7 +606,7 @@ export function App() {
     if (p === 'profile' && !user) p = 'login'
     setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
     if (p !== 'visual') setVSel(null)
-    if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey)
+    if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey, !!options.includeArchived)
     if (p === 'profile') fetchProfile()
   }
 
@@ -1174,24 +1187,29 @@ export function App() {
     go('result')
   }
 
-  async function loadLiveLeaderboard(dateKey) {
+  async function loadLiveLeaderboard(dateKey, includeArchived = false) {
     try {
       // Supabase returns at most a page of rows. Read every page so “সব ফল”
-      // genuinely includes every participant from that live-exam date.
+      // genuinely includes every participant from that live-exam date. A past
+      // exam board includes both official live results and archived make-up runs.
       const pageSize = 1000
       const allRows = []
-      for (let from = 0; ; from += pageSize) {
-        const { data, error } = await supabase.from('exam_results')
-          .select('user_name, user_avatar, score, user_id, created_at')
-          // `live-archive:` attempts stay out. The schedule date in the official
-          // live ID is used instead of completion time, so an exam ending after
-          // midnight is still counted with the day on which it was published.
-          .like('category', `live:%${dateKey}%`)
-          .order('created_at', { ascending: true })
-          .range(from, from + pageSize - 1)
-        if (error) throw error
-        allRows.push(...(data || []))
-        if (!data || data.length < pageSize) break
+      const categoryPatterns = includeArchived
+        ? [`live:%${dateKey}%`, `live-archive:%${dateKey}%`]
+        : [`live:%${dateKey}%`]
+      for (const categoryPattern of categoryPatterns) {
+        for (let from = 0; ; from += pageSize) {
+          const { data, error } = await supabase.from('exam_results')
+            .select('user_name, user_avatar, score, user_id, created_at')
+            // The schedule date in the official live ID is used instead of
+            // completion time, so exams ending after midnight stay together.
+            .like('category', categoryPattern)
+            .order('created_at', { ascending: true })
+            .range(from, from + pageSize - 1)
+          if (error) throw error
+          allRows.push(...(data || []))
+          if (!data || data.length < pageSize) break
+        }
       }
       const grouped = {}
       allRows.forEach(row => {
@@ -1209,10 +1227,11 @@ export function App() {
     }
   }
 
-  async function fetchLeaderboard(dateKey = todayLeaderboardDateKey) {
+  async function fetchLeaderboard(dateKey = todayLeaderboardDateKey, includeArchived = false) {
     setLbDateKey(dateKey)
+    setLbIncludesArchive(includeArchived)
     setLbData(null)
-    setLbData(await loadLiveLeaderboard(dateKey))
+    setLbData(await loadLiveLeaderboard(dateKey, includeArchived))
   }
 
   async function fetchProfile() {
@@ -1308,7 +1327,7 @@ export function App() {
 
   const LBRow = (x, i) => (
     <div className="lb-row" key={i}>
-      <span className="rk">{['🥇', '🥈', ''][i] || <i>✦</i>}</span>
+      <span className="rk">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : BN(i + 1)}</span>
       <div className="nm">{x.n || x.user_name}<span>{BN(x.e || x.total_exams)} পরীক্ষা সম্পন্ন</span></div>
       <span className="sc">{BN(x.s || x.avgScore)}<small> % গড়</small></span>
     </div>
@@ -1526,13 +1545,6 @@ export function App() {
                 : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
           </section>
 
-          <section className="sec">
-            <div className="cta-band">
-              <h2>নিজেকে যাচাই করার জন্য আপনি কি <i>প্রস্তুত?</i></h2>
-              <p>বিষয় বেছে অনুশীলন করুন এবং নিজের অগ্রগতি দেখুন।</p>
-              <button className="btn primary" onClick={() => go(user ? 'setup' : 'signup')}>🎓 অনুশীলন শুরু করুন ➝</button>
-            </div>
-          </section>
         </>}
 
         {/* ================= LIVE EXAM CENTER ================= */}
@@ -1631,6 +1643,7 @@ export function App() {
                   <button className={`btn ${attempted && !testing ? 'ghost' : 'primary'} sm`} disabled={!testing && (attempted || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(exam, testing)}>
                     {!user ? <><SheetIco id="lock" /> লগইন করে দিন</> : testing ? 'টেস্ট মোডে শুরু করুন →' : attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
                   </button>
+                  <button className="btn ghost sm past-leaderboard-btn" onClick={() => go('leaderboard', { leaderboardDateKey: exam.dateKey, includeArchived: true })}>লিডারবোর্ড দেখুন →</button>
                 </article>
               })}
             </div>
@@ -2263,7 +2276,7 @@ export function App() {
         {/* ================= PROFILE ================= */}
         {page === 'profile' && user && <>
           <section className="sec">
-            <div className="head"><div className="eyebrow">প্রোফাইল</div><h2>{user.user_metadata?.full_name || 'শিক্ষার্থী'}</h2></div>
+            <div className="head"><div className="eyebrow">প্রোফাইল</div><h2>আমার <i>প্রোফাইল</i></h2></div>
             <div className="panel">
               <div className="prof">
                 <span className="avwrap">

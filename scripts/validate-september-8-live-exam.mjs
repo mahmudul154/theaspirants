@@ -57,8 +57,8 @@ const exam = schedule.find(item => item.id === 'bcs-40-day-model-2026-09-08')
 assert.ok(exam, 'Could not find the 8 September live exam')
 assert.equal(exam.dateKey, '2026-09-08')
 assert.equal(exam.startsAt, Date.UTC(2026, 8, 8, 17, 30), 'Exam must start at 23:30 Asia/Dhaka')
-assert.equal(exam.endsAt, Date.UTC(2026, 8, 8, 18, 30), 'Exam must end at 00:30 Asia/Dhaka')
-assert.equal(exam.minutes, 60, 'Exam duration changed')
+assert.equal(exam.endsAt, Date.UTC(2026, 8, 9, 8, 0), 'Exam must remain open until 14:00 Asia/Dhaka the next day')
+assert.equal(exam.minutes, 60, 'Exam paper duration changed')
 assert.equal(exam.questions, 83, 'Scheduled count and source paper count must agree')
 assert.strictEqual(exam.rows, questions, 'Day 2 must use the exact source-only PDF bundle')
 assert.deepEqual(exam.distribution, [
@@ -79,4 +79,4 @@ assert.ok(canRunLiveTest(' AAKASHH060@GMAIL.COM ', exam.id), 'Admin email checks
 assert.ok(!canRunLiveTest('other@example.com', exam.id), 'Other accounts must not get early access')
 assert.ok(!canRunLiveTest('aakashh060@gmail.com', 'bcs-40-day-model-2026-09-09'), 'The admin must not get early access to another day')
 
-console.log('✓ 8 September live exam validated: source-only 83-question PDF paper, 30 / 30 / 23 split, deterministic shuffle, one-paragraph explanations, 23:30–00:30 Asia/Dhaka schedule, and restricted admin test access.')
+console.log('✓ 8 September live exam validated: source-only 83-question PDF paper, 30 / 30 / 23 split, deterministic shuffle, one-paragraph explanations, 23:30–14:00 next-day Asia/Dhaka availability, and restricted admin test access.')

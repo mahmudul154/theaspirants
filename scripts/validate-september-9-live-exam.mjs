@@ -60,7 +60,7 @@ for (const [phrase, answer] of expectedMathAnswers) {
 const scheduledExam = buildDailyLiveExams(Date.UTC(2026, 8, 9, 17, 29)).find(exam => exam.dateKey === '2026-09-09')
 assert.ok(scheduledExam, 'Day 3 scheduled live exam is missing')
 assert.equal(scheduledExam.startsAt, Date.UTC(2026, 8, 9, 17, 30), 'Day 3 must start at 23:30 Asia/Dhaka')
-assert.equal(scheduledExam.endsAt, Date.UTC(2026, 8, 9, 18, 30), 'Day 3 must run for 60 minutes')
+assert.equal(scheduledExam.endsAt, Date.UTC(2026, 8, 10, 8, 0), 'Day 3 must remain open until 14:00 Asia/Dhaka the next day')
 assert.equal(scheduledExam.questions, 76, 'Scheduled count and paper count must agree')
 assert.equal(scheduledExam.topic, 'Tense, Right Form of Verbs ও Conditionals • বিশ্ব সভ্যতা • শতকরা ও লাভ-ক্ষতি', 'The announced Day 3 syllabus changed')
 assert.deepEqual(scheduledExam.questionPlan.map(part => [part.label, part.questions]), [
@@ -75,4 +75,4 @@ assert.deepEqual(scheduledExam.distribution, [
   { label: 'গাণিতিক যুক্তি', questions: 16 }
 ])
 
-console.log('✓ 9 September live exam validated: source-only 76-question paper, 30 / 30 / 16 split, one-paragraph explanations, fixed shared shuffle, and 23:30–00:30 Asia/Dhaka schedule.')
+console.log('✓ 9 September live exam validated: source-only 76-question paper, 30 / 30 / 16 split, one-paragraph explanations, fixed shared shuffle, and 23:30–14:00 next-day Asia/Dhaka availability.')

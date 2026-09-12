@@ -1297,3 +1297,11 @@ html.dark .circular-icon-building{color:#ffab91;background:#38221d;border-color:
   .qopt .k{font-size:.84rem;flex-basis:16px}
   .qbar-guide{font-size:.61rem}
 }
+
+@media(min-width:901px){
+  .home-main .hero-panel{padding:30px 34px 22px}
+  .home-main .hero-panel h1{font-size:clamp(2rem,3.4vw,2.8rem)}
+  .home-main .hero-panel .lead{font-size:.94rem;line-height:1.65}
+  .home-main .hero-panel .hero-chips{margin-top:18px}
+  .home-main .hero-panel .cta{margin-top:16px!important}
+}
