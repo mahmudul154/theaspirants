@@ -58,7 +58,7 @@ const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).ma
 // presenting one long, unstructured list. The database topic names remain
 // unchanged; this only controls their visual grouping.
 const MATH_TOPIC_GROUPS = [
-  { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
+  { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'গড়', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
   { label: 'অনুপাত, শতকরা ও বাণিজ্যিক গণিত', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
   { label: 'কাজ, সময়, গতি ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
   { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
