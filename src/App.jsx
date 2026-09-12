@@ -32,6 +32,9 @@ const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
+const OFFLINE_CACHE_KEY = 'asp_offline_question_cache_v1'
+const OFFLINE_CACHE_LIMIT = 600
+const OFFLINE_CACHE_TTL_MS = 30 * 864e5
 const Md = ({ s }) => <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{String(s || '')}</Markdown>
 
 const ICOS = {
@@ -228,6 +231,45 @@ function offlinePoolFor(subjects) {
     !row.subject || selected.has(row.subject) || selectedDbSubjects.has(row.subject)
   ))
   return matches.length ? matches : OFFLINE_BUNDLED_ROWS
+}
+
+function cachedQuestionRows() {
+  const cached = load(OFFLINE_CACHE_KEY, { savedAt: 0, rows: [] })
+  if (!cached || !Array.isArray(cached.rows) || Date.now() - Number(cached.savedAt || 0) > OFFLINE_CACHE_TTL_MS) return []
+  return cached.rows
+}
+
+function cacheQuestionRows(rows) {
+  const safeRows = (Array.isArray(rows) ? rows : []).map(row => ({
+    id: row?.id,
+    question: row?.question,
+    options: row?.options,
+    answer: row?.answer,
+    answer_index: row?.answer_index,
+    explanation: row?.explanation,
+    subject: row?.subject,
+    topic: row?.topic,
+    exam_tag: row?.exam_tag,
+    difficulty: row?.difficulty,
+    created_at: row?.created_at
+  })).filter(row => typeof row.question === 'string' && Array.isArray(row.options) && row.answer)
+  if (!safeRows.length) return
+  const merged = uniqueQuestions([...cachedQuestionRows(), ...safeRows]).slice(-OFFLINE_CACHE_LIMIT)
+  try {
+    localStorage.setItem(OFFLINE_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), rows: merged }))
+  } catch {
+    // A full browser storage bucket should never block an online quiz.
+  }
+}
+
+function cachedPoolFor(subjects, topics = []) {
+  const selected = new Set(subjects || [])
+  const selectedDbSubjects = new Set(dbSubjectsFor(subjects || []))
+  const topicSet = new Set(dbTopicsFor(topics || []))
+  return cachedQuestionRows().filter(row => (
+    (!row.subject || selected.has(row.subject) || selectedDbSubjects.has(row.subject))
+    && (!topicSet.size || topicSet.has(row.topic))
+  ))
 }
 
 const REVIEW_OPTION_KEYS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ', 'ছ', 'জ']
@@ -842,7 +884,8 @@ export function App() {
     if (offlineCustom || guestCustom) {
       // Custom practice stays useful without a network connection (and without
       // an account). The compact reviewed QB set is bundled with the app.
-      rows = offlinePoolFor(Array.isArray(fallback) ? fallback : subjects || SUBJECTS)
+      const offlineSubjects = Array.isArray(fallback) ? fallback : subjects || SUBJECTS
+      rows = [...cachedPoolFor(offlineSubjects, topics), ...offlinePoolFor(offlineSubjects)]
     } else if (cfg.publishedExamId) {
       try {
         rows = await loadPublishedModelRows(cfg.publishedExamId, requestedLimit)
@@ -1102,9 +1145,11 @@ export function App() {
       setToastMsg('বিশেষ পরীক্ষার সিলেবাসভিত্তিক প্রশ্ন এখন লোড করা যায়নি—একটু পরে আবার চেষ্টা করুন')
       return
     }
+    if (!offlineCustom && !guestCustom && databaseRowsArePrioritized) cacheQuestionRows(rows)
     if (rows && avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     if (!rows) {
-      rows = (Array.isArray(fallback) ? fallback : SUBJECTS).flatMap(subject => localPool(subject))
+      const fallbackSubjects = Array.isArray(fallback) ? fallback : SUBJECTS
+      rows = [...cachedPoolFor(fallbackSubjects, topics), ...offlinePoolFor(fallbackSubjects)]
       if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     }
     rows = uniqueQuestions(rows)
@@ -1874,7 +1919,7 @@ export function App() {
                   <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
                 </div>
               </div>
-              <div className="offline-quiz-note">ইন্টারনেট না থাকলেও bundled প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে। প্রশ্নের লেখা কপি করা বন্ধ থাকবে।</div>
+              <div className="offline-quiz-note">ইন্টারনেট না থাকলেও bundled ও সীমিত cached প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে। প্রশ্নের লেখা কপি করা বন্ধ থাকবে।</div>
               <div className="cta"><button className="btn primary" onClick={() => {
                 if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
                 const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
