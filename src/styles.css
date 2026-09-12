@@ -263,6 +263,10 @@ html.dark .leaderboard-list .lb-row:first-child{background:color-mix(in srgb,var
 .topic-check-option{display:grid;grid-template-columns:21px minmax(0,1fr);align-items:start;gap:10px;padding:10px 9px;border-radius:4px;color:var(--ink2);font-size:.82rem;line-height:1.5;cursor:pointer;transition:background .15s,color .15s}
 .topic-check-option:hover{background:color-mix(in srgb,var(--ink) 4%,transparent);color:var(--ink)}
 .topic-check-option.all-option{margin-bottom:5px;padding-bottom:12px;border-bottom:1px solid var(--line);border-radius:4px 4px 0 0}
+.topic-check-group{margin:8px 0 10px;padding:7px 5px 5px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--paper) 42%,var(--card))}
+.topic-check-group-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 8px 6px;color:var(--accent);font-size:.72rem;letter-spacing:.01em}
+.topic-check-group-title small{color:var(--ink3);font-size:.62rem;font-weight:500}
+.topic-check-group .topic-check-option{padding:8px 5px}
 .topic-check-option input{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin:0;border:1.5px solid var(--line2);border-radius:4px;background:var(--paper);display:grid;place-items:center;cursor:pointer;transition:all .15s}
 .topic-check-option input:checked{border-color:var(--accent);background:var(--accent)}
 .topic-check-option input:checked:after{content:"✓";color:#fff;font-size:.78rem;font-weight:800;line-height:1}

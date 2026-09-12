@@ -54,6 +54,19 @@ const ROUTINE_SUBJECT_LABELS = {
 }
 const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
 
+// Keep mathematics topics readable in the custom-quiz picker instead of
+// presenting one long, unstructured list. The database topic names remain
+// unchanged; this only controls their visual grouping.
+const MATH_TOPIC_GROUPS = [
+  { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
+  { label: 'অনুপাত, শতকরা ও বাণিজ্যিক গণিত', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
+  { label: 'কাজ, সময়, গতি ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
+  { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
+  { label: 'ধারা, বিন্যাস, সম্ভাবনা ও পরিসংখ্যান', topics: ['Series', 'Sequence and Series', 'বিন্যাস', 'সমাবেশ', 'Permutation and Combination', 'সম্ভাব্যতা', 'Probability', 'পরিসংখ্যান', 'Statistics'] },
+  { label: 'জ্যামিতি, পরিমিতি ও ক্যালকুলাস', topics: ['Geometry', 'রেখা ও কোন', 'ত্রিভুজ ও ত্রিভুজ সংক্রান্ত উপপাদ্য', 'পিথাগরাসের উপপাদ্য', 'চতুর্ভুজ ও চতুর্ভুজ সঙ্ক্রান্ত উপপাদ্য', 'সুষম বহুভুজ', 'বৃত্ত ও বৃত্ত সংক্রান্ত উপপাদ্য', 'স্থানাংক ও জ্যামিতি', 'Coordinate Geometry', 'ক্ষেত্রফল ও পরিসীমা', 'পরিমিতি', 'Mensuration', 'ত্রিকোণমিতি', 'Trigonometry', 'কোণ পরিমাপ', 'মানচিত্র স্কেল', 'Calculus'] },
+  { label: 'অন্যান্য', topics: ['বিসিএস', 'বিবিধ ও মিসলেনিয়াস'] }
+]
+
 const SUBJECT_TEACHERS = {
   'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
   'English': 'ইংরেজি বিষয়ের শিক্ষক',
@@ -287,6 +300,11 @@ export function App() {
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
+  const cTopicNeedle = cTopicSearch.trim().toLocaleLowerCase()
+  const cVisibleTopics = cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle))
+  const cMathTopicGroups = MATH_TOPIC_GROUPS
+    .map(group => ({ ...group, topics: group.topics.filter(topic => cVisibleTopics.includes(topic)) }))
+    .filter(group => group.topics.length)
   const customTopicCount = topic => cSubs.reduce((sum, subject) => sum + dbTopicsFor([topic]).reduce((topicTotal, dbTopic) => topicTotal + (questionCounts?.subjects?.[subject]?.topics?.[dbTopic] || 0), 0), 0)
   const [clock, setClock] = useState(Date.now())
   const [liveAttempts, setLiveAttempts] = useState({})
@@ -1663,13 +1681,25 @@ export function App() {
                           <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
                           <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
                         </label>
-                        {cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicSearch.trim().toLocaleLowerCase())).map(topic => (
-                          <label className="topic-check-option" key={topic}>
-                            <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
-                            <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
-                          </label>
-                        ))}
-                        {!cAvailableTopics.some(topic => topic.toLocaleLowerCase().includes(cTopicSearch.trim().toLocaleLowerCase())) && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
+                        {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
+                          ? cMathTopicGroups.map(group => (
+                              <div className="topic-check-group" key={group.label}>
+                                <div className="topic-check-group-title"><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয়</small></div>
+                                {group.topics.map(topic => (
+                                  <label className="topic-check-option" key={topic}>
+                                    <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
+                                    <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                  </label>
+                                ))}
+                              </div>
+                            ))
+                          : cVisibleTopics.map(topic => (
+                              <label className="topic-check-option" key={topic}>
+                                <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
+                                <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                              </label>
+                            ))}
+                        {!cVisibleTopics.length && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
                       </div>
                     </div>}
                   </details>
