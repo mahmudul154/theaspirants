@@ -213,6 +213,23 @@ function uniqueQuestions(items) {
   return [...unique.values()]
 }
 
+// The native app carries a reviewed local set as well as the fixed papers that
+// are already bundled for the live-exam fallback. This keeps custom practice
+// useful in airplane mode without pretending that the remote question bank is
+// fully mirrored on the device.
+const OFFLINE_BUNDLED_ROWS = uniqueQuestions([
+  ...SUBJECTS.flatMap(subject => localPool(subject)),
+  ...buildDailyLiveExams(Date.now()).flatMap(exam => exam.rows || [])
+])
+function offlinePoolFor(subjects) {
+  const selected = new Set(subjects || [])
+  const selectedDbSubjects = new Set(dbSubjectsFor(subjects || []))
+  const matches = OFFLINE_BUNDLED_ROWS.filter(row => (
+    !row.subject || selected.has(row.subject) || selectedDbSubjects.has(row.subject)
+  ))
+  return matches.length ? matches : OFFLINE_BUNDLED_ROWS
+}
+
 const REVIEW_OPTION_KEYS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ', 'ছ', 'জ']
 function ReviewOptions({ question, selectedIndex }) {
   const options = question?.options || []
@@ -825,7 +842,7 @@ export function App() {
     if (offlineCustom || guestCustom) {
       // Custom practice stays useful without a network connection (and without
       // an account). The compact reviewed QB set is bundled with the app.
-      rows = (Array.isArray(fallback) ? fallback : subjects || SUBJECTS).flatMap(subject => localPool(subject))
+      rows = offlinePoolFor(Array.isArray(fallback) ? fallback : subjects || SUBJECTS)
     } else if (cfg.publishedExamId) {
       try {
         rows = await loadPublishedModelRows(cfg.publishedExamId, requestedLimit)
