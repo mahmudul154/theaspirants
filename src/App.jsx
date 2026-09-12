@@ -1302,7 +1302,7 @@ export function App() {
         </div>
       </header>}
 
-      <main style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
+      <main className={page === 'home' ? 'home-main' : page === 'quiz' ? 'quiz-main' : ''} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
