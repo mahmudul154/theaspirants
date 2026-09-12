@@ -1315,7 +1315,7 @@ export function App() {
               <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
             </div>
             <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => go('exams')}>আজকের পরীক্ষা দেখুন →</button>
+              <button className="btn primary" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
               <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
             </div>
           </section>
@@ -1352,7 +1352,7 @@ export function App() {
                 const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
                 const planDay = exam.subject.match(/দিন\s+[^•]+$/)?.[0]
                 const compactTitle = exam.planned ? `৪০ দিনে প্রিলি প্রস্তুতি${planDay ? ` • ${planDay}` : ''}` : exam.subject
-                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam) : go('exams')}>
+                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
                   <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
                   <h3 title={exam.subject}>{isToday ? compactTitle : exam.subject}</h3>
                   <div className="top">{exam.topic}</div>
