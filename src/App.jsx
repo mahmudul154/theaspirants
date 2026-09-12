@@ -10,7 +10,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest } from './live-test-access.js'
 
@@ -159,7 +159,11 @@ const SHEET_ICONS = {
   bank: <><path d="m3 10 9-6 9 6" /><path d="M5 10v8M9 10v8M15 10v8M19 10v8" /><path d="M3 18h18M2 22h20" /></>,
   sparkles: <><path d="m12 3-1.1 3.2a2 2 0 0 1-1.2 1.2L6.5 8.5l3.2 1.1a2 2 0 0 1 1.2 1.2L12 14l1.1-3.2a2 2 0 0 1 1.2-1.2l3.2-1.1-3.2-1.1a2 2 0 0 1-1.2-1.2z" /><path d="m19 15-.6 1.7a1 1 0 0 1-.6.6l-1.8.7 1.8.6a1 1 0 0 1 .6.6L19 22l.6-1.8a1 1 0 0 1 .6-.6L22 19l-1.8-.7a1 1 0 0 1-.6-.6z" /><path d="m5 2-.4 1.2a1 1 0 0 1-.6.6l-1.2.4 1.2.4a1 1 0 0 1 .6.6L5 6.5l.4-1.1a1 1 0 0 1 .6-.6l1.2-.4L6 4a1 1 0 0 1-.6-.6z" /></>,
   external: <><path d="M15 3h6v6" /><path d="m10 14 11-11" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></>,
-  copy: <><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></>
+  copy: <><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></>,
+  file: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
+  building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M8 8h1M12 8h1M16 8h1M8 12h1M12 12h1M16 12h1M10 21v-5h4v5" /></>,
+  book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" /><path d="M4 5.5v16M8 7h8M8 11h8" /></>,
+  school: <><path d="m3 10 9-6 9 6-9 6z" /><path d="M6 12v5c3 2 9 2 12 0v-5M21 10v7" /></>
 }
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
@@ -1359,6 +1363,10 @@ export function App() {
                 <span className="home-feature-icon"><SheetIco id="news" /></span>
                 <span><b>আজকের পত্রিকা</b><small>কারেন্ট অ্যাফেয়ার্স</small></span><i aria-hidden="true">→</i>
               </button>
+              <button className="home-feature-card" onClick={() => go('circular')}>
+                <span className="home-feature-icon"><SheetIco id="file" /></span>
+                <span><b>চাকরির সার্কুলার</b><small>নতুন নিয়োগ আপডেট</small></span><i aria-hidden="true">→</i>
+              </button>
               <button className="home-feature-card" onClick={() => go('visual')}>
                 <span className="home-feature-icon"><SheetIco id="image" /></span>
                 <span><b>ছবি দিয়ে শেখো</b><small>ভিজ্যুয়াল লার্নিং</small></span><i aria-hidden="true">→</i>
@@ -1366,7 +1374,7 @@ export function App() {
             </div>
           </section>
 
-          <section className="sec" style={{ paddingTop: 28 }}>
+          <section className="sec home-smart-panel" style={{ paddingTop: 28 }}>
             <div className="panel" style={{ gap: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                 <h3 style={{ margin: 0 }}>{greet()}, {(user?.user_metadata?.full_name || user?.name || 'শিক্ষার্থী').split(' ')[0]} 👋</h3>
@@ -1389,7 +1397,7 @@ export function App() {
             </div>
           </section>
 
-          <section className="sec">
+          <section className="sec home-live-attraction">
             <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
             <div className="slider" aria-label="লাইভ পরীক্ষার সংক্ষিপ্ত তালিকা">
               {homeLiveExams.map(exam => {
@@ -1412,7 +1420,21 @@ export function App() {
             <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি প্রস্তুতি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
 
-          <section className="sec">
+          <section className="sec home-circular-section">
+            <div className="head circular-section-head">
+              <div><div className="eyebrow">চাকরির আপডেট</div><h2>সাম্প্রতিক <i>সার্কুলার</i></h2></div>
+              <button className="btn sm ghost" onClick={() => go('circular')}>সব সার্কুলার →</button>
+            </div>
+            <div className="circular-card-grid">
+              {CIRCULARS.map(item => <button className="circular-card" key={item.title} onClick={() => go(item.page)}>
+                <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
+                <span className="circular-card-copy"><span className="circular-tag">{item.tag}</span><b>{item.title}</b><small>{item.desc}</small></span>
+                <i aria-hidden="true">→</i>
+              </button>)}
+            </div>
+          </section>
+
+          <section className="sec home-target-section">
             <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
               <div><div className="eyebrow">টার্গেট বাছো</div><h2 style={{ marginTop: 10 }}>কোন <i>পরীক্ষা</i> দিবে?</h2></div>
             </div>
@@ -1828,6 +1850,29 @@ export function App() {
                   </article>
                 })}
               </>}
+          </section>
+        </>}
+
+        {/* ================= চাকরির সার্কুলার ================= */}
+        {page === 'circular' && <>
+          <section className="sec circular-page">
+            <div className="head">
+              <div className="eyebrow">চাকরির আপডেট</div>
+              <h2>চাকরির <i>সার্কুলার</i></h2>
+              <p className="muted">বিভিন্ন চাকরির প্রস্তুতি, প্রশ্নব্যাংক ও মডেল পরীক্ষায় দ্রুত যেতে একটি জায়গা থেকে বেছে নিন।</p>
+            </div>
+            <div className="circular-page-grid">
+              {CIRCULARS.map(item => <article className="circular-page-card" key={item.title}>
+                <div className="circular-page-card-top">
+                  <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
+                  <span className="circular-tag">{item.tag}</span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+                <button className="btn primary sm" onClick={() => go(item.page)}>{item.action} →</button>
+              </article>)}
+            </div>
+            <div className="circular-tip"><span>💡</span><span><b>সার্কুলার দেখে প্রস্তুতি নিন</b><small>প্রতিটি ক্যাটাগরি থেকে সংশ্লিষ্ট প্রশ্ন ও মডেল পরীক্ষা দ্রুত খুলে নিতে পারবেন।</small></span></div>
           </section>
         </>}
 
@@ -2322,7 +2367,7 @@ export function App() {
               <span className="side-nav-label">প্রধান মেনু</span>
               {[
                 ['home', 'home', 'হোম'], ['exams', 'exam', 'পরীক্ষা'], ['questionBank', 'bank', 'প্রশ্নব্যাংক'], ['potrika', 'news', 'পত্রিকা'],
-                ['visual', 'image', 'ভিজ্যুয়াল'], ['daily', 'flame', 'ডেইলি'], ['leaderboard', 'trophy', 'র‍্যাংকিং']
+                ['visual', 'image', 'ভিজ্যুয়াল'], ['circular', 'file', 'সার্কুলার'], ['daily', 'flame', 'ডেইলি'], ['leaderboard', 'trophy', 'র‍্যাংকিং']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
             </div>
 
