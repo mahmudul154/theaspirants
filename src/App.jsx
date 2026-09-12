@@ -802,13 +802,15 @@ export function App() {
   }
 
   async function beginQuiz(cfg) {
-    if (!user) {
+    const origin = cfg.returnPage || page
+    const offlineCustom = origin === 'setup' && typeof navigator !== 'undefined' && navigator.onLine === false
+    const guestCustom = origin === 'setup' && !user
+    if (!user && !guestCustom) {
       setToastMsg('🔒 পরীক্ষা দিতে আগে লগইন করুন')
       go('login')
       return
     }
 
-    const origin = cfg.returnPage || page
     const repeatSetup = cfg.once || cfg.noRepeatSetup ? null : { ...cfg, returnPage: origin }
     const { title, subjects, topics, limit, minutes, fallback } = cfg
     const requestedLimit = Math.min(200, Math.max(1, Number(limit || 10)))
@@ -820,7 +822,11 @@ export function App() {
     let rows = null
     let databaseRowsArePrioritized = false
     let fetchError = null
-    if (cfg.publishedExamId) {
+    if (offlineCustom || guestCustom) {
+      // Custom practice stays useful without a network connection (and without
+      // an account). The compact reviewed QB set is bundled with the app.
+      rows = (Array.isArray(fallback) ? fallback : subjects || SUBJECTS).flatMap(subject => localPool(subject))
+    } else if (cfg.publishedExamId) {
       try {
         rows = await loadPublishedModelRows(cfg.publishedExamId, requestedLimit)
         databaseRowsArePrioritized = true
@@ -1851,11 +1857,12 @@ export function App() {
                   <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
                 </div>
               </div>
+              <div className="offline-quiz-note">ইন্টারনেট না থাকলেও bundled প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে। প্রশ্নের লেখা কপি করা বন্ধ থাকবে।</div>
               <div className="cta"><button className="btn primary" onClick={() => {
                 if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
                 const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
                 beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, returnPage: 'setup' })
-              }}>{user ? 'কাস্টম কুইজ শুরু করুন →' : <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</>}</button></div>
+              }}>কাস্টম কুইজ শুরু করুন →</button></div>
             </div>
           </section>
         </>}
@@ -2028,7 +2035,15 @@ export function App() {
 
         {/* ================= QUIZ (সব প্রশ্ন এক পেজে) ================= */}
         {page === 'quiz' && quiz && <>
-          <section className="sec" style={{ paddingTop: 28, gap: 18 }}>
+          <section className="sec" style={{ paddingTop: 28, gap: 18 }}
+            onContextMenu={event => event.preventDefault()}
+            onCopy={event => event.preventDefault()}
+            onCut={event => event.preventDefault()}
+            onDragStart={event => event.preventDefault()}
+            onKeyDown={event => {
+              const key = String(event.key || '').toLowerCase()
+              if ((event.ctrlKey || event.metaKey) && ['a', 'c', 'x', 's', 'u', 'p'].includes(key)) event.preventDefault()
+            }}>
             <div className="eyebrow">{quiz.title} — {BN(quiz.qs.length)}টি প্রশ্ন • স্লাইড/স্ক্রল করে সব দেখো</div>
             {quiz.candidate && <div className="live-candidate-line" aria-label="পরীক্ষার্থীর তথ্য"><span>নাম: <b>{quiz.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{quiz.candidate.institution}</b></span></div>}
             {quiz.testing && <div className="live-candidate-line" role="status"><b>টেস্ট মোড</b><span>এই রানটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলের ফলাফলে যোগ হবে না।</span></div>}
