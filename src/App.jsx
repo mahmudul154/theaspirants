@@ -1310,7 +1310,7 @@ export function App() {
         </div>
       </header>}
 
-      <main className={page === 'home' ? 'home-main' : page === 'quiz' ? 'quiz-main' : ''} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
+      <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
           <section className="hero-panel">
@@ -1325,6 +1325,44 @@ export function App() {
             <div className="cta" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
               <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
+            </div>
+          </section>
+
+          <section className="sec home-features-section">
+            <div className="head"><div className="eyebrow">দ্রুত ফিচার</div><h2>সবকিছু <i>এক জায়গায়</i></h2></div>
+            <div className="home-features-grid">
+              <button className="home-feature-card feature-live" onClick={() => go('exams')}>
+                <span className="home-feature-icon"><SheetIco id="exam" /></span>
+                <span><b>লাইভ পরীক্ষা</b><small>আজকের পরীক্ষা ও রুটিন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card feature-custom" onClick={() => go('setup')}>
+                <span className="home-feature-icon"><SheetIco id="sliders" /></span>
+                <span><b>কাস্টম কুইজ</b><small>বিষয় ও টপিক বেছে নিন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('daily')}>
+                <span className="home-feature-icon"><SheetIco id="flame" /></span>
+                <span><b>ডেইলি চ্যালেঞ্জ</b><small>প্রতিদিন ১০টি প্রশ্ন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('review')}>
+                <span className="home-feature-icon"><SheetIco id="layers" /></span>
+                <span><b>রিভিশন</b><small>ভুল প্রশ্ন আবার অনুশীলন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('questionBank')}>
+                <span className="home-feature-icon"><SheetIco id="bank" /></span>
+                <span><b>প্রশ্নব্যাংক</b><small>বিগত পরীক্ষার প্রশ্ন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('leaderboard')}>
+                <span className="home-feature-icon"><SheetIco id="trophy" /></span>
+                <span><b>লিডারবোর্ড</b><small>আজকের র‍্যাংকিং দেখুন</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('potrika')}>
+                <span className="home-feature-icon"><SheetIco id="news" /></span>
+                <span><b>আজকের পত্রিকা</b><small>কারেন্ট অ্যাফেয়ার্স</small></span><i aria-hidden="true">→</i>
+              </button>
+              <button className="home-feature-card" onClick={() => go('visual')}>
+                <span className="home-feature-icon"><SheetIco id="image" /></span>
+                <span><b>ছবি দিয়ে শেখো</b><small>ভিজ্যুয়াল লার্নিং</small></span><i aria-hidden="true">→</i>
+              </button>
             </div>
           </section>
 
@@ -1388,16 +1426,6 @@ export function App() {
                   <div className="bd"><b>{c.name}</b><span>{c.d}</span></div>
                 </button>
               ))}
-            </div>
-          </section>
-
-          <section className="sec">
-            <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>আজকের <i>টার্গেট</i></h2></div>
-            <div className="qk-grid">
-              <button className="qk" onClick={() => go('setup')}><span className="ic">🛠</span><b>কাস্টম কুইজ</b><span>নিজে পরীক্ষা বানাও</span></button>
-              <button className="qk" onClick={() => go('daily')}><span className="ic">🔥</span><b>ডেইলি চ্যালেঞ্জ</b><span>প্রতিদিন ১০ প্রশ্ন</span></button>
-              <button className="qk" onClick={() => go('review')}><span className="ic">↻</span><b>রিভিশন ও ভুল খাতা</b><span>{BN(wrong.length)}টি ভুল উত্তর সংরক্ষিত</span></button>
-              <button className="qk" onClick={() => go('leaderboard')}><span className="ic">🏆</span><b>লিডারবোর্ড</b><span>আজকের র‍্যাংকিং</span></button>
             </div>
           </section>
 
