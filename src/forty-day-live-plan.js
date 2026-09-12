@@ -1,6 +1,6 @@
-// Forty consecutive 23:30 Asia/Dhaka model exams. Each daily paper follows
-// the 40 / 30 / 30 format of the published model test and is loaded from the
-// question bank according to the listed shared preliminary-preparation topics.
+// Forty consecutive 23:30 Asia/Dhaka model exams. Each daily paper is loaded
+// from the question bank according to its published subject counts and shared
+// preliminary-preparation topics.
 const part = (subject, label, topics, questions) => ({ subject, label, topics, questions })
 
 const SEPTEMBER_2026_PLAN = [
@@ -13,9 +13,9 @@ const SEPTEMBER_2026_PLAN = [
     part('বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ: বঙ্গভঙ্গ, স্বদেশী আন্দোলন, বাংলার সশস্ত্র বিপ্লবী আন্দোলন, দেশভাগের প্রেক্ষাপট, যুক্তফ্রন্ট ও ১৯৫৪-এর নির্বাচন', ['ব্রিটিশ শাসন ও আন্দোলন', '১৯৪৭ এর দেশভাগ পূর্ব পর্ব', 'পাকিস্তান আমলে বাংলাদেশ (১৯৪৭-১৯৭১)', 'ইতিহাস ও ঐতিহ্য'], 50)
   ],
   [
-    part('English', 'ইংরেজি ব্যাকরণ: Narration', ['Voice, Narration and One Word'], 40),
-    part('গাণিতিক যুক্তি', 'গণিত: গড় ও বয়স', ['Arithmetic', 'বয়স ভিত্তিক'], 30),
-    part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: জাতিপুঞ্জ, সাম্রাজ্যের পতন, দ্বিতীয় বিশ্বযুদ্ধ, স্নায়ুযুদ্ধ, কোরিয়া সংকট, যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', ['আন্তর্জাতিক সংস্থা ও জোট', 'বিশ্ব ইতিহাস', 'ভূ-রাজনীতি, যুদ্ধ ও ইতিহাস', 'যুদ্ধ', 'রাজনীতি'], 30)
+    part('English', 'ইংরেজি ব্যাকরণ: Narration', ['Voice, Narration and One Word'], 35),
+    part('গাণিতিক যুক্তি', 'গণিত: গড় ও বয়স', ['গড়', 'বয়স ভিত্তিক'], 20),
+    part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: জাতিপুঞ্জ, সাম্রাজ্যের পতন, দ্বিতীয় বিশ্বযুদ্ধ, স্নায়ুযুদ্ধ, কোরিয়া সংকট, যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', ['আন্তর্জাতিক সংস্থা ও জোট', 'বিশ্ব ইতিহাস', 'ভূ-রাজনীতি, যুদ্ধ ও ইতিহাস', 'যুদ্ধ', 'রাজনীতি'], 45)
   ],
   [
     part('English', 'ইংরেজি: দিন ৩–৫-এর Parts of Speech ও Narration রিভিশন', ['Parts of Speech', 'Voice, Narration and One Word'], 20),
