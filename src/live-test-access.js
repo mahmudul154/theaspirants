@@ -2,7 +2,11 @@
 // live papers. Test mode never saves an official attempt, profile score, or
 // leaderboard result.
 export const LIVE_TEST_ALLOWED_EXAM_ID = 'bcs-40-day-model-2026-09-08'
-export const LIVE_TEST_ADDITIONAL_EXAM_IDS = ['bcs-40-day-model-2026-09-10', 'bcs-40-day-model-2026-09-11']
+export const LIVE_TEST_ADDITIONAL_EXAM_IDS = [
+  'bcs-40-day-model-2026-09-10',
+  'bcs-40-day-model-2026-09-11',
+  'bcs-40-day-model-2026-09-12'
+]
 export const LIVE_TEST_ADMIN_EMAILS = ['aakashh060@gmail.com']
 export const LIVE_TEST_TODAY_EMAIL = 'rayhan393393@gmail.com'
 export const LIVE_TEST_TODAY_EXAM_ID = 'bcs-40-day-model-2026-09-11'
