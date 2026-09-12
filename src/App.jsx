@@ -2387,7 +2387,7 @@ export function App() {
         <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="exam" />পরীক্ষা</button>
         <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম</button>
         <button className={page === 'questionBank' ? 'on' : ''} onClick={() => go('questionBank')}><SheetIco id="bank" />ব্যাংক</button>
-        <button className={page === 'potrika' ? 'on' : ''} onClick={() => go('potrika')}><SheetIco id="news" />পত্রিকা</button>
+        <button className={page === 'circular' ? 'on' : ''} onClick={() => go('circular')}><SheetIco id="file" />সার্কুলার</button>
       </nav>}
 
       {page !== 'quiz' && <>
