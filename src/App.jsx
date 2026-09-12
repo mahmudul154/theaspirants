@@ -844,10 +844,34 @@ export function App() {
           // Keep every available named previous-exam row ahead of the generic
           // BCS fallback. Mixing the two pools together could otherwise replace
           // named rows even when they were available for this exact bucket.
-          // Published fixed papers use the stable database order and preserve
-          // the stored option order so every learner receives the same paper.
+          // Published fixed papers use a stable round-robin across every listed
+          // topic and preserve stored option order, so no topic is silently
+          // crowded out by the first database rows.
+          const selectFixedRows = (sourceRows, limit) => {
+            if (!bucket.topics?.length) return sourceRows.slice(0, limit)
+            const byTopic = new Map(bucket.topics.map(topic => [topic, []]))
+            sourceRows.forEach(question => {
+              const list = byTopic.get(question.topic)
+              if (list) list.push(question)
+            })
+            const selected = []
+            while (selected.length < limit) {
+              let added = false
+              for (const topic of bucket.topics) {
+                const list = byTopic.get(topic) || []
+                if (list.length && selected.length < limit) {
+                  selected.push(list.shift())
+                  added = true
+                }
+              }
+              if (!added) break
+            }
+            return selected
+          }
+          const copyFixedRows = rows => selectFixedRows(rows, Math.min(bucket.questions, rows.length))
+            .map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
           const selectedNamed = bucket.fixed
-            ? namedRows.slice(0, Math.min(bucket.questions, namedRows.length)).map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
+            ? copyFixedRows(namedRows)
             : mixQuestions(namedRows, Math.min(bucket.questions, namedRows.length))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
@@ -860,7 +884,7 @@ export function App() {
             const genericRows = uniqueQuestions(genericResult.data || [])
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
-              ? genericRows.slice(0, remaining).map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
+              ? copyFixedRows(genericRows).slice(0, remaining)
               : mixQuestions(genericRows, remaining)
           }
           const selected = [...selectedNamed, ...selectedGeneric]
@@ -870,17 +894,41 @@ export function App() {
           return selected
         }
 
-        const plannedRows = []
+        const plannedBuckets = []
         for (const bucket of cfg.questionPlan) {
           const bucketRows = await fetchPlanBucket(bucket)
-          plannedRows.push(...bucketRows)
+          plannedBuckets.push({ bucket, rows: bucketRows })
           bucketRows.forEach(question => plannedQuestionKeys.add(questionKey(question)))
         }
         // Keep supplied additions alongside the planned database selection; they
         // use the same canonical question shape and count toward the live limit.
         const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
-        rows = uniqueQuestions([...plannedRows, ...(cfg.supplementalRows || [])])
-        if (!fixedPaper) rows.sort(() => Math.random() - .5)
+        if (fixedPaper) {
+          // Day 5 is deliberately interleaved: English → GK → Math, repeated.
+          // Once a shorter bucket ends, the remaining buckets continue in the
+          // same stable cycle without changing the paper for another learner.
+          const cycleSubjects = ['English', 'আন্তর্জাতিক বিষয়াবলি', 'গাণিতিক যুক্তি']
+          const rowsBySubject = new Map(plannedBuckets.map(({ bucket, rows: bucketRows }) => [bucket.subject, [...bucketRows]]))
+          const interleavedRows = []
+          let added = true
+          while (added) {
+            added = false
+            cycleSubjects.forEach(subject => {
+              const bucketRows = rowsBySubject.get(subject)
+              if (bucketRows?.length) {
+                interleavedRows.push(bucketRows.shift())
+                added = true
+              }
+            })
+          }
+          const unusedRows = plannedBuckets
+            .filter(({ bucket }) => !cycleSubjects.includes(bucket.subject))
+            .flatMap(({ rows: bucketRows }) => bucketRows)
+          rows = uniqueQuestions([...interleavedRows, ...unusedRows, ...(cfg.supplementalRows || [])])
+        } else {
+          rows = uniqueQuestions([...plannedBuckets.flatMap(({ rows: bucketRows }) => bucketRows), ...(cfg.supplementalRows || [])])
+          rows.sort(() => Math.random() - .5)
+        }
         databaseRowsArePrioritized = true
       } else {
       const selectedPostNames = cfg.postNames?.length ? [...new Set(cfg.postNames)] : []
@@ -1999,7 +2047,7 @@ export function App() {
               <span className={`q-timer ${quiz.left < 30 ? 'warn' : ''}`}>⏱ {mmss}</span>
               <span className="qbar-progress"><b>{BN(quiz.ans.filter(a => a != null).length)}/{BN(quiz.qs.length)}</b><small>উত্তর হয়েছে</small></span>
             </div>
-            <p className={`qbar-guide ${arm ? 'confirming' : ''}`}><span aria-hidden="true">✦</span>{arm ? 'নিশ্চিত করতে আবার সাবমিটে ট্যাপ করুন' : 'সব উত্তর মিলিয়ে তারপর সাবমিট করুন'}</p>
+            <p className={`qbar-guide ${arm ? 'confirming' : ''}`}><span aria-hidden="true">⚠</span>{arm ? 'সতর্কতা: নিশ্চিত করতে আবার সাবমিট করুন' : 'সতর্কতা: সাবমিটের আগে উত্তর মিলিয়ে নিন'}</p>
             <button className={`btn qbar-submit ${arm ? 'danger' : 'primary'}`} onClick={() => {
               if (!arm) { setArm(true); setTimeout(() => setArm(false), 2500); return }
               finish()

@@ -1279,3 +1279,21 @@ html.dark .circular-icon-building{color:#ffab91;background:#38221d;border-color:
   .circular-page-card{gap:7px;padding:10px;border-radius:10px}.circular-page-card .circular-icon{width:32px;height:32px}.circular-page-card h3{font-size:.76rem}.circular-page-card p{font-size:.61rem;line-height:1.5;min-height:3em}.circular-page-card .btn{font-size:.6rem;padding:7px 8px}
   .circular-tip{padding:10px;font-size:.64rem}.circular-tip b{font-size:.68rem}.circular-tip small{font-size:.57rem}
 }
+
+/* ---------- compact question reading + persistent submit caution ---------- */
+.q-card{padding:22px 24px;border-radius:12px}
+.q-card .qn{font-size:1.02rem;line-height:1.58;margin-bottom:16px}
+.qopt{padding:11px 13px;margin-bottom:8px;font-size:.88rem;line-height:1.55;border-radius:9px}
+.qopt:hover{padding-left:17px}
+.qopt .k{font-size:.92rem}
+.qbar-guide{font-size:.65rem;color:var(--accent);font-weight:600}
+.qbar-submit{box-shadow:none}
+.qbar-submit.danger{box-shadow:none}
+@media(max-width:650px){
+  .q-card{padding:16px 14px;border-radius:11px}
+  .q-card .qn{font-size:.9rem;line-height:1.5;margin-bottom:13px}
+  .qopt{padding:9px 10px;margin-bottom:6px;font-size:.78rem;line-height:1.5;border-radius:8px}
+  .qopt:hover{padding-left:13px}
+  .qopt .k{font-size:.84rem;flex-basis:16px}
+  .qbar-guide{font-size:.61rem}
+}
