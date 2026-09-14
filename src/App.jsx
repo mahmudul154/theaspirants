@@ -56,6 +56,8 @@ const ROUTINE_SUBJECT_LABELS = {
   'গাণিতিক যুক্তি': 'গণিত'
 }
 const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
+// "৪০ দিনে প্রিলি • দিন ৫" → "দিন ৫" (heading-এ শুধু দিন দেখাতে)
+const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] || ''
 
 // Keep mathematics topics readable in the custom-quiz picker instead of
 // presenting one long, unstructured list. The database topic names remain
@@ -99,6 +101,19 @@ const APP_CATS = [
   { id: 'bank', name: 'ব্যাংক জব', img: '/assets/bank1.png', d: '৬ বিষয় • শর্টকাটসহ' },
   { id: 'ntrca', name: 'শিক্ষক নিবন্ধন', img: '/assets/ntrca1.png', d: 'স্কুল ও কলেজ স্তর' },
   { id: 'primary', name: 'প্রাথমিক', img: '/assets/primary1.png', d: 'সহকারী শিক্ষক নিয়োগ' }
+]
+
+// Auto-sliding feature strip — প্রতিটি ফিচারের নিজস্ব brand color (icon8-স্টাইল)
+const HOME_FEATURES = [
+  { icon: 'exam', label: 'লাইভ পরীক্ষা', sub: 'আজকের পরীক্ষা ও রুটিন', page: 'exams', color: '#e53935', bg: 'linear-gradient(135deg,#ff7043,#d32f2f)' },
+  { icon: 'sliders', label: 'কাস্টম কুইজ', sub: 'বিষয় ও টপিক বেছে নিন', page: 'setup', color: '#1e88e5', bg: 'linear-gradient(135deg,#42a5f5,#1565c0)' },
+  { icon: 'flame', label: 'ডেইলি চ্যালেঞ্জ', sub: 'প্রতিদিন ১০টি প্রশ্ন', page: 'daily', color: '#f57c00', bg: 'linear-gradient(135deg,#ffa726,#ef6c00)' },
+  { icon: 'layers', label: 'রিভিশন', sub: 'ভুল প্রশ্ন আবার অনুশীলন', page: 'review', color: '#7e57c2', bg: 'linear-gradient(135deg,#9575cd,#5e35b1)' },
+  { icon: 'bank', label: 'প্রশ্নব্যাংক', sub: 'বিগত পরীক্ষার প্রশ্ন', page: 'questionBank', color: '#00897b', bg: 'linear-gradient(135deg,#26a69a,#00695c)' },
+  { icon: 'trophy', label: 'লিডারবোর্ড', sub: 'আজকের র‍্যাংকিং', page: 'leaderboard', color: '#f9a825', bg: 'linear-gradient(135deg,#ffca28,#f57f17)' },
+  { icon: 'news', label: 'আজকের পত্রিকা', sub: 'কারেন্ট অ্যাফেয়ার্স', page: 'potrika', color: '#0288d1', bg: 'linear-gradient(135deg,#29b6f6,#0277bd)' },
+  { icon: 'file', label: 'চাকরির সার্কুলার', sub: 'নতুন নিয়োগ আপডেট', page: 'circular', color: '#00796b', bg: 'linear-gradient(135deg,#4db6ac,#00695c)' },
+  { icon: 'image', label: 'ছবি দিয়ে শেখো', sub: 'ভিজ্যুয়াল লার্নিং', page: 'visual', color: '#d81b60', bg: 'linear-gradient(135deg,#f06292,#c2185b)' }
 ]
 
 const NOTICES = [
@@ -398,6 +413,7 @@ export function App() {
   const [avatar, setAvatar] = useState(() => localStorage.getItem('asp_avatar') || null)
   const [revMeta, setRevMeta] = useState(() => load('asp_rev', {}))
   const [goal, setGoal] = useState(() => load('asp_goal', null))
+  const [routineOpen, setRoutineOpen] = useState(false)
   const [quitArm, setQuitArm] = useState(false)
   const [revOnlyWrong, setRevOnlyWrong] = useState(false)
   const [potCat, setPotCat] = useState('সব')
@@ -1241,7 +1257,9 @@ export function App() {
       supabase.from('exam_results').insert({
         user_id: user.id,
         user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'শিক্ষার্থী',
-        user_avatar: user.user_metadata?.avatar_url || null,
+        // user_avatar doubles as a small metadata slot: { u: avatarUrl, e: email }
+        // so the leaderboard can identify participants by email too.
+        user_avatar: JSON.stringify({ u: user.user_metadata?.avatar_url || null, e: user.email || '' }),
         score: pct,
         total_questions: qs.length,
         category: quiz.rankingEligible ? `live:${quiz.scheduleId}` : `live-archive:${quiz.scheduleId}`
@@ -1282,7 +1300,16 @@ export function App() {
       const grouped = {}
       allRows.forEach(row => {
         const key = row.user_id || row.user_name
-        grouped[key] ||= { user_name: row.user_name, user_avatar: row.user_avatar, totalScore: 0, total_exams: 0 }
+        let avatarUrl = null
+        let email = ''
+        if (row.user_avatar) {
+          try {
+            const meta = JSON.parse(row.user_avatar)
+            if (meta && typeof meta === 'object') { avatarUrl = meta.u || meta.avatar_url || null; email = meta.e || meta.email || '' }
+            else avatarUrl = row.user_avatar
+          } catch { avatarUrl = row.user_avatar }
+        }
+        grouped[key] ||= { user_name: row.user_name, user_avatar: avatarUrl, user_email: email, totalScore: 0, total_exams: 0 }
         grouped[key].total_exams += 1
         grouped[key].totalScore += Number(row.score)
       })
@@ -1367,7 +1394,9 @@ export function App() {
   // window is already live, it naturally changes to the time left to finish.
   const heroCountdownExam = liveExam || upcomingExams.find(exam => exam.dateKey === todayLeaderboardDateKey) || upcomingExams[0] || null
   const heroCountdownIsLive = heroCountdownExam?.status === 'live'
-  const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 4)
+  // Home page keeps only the next two papers so the routine stays compact;
+  // the full schedule lives behind the dropdown on the exams page.
+  const homeLiveExams = (liveExam ? [liveExam, ...upcomingExams] : upcomingExams).slice(0, 2)
   const selectedQbGroup = QUESTION_BANK.groups.find(group => group.id === qbGroupId) || null
   const qbNeedle = qbQuery.trim().toLocaleLowerCase()
   const matchingQbSources = qbNeedle
@@ -1396,7 +1425,7 @@ export function App() {
   const LBRow = (x, i) => (
     <div className="lb-row" key={i}>
       <span className="rk">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : BN(i + 1)}</span>
-      <div className="nm">{x.n || x.user_name}<span>{BN(x.e || x.total_exams)} পরীক্ষা সম্পন্ন</span></div>
+      <div className="nm">{x.n || x.user_name}<span>{x.user_email ? `${x.user_email} • ${BN(x.e || x.total_exams)} পরীক্ষা` : `${BN(x.e || x.total_exams)} পরীক্ষা সম্পন্ন`}</span></div>
       <span className="sc">{BN(x.s || x.avgScore)}<small> % গড়</small></span>
     </div>
   )
@@ -1469,43 +1498,15 @@ export function App() {
 
           <section className="sec home-features-section">
             <div className="head"><div className="eyebrow">দ্রুত ফিচার</div><h2>সবকিছু <i>এক জায়গায়</i></h2></div>
-            <div className="home-features-grid">
-              <button className="home-feature-card feature-live" onClick={() => go('exams')}>
-                <span className="home-feature-icon"><SheetIco id="exam" /></span>
-                <span><b>লাইভ পরীক্ষা</b><small>আজকের পরীক্ষা ও রুটিন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card feature-custom" onClick={() => go('setup')}>
-                <span className="home-feature-icon"><SheetIco id="sliders" /></span>
-                <span><b>কাস্টম কুইজ</b><small>বিষয় ও টপিক বেছে নিন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('daily')}>
-                <span className="home-feature-icon"><SheetIco id="flame" /></span>
-                <span><b>ডেইলি চ্যালেঞ্জ</b><small>প্রতিদিন ১০টি প্রশ্ন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('review')}>
-                <span className="home-feature-icon"><SheetIco id="layers" /></span>
-                <span><b>রিভিশন</b><small>ভুল প্রশ্ন আবার অনুশীলন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('questionBank')}>
-                <span className="home-feature-icon"><SheetIco id="bank" /></span>
-                <span><b>প্রশ্নব্যাংক</b><small>বিগত পরীক্ষার প্রশ্ন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('leaderboard')}>
-                <span className="home-feature-icon"><SheetIco id="trophy" /></span>
-                <span><b>লিডারবোর্ড</b><small>আজকের র‍্যাংকিং দেখুন</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('potrika')}>
-                <span className="home-feature-icon"><SheetIco id="news" /></span>
-                <span><b>আজকের পত্রিকা</b><small>কারেন্ট অ্যাফেয়ার্স</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('circular')}>
-                <span className="home-feature-icon"><SheetIco id="file" /></span>
-                <span><b>চাকরির সার্কুলার</b><small>নতুন নিয়োগ আপডেট</small></span><i aria-hidden="true">→</i>
-              </button>
-              <button className="home-feature-card" onClick={() => go('visual')}>
-                <span className="home-feature-icon"><SheetIco id="image" /></span>
-                <span><b>ছবি দিয়ে শেখো</b><small>ভিজ্যুয়াল লার্নিং</small></span><i aria-hidden="true">→</i>
-              </button>
+            <div className="feature-marquee" aria-label="ফিচার ক্যারোসেল">
+              <div className="feature-track">
+                {[...HOME_FEATURES, ...HOME_FEATURES].map((feature, index) => (
+                  <button className="feature-chip" key={`${feature.page}-${index}`} onClick={() => go(feature.page)} style={{ '--fc': feature.color, '--fbg': feature.bg }} title={feature.label}>
+                    <span className="feature-chip-icon"><SheetIco id={feature.icon} /></span>
+                    <span className="feature-chip-text"><b>{feature.label}</b><small>{feature.sub}</small></span>
+                  </button>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -1539,20 +1540,23 @@ export function App() {
                 const isToday = exam.dateKey === todayLeaderboardDateKey
                 const isLive = exam.status === 'live'
                 const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
-                const planDay = exam.subject.match(/দিন\s+[^•]+$/)?.[0]
-                const compactTitle = exam.planned ? `৪০ দিনে প্রিলি প্রস্তুতি${planDay ? ` • ${planDay}` : ''}` : exam.subject
+                const planDay = examPlanDay(exam)
+                const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
                 return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
+                  {exam.planned && <span className="live-plan-mini-tag">৪০ দিনে প্রিলি</span>}
                   <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
-                  <h3 title={exam.subject}>{isToday ? compactTitle : exam.subject}</h3>
+                  <h3 title={exam.subject}>{heading}</h3>
                   <div className="top">{exam.topic}</div>
                   <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
-                  {isToday
-                    ? <span className="today-card-countdown"><small>{isLive ? 'লাইভ শেষ হতে বাকি' : 'শুরু হতে বাকি'}</small><b aria-live="polite">{countdown}</b></span>
-                    : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
+                  {isLive
+                    ? <span className="today-card-countdown"><small>লাইভ শেষ হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
+                    : isToday
+                      ? <span className="today-card-countdown"><small>শুরু হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
+                      : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
                 </button>
               })}
             </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি প্রস্তুতি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
+            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
 
           <section className="sec home-circular-section">
@@ -1634,9 +1638,9 @@ export function App() {
               <div className="live-feature-copy">
                 <div className="live-feature-tags">
                   <span className={`live-status ${featuredExam.status}`}>{isTestExam(featuredExam) ? 'টেস্ট মোড' : featuredExam.status === 'live' ? '● এখন লাইভ' : featuredExamIsToday ? 'আজকের পরীক্ষা' : 'পরবর্তী পরীক্ষা'}</span>
-                  {featuredExam.planned && <span className="live-plan-status">৪০ দিনে প্রিলি প্রস্তুতি</span>}
+                  {featuredExam.planned && <span className="live-plan-status">৪০ দিনে প্রিলি</span>}
                 </div>
-                <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.subject}</span>
+                <span className="live-feature-subject"><Ico id={featuredExam.subject} size={18} /> {featuredExam.planned ? (examPlanDay(featuredExam) || featuredExam.subject) : featuredExam.subject}</span>
                 <h3>{featuredExam.topic}</h3>
                 <div className="live-feature-meta">
                   <span>📅 {formatLiveExamDate(featuredExam.startsAt)}</span>
@@ -1675,7 +1679,11 @@ export function App() {
               <div><div className="eyebrow">{hasFortyDayPlan ? FORTY_DAY_PRELI_PREPARATION : 'পরবর্তী সাত দিন'}</div><h2>পরবর্তী <i>পরীক্ষাসমূহ</i></h2></div>
               <span className="dhaka-time-chip">Asia/Dhaka • দৈনিক রাত ১১:৩০</span>
             </div>
-            <div className="live-routine-list">
+            <button type="button" className={`routine-dropdown-toggle ${routineOpen ? 'open' : ''}`} aria-expanded={routineOpen} onClick={() => setRoutineOpen(open => !open)}>
+              <span>📅 সম্পূর্ণ রুটিন <small>— {BN(routineExams.length)}টি পরীক্ষা</small></span>
+              <i aria-hidden="true">{routineOpen ? '▲' : '▼'}</i>
+            </button>
+            {routineOpen && <div className="live-routine-list">
               {routineExams.map((exam, index) => (
                 <article className="live-routine-card" key={exam.id}>
                   <div className="routine-day"><b>{BN(exam.planDay || index + 1)}</b><span>দিন</span></div>
@@ -1689,7 +1697,7 @@ export function App() {
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
                 </article>
               ))}
-            </div>
+            </div>}
           </section>
 
           <section className="sec past-exam-section">
@@ -1703,8 +1711,14 @@ export function App() {
                 const testing = isTestExam(exam)
                 const attempted = !!liveAttempts[exam.id]
                 return <article className={`past-exam-card ${attempted && !testing ? 'attempted' : ''}`} key={exam.id}>
-                  <div className="past-card-head"><span className="past-badge">{testing ? 'টেস্ট মোড' : 'বিগত'}</span>{attempted && !testing && <span className="done-badge">✓ সম্পন্ন</span>}</div>
-                  <span className="past-subject"><Ico id={exam.subject} size={16} /> {exam.subject}</span>
+                  <div className="past-card-head">
+                    <span className="past-badge">{testing ? 'টেস্ট মোড' : 'বিগত'}</span>
+                    <span className="past-card-head-right">
+                      {attempted && !testing && <span className="done-badge">✓ সম্পন্ন</span>}
+                      {exam.planned && <span className="past-plan-tag">৪০ দিনে প্রিলি</span>}
+                    </span>
+                  </div>
+                  <span className="past-subject"><Ico id={exam.subject} size={16} /> {exam.planned ? (examPlanDay(exam) || exam.subject) : exam.subject}</span>
                   <h3>{exam.topic}</h3>
                   <time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)} • {formatLiveExamTime(exam.startsAt)}</time>
                   <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span></div>

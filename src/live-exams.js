@@ -3,7 +3,7 @@ import { SEPTEMBER_8_LIVE_EXAM_COUNTS, SEPTEMBER_8_LIVE_EXAM_QUESTIONS } from '.
 import { SEPTEMBER_9_LIVE_EXAM_COUNTS, SEPTEMBER_9_LIVE_EXAM_QUESTIONS } from './september-9-live-exam.js'
 import { SEPTEMBER_10_LIVE_EXAM_COUNTS, SEPTEMBER_10_LIVE_EXAM_QUESTIONS } from './september-10-live-exam.js'
 import { SEPTEMBER_11_LIVE_EXAM_COUNTS, SEPTEMBER_11_LIVE_EXAM_QUESTIONS } from './september-11-live-exam.js'
-import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE, SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
+import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE, ROUTINE_END_DATEKEY, SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -16,7 +16,7 @@ const LIVE_WINDOW_MS = 14 * HOUR_MS + 30 * 60 * 1000
 
 // The shared syllabus supports government-job preliminary preparation beyond
 // one exam track, while keeping the existing schedule IDs stable.
-export const FORTY_DAY_PRELI_PREPARATION = '৪০ দিনে প্রিলি প্রস্তুতি (পিএসসি, বিসিএস, ব্যাংক, এনটিআরসিএ, প্রাথমিক ও অন্যান্য)'
+export const FORTY_DAY_PRELI_PREPARATION = '৪০ দিনে প্রিলি'
 
 // Exact, well-populated Supabase topic values. The date serial chooses one
 // deterministically, so every visitor sees the same national routine.
@@ -84,6 +84,8 @@ function modelLiveExamFor(day) {
   const dayOfMonth = date.getUTCDate()
   const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
   const routineOverride = SEPTEMBER_2026_ROUTINE[dateKey]
+  // Off days and anything past the end of the published routine have no exam.
+  if (routineOverride?.rest || dateKey > ROUTINE_END_DATEKEY) return null
   const questionPlan = routineOverride?.questionPlan || FORTY_DAY_LIVE_PLAN[index]
   const planDay = routineOverride?.day || index + 1
   const firstPhase = index < 20
@@ -176,19 +178,22 @@ export function buildDailyLiveExams(now = Date.now()) {
 
   for (let offset = -14; offset <= 45; offset++) {
     const day = dhakaDay + offset * DAY_MS
+    const date = new Date(day)
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const dayOfMonth = date.getUTCDate()
+    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
+    // The published routine ends on 22 September 2026; off days and anything
+    // after that date have no exam at all.
+    if (dateKey > ROUTINE_END_DATEKEY || SEPTEMBER_2026_ROUTINE[dateKey]?.rest) continue
     const plannedModel = modelLiveExamFor(day)
     if (plannedModel) {
       exams.push(withStatus(plannedModel, now))
       continue
     }
-    const date = new Date(day)
     const serial = Math.floor(day / DAY_MS)
     const index = ((serial % LIVE_TOPIC_ROTATION.length) + LIVE_TOPIC_ROTATION.length) % LIVE_TOPIC_ROTATION.length
     const slot = LIVE_TOPIC_ROTATION[index]
-    const year = date.getUTCFullYear()
-    const month = date.getUTCMonth()
-    const dayOfMonth = date.getUTCDate()
-    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
     const startsAt = Date.UTC(year, month, dayOfMonth, LIVE_START_UTC_HOUR, LIVE_START_UTC_MINUTE)
     const endsAt = startsAt + LIVE_WINDOW_MS
 
