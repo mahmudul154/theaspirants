@@ -1,7 +1,7 @@
 // Published fixed paper for the 14 September 2026 weekly model test (Day 6).
-// 90 reviewed questions from the supplied PDFs, interleaved so one subject's
+// 100 reviewed questions: 90 from the supplied PDFs + 10 international from the DB,
 // question is always followed by the next subject's question (round-robin).
-// Distribution: ইংরেজি ২০ • বাংলা ২০ • গণিত ২০ • বাংলাদেশ ২০ • আন্তর্জাতিক ১০
+// Distribution: ইংরেজি ২০ • বাংলা ২০ • গণিত ২০ • বাংলাদেশ ২০ • আন্তর্জাতিক ২০
 
 const q = (subject, topic, question, options, answerIndex, explanation) => ({
   subject, topic, question, options, answerIndex, explanation
@@ -54,27 +54,27 @@ const sourceRows = [
   q('বাংলা', 'শব্দ ও শব্দের প্রকারভেদ', 'যে সাধিত শব্দের অর্থ তার মূল শব্দ বা প্রকৃতির অর্থ অনুযায়ী না হয়ে অন্য কোনো বিশিষ্ট অর্থ প্রকাশ করে, তাকে কী বলা হয়?', ['যৌগিক শব্দ', 'রূঢ় শব্দ', 'যোগরূঢ় শব্দ', 'মৌলিক শব্দ'], 1, 'যেমন: \'হস্তী\' (হস্ত আছে যার — না বুঝিয়ে পশু বিশেষ), \'বাঁশি\' (বাঁশ দিয়ে তৈরি যে কোনো বস্তু না বুঝিয়ে বিশেষ বাদ্যযন্ত্র)।'),
   q('বাংলা', 'শব্দ ও শব্দের প্রকারভেদ', '\'পঙ্কজ\' (পঙ্কে জন্মে যা = পদ্মফুল) শব্দটি কোন অর্থগত শ্রেণির অন্তর্ভুক্ত?', ['যৌগিক শব্দ', 'রূঢ় শব্দ', 'যোগরূঢ় শব্দ', 'মূল শব্দ'], 2, 'সমাস নিষ্পন্ন যে শব্দ সম্পূর্ণভাবে সমস্যমান পদসমূহের অনুগামী না হয়ে কোনো বিশিষ্ট অর্থ প্রকাশ করে, তাকে যোগরূঢ় শব্দ বলে। \'পঙ্কজ\' দ্বারা শেওলা, শালুক ইত্যাদি না বুঝিয়ে কেবল \'পদ্মফুল\'-কে বোঝায়।'),
 
-  // ================= গণিত — গড় ও বয়স (২০) =================
-  q('গণিত', 'গড় ও বয়স', 'প্রথম পাঁচটি মৌলিক সংখ্যার গড় কত?', ['4.5', '5.6', '7.5', '8.6'], 1, 'প্রথম পাঁচটি মৌলিক সংখ্যা: 2, 3, 5, 7, 11। যোগফল = 2 + 3 + 5 + 7 + 11 = 28। গড় = 28 ÷ 5 = 5.6'),
-  q('গণিত', 'গড় ও বয়স', '৩০ থেকে ৫০ এর মধ্যবর্তী সব মৌলিক সংখ্যার গড় কত?', ['37', '37.8', '39.8', '39'], 2, '৩০ ও ৫০ এর মধ্যবর্তী মৌলিক সংখ্যা: 31, 37, 41, 43, 47। যোগফল = 199। গড় = 199 ÷ 5 = 39.8'),
-  q('গণিত', 'গড় ও বয়স', '১০টি পূর্ণসংখ্যার যোগফল 462। প্রথম ৪টির গড় 52 এবং শেষ ৫টির গড় 38 হলে পঞ্চম সংখ্যাটি কত?', ['64', '60', '50', '62'], 0, 'প্রথম ৪টির যোগফল = 52 × 4 = 208। শেষ ৫টির যোগফল = 38 × 5 = 190। পঞ্চম সংখ্যা = 462 − (208 + 190) = 64।'),
-  q('গণিত', 'গড় ও বয়স', '৬টি সংখ্যার গড় 25। এর সাথে গড় 22 বিশিষ্ট আরও ৩টি সংখ্যা যোগ করলে ৯টি সংখ্যার সম্মিলিত গড় কত?', ['20', '24', '28', '32'], 1, '৬টির যোগফল = 6 × 25 = 150। ৩টি নতুন সংখ্যার যোগফল = 22 × 3 = 66। ৯টির যোগফল = 216। গড় = 216 ÷ 9 = 24।'),
-  q('গণিত', 'গড় ও বয়স', '৬টি সংখ্যার গড় 8.5। একটি সংখ্যা বাদ দিলে বাকি সংখ্যার গড় 7.2 হয়। বাদ দেওয়া সংখ্যাটি কত?', ['7.8', '6.5', '16', '15'], 3, '৬টির যোগফল = 8.5 × 6 = 51। ৫টির যোগফল = 7.2 × 5 = 36। বাদ দেওয়া সংখ্যা = 51 − 36 = 15।'),
-  q('গণিত', 'গড় ও বয়স', '৬টি সংখ্যার গড় 6.5। এর সাথে আরও ৪টি সংখ্যা যোগ করলে ১০টির গড় 7.9 হয়। যোগ করা ৪টি সংখ্যার গড় কত?', ['10', '11', '12.5', 'None of these'], 0, '৬টির যোগফল = 6 × 6.5 = 39। ১০টির যোগফল = 10 × 7.9 = 79। ৪টি নতুন সংখ্যার যোগফল = 40। গড় = 40 ÷ 4 = 10।'),
-  q('গণিত', 'গড় ও বয়স', '৪টি ভিন্ন পূর্ণসংখ্যার গড় 75। সবচেয়ে বড় সংখ্যাটি 90 হলে সবচেয়ে ছোট সংখ্যাটির সম্ভাব্য সর্বনিম্ন মান কত?', ['1', '19', '29', '33'], 3, 'যোগফল = 75 × 4 = 300। বড় সংখ্যা = 90। ছোট সংখ্যাকে যতটা সম্ভব ছোট করতে মাঝের ২টি সংখ্যা যতটা সম্ভব বড় হতে হবে (89 ও 88, যেহেতু ভিন্ন পূর্ণসংখ্যা)। সর্বনিম্ন মান = 300 − (90 + 89 + 88) = 33।'),
-  q('গণিত', 'গড় ও বয়স', 'দশটি সংখ্যার গড় 7। প্রতিটি সংখ্যাকে 12 দিয়ে গুণ করলে নতুন সংখ্যাগুলোর গড় কত?', ['44', '84', '48', '38'], 1, 'প্রতিটি সংখ্যাকে k গুণক দিয়ে গুণ করলে গড়ও একই গুণক দিয়ে বাড়ে। নতুন গড় = 7 × 12 = 84।'),
-  q('গণিত', 'গড় ও বয়স', '২০টি সংখ্যার গড় শূন্য। এর মধ্যে সর্বাধিক কয়টি সংখ্যা শূন্যের চেয়ে বড় হতে পারে?', ['0', '1', '10', '19'], 3, '২০টি সংখ্যার যোগফল = 0 × 20 = 0। ১৯টি ধনাত্মক হলে তাদের যোগফল একটি ঋণাত্মক ২০তম সংখ্যা দিয়ে পূরণ করা যেতে পারে। তাই সর্বাধিক ১৯টি শূন্যের চেয়ে বড় হতে পারে।'),
-  q('গণিত', 'গড় ও বয়স', '৩টি সংখ্যার মধ্যে প্রথম দুটির গড় 2, শেষ দুটির গড় 3 এবং প্রথম ও শেষের গড় 4। তিনটি সংখ্যার গড় কত?', ['3', '2', '2.5', '3.5'], 0, 'ধরি সংখ্যা A, B, C। A + B = 4, B + C = 6, A + C = 8। যোগ করলে 2(A + B + C) = 18 ⇒ A + B + C = 9। গড় = 9 ÷ 3 = 3।'),
-  q('গণিত', 'গড় ও বয়স', 'P ও Q-এর গড় মাসিক আয় 5050 টাকা, Q ও R-এর 6250 টাকা এবং P ও R-এর 5200 টাকা। P-এর মাসিক আয় কত?', ['3500', '4000', '4050', '5000'], 1, 'P + Q = 10100, Q + R = 12500, P + R = 10400। যোগ করলে 2(P + Q + R) = 33000 ⇒ P + Q + R = 16500। P = 16500 − 12500 = 4000 টাকা।'),
-  q('গণিত', 'গড় ও বয়স', 'S = {0, 2, 4, 5, 9} সেট থেকে কোন সংখ্যাটি সরালে সেটটির গড় অপরিবর্তিত থাকবে?', ['0', '2', '4', '5'], 2, 'সংখ্যাগুলোর যোগফল = 20, গড় = 20 ÷ 5 = 4। গড়ের সমান সংখ্যা (4) সরালে বাকি সংখ্যার গড়ও 4-ই থাকে।'),
-  q('গণিত', 'গড় ও বয়স', '৯টি আমের গড় ওজন 20 গ্রাম বাড়ে যদি 120 গ্রাম ওজনের একটি আমের বদলে অন্য একটি আম রাখা হয়। নতুন আমটির ওজন কত?', ['300g', '350g', '400g', '200g'], 0, 'মোট ওজন বৃদ্ধি = 9 × 20 g = 180 g। নতুন আমের ওজন = 120 g + 180 g = 300g।'),
-  q('গণিত', 'গড় ও বয়স', 'একজন ক্রিকেটারের বোলিং গড় 12.4 রান/উইকেট। সে 26 রানে 5 উইকেট নিয়ে তার গড় 0.4 কমায়। শেষ ম্যাচ পর্যন্ত তার মোট উইকেট সংখ্যা কত?', ['64', '72', '80', '85'], 3, 'ধরি শেষ ম্যাচ পর্যন্ত উইকেট = x। (12.4x + 26) ÷ (x + 5) = 12.0 ⇒ 12.4x + 26 = 12x + 60 ⇒ 0.4x = 34 ⇒ x = 85।'),
-  q('গণিত', 'গড় ও বয়স', 'একজন ব্যাটসম্যান ১৭তম ইনিংসে 87 রান করে তার গড় 3 বাড়ান। ১৭তম ইনিংসের পর তার গড় কত?', ['38 রান', '36 রান', '39 রান', '45 রান'], 2, 'ধরি ১৭তম ইনিংসের পর গড় = x, ১৬তমের পর = x − 3। 16(x − 3) + 87 = 17x ⇒ 16x − 48 + 87 = 17x ⇒ x = 39 রান।'),
-  q('গণিত', 'গড় ও বয়স', '৩২ জন শিক্ষার্থীর গড় বয়স 10 বছর। শিক্ষকের বয়স ধরলে গড় 1 বছর বাড়ে। শিক্ষকের বয়স কত?', ['43 বছর', '50 বছর', '34 বছর', '32 বছর'], 0, '৩২ জনের মোট বয়স = 32 × 10 = 320 বছর। শিক্ষকসহ ৩৩ জনের মোট = 33 × 11 = 363 বছর। শিক্ষকের বয়স = 363 − 320 = 43 বছর।'),
-  q('গণিত', 'গড় ও বয়স', '৩ বছর আগে ৫ সদস্যের একটি পরিবারের গড় বয়স ছিল 17 বছর। একটি শিশু জন্ম নেওয়ায় বর্তমানে পরিবারের গড় বয়স আগের সমান। শিশুটির বর্তমান বয়স কত?', ['১ বছর', '১ বছর ৬ মাস', '২ বছর', '৩ বছর'], 2, '৫ জনের বর্তমান মোট বয়স = (5 × 17) + (5 × 3) = 100 বছর। শিশুসহ ৬ জনের মোট = 17 × 6 = 102 বছর। শিশুর বয়স = 102 − 100 = 2 বছর।'),
-  q('গণিত', 'গড় ও বয়স', '৫ বছর আগে P ও Q-এর গড় বয়স ছিল 15 বছর। আজ P, Q ও R-এর গড় বয়স 20 বছর। 10 বছর পর R-এর বয়স কত হবে?', ['40', '30', '20', '65'], 1, 'P + Q এর বর্তমান বয়স = 2 × (15 + 5) = 40 বছর। P + Q + R = 3 × 20 = 60 বছর। R-এর বর্তমান বয়স = 20 বছর। 10 বছর পর = 30 বছর।'),
-  q('গণিত', 'গড় ও বয়স', 'পিতা তার ছেলে রনিতের চেয়ে তিনগুণ বেশি বয়সী। 8 বছর পর পিতা রনিতের আড়াই গুণ বয়সী হবেন। আরও 8 বছর পর পিতা রনিতের কত গুণ বয়সী হবেন?', ['2 গুণ', '2.5 গুণ', '2.75 গুণ', '2.25 গুণ'], 0, '"তিনগুণ বেশি" মানে পিতার বর্তমান বয়স = x + 3x = 4x। 8 বছর পর: 4x + 8 = 2.5(x + 8) ⇒ 1.5x = 12 ⇒ x = 8। বর্তমানে রনিত 8, পিতা 32। আরও 8 বছর পর (মোট 16 বছর): রনিত 24, পিতা 48। অনুপাত = 48 ÷ 24 = 2 গুণ।'),
-  q('গণিত', 'গড় ও বয়স', 'বর্তমানে করিম ও রহিমের বয়সের অনুপাত 4:3। 6 বছর পর করিমের বয়স 26 বছর হবে। রহিমের বর্তমান বয়স কত?', ['12', '15', '19', '21'], 1, 'ধরি করিম ও রহিমের বর্তমান বয়স = 4x ও 3x। 6 বছর পর করিম = 4x + 6 = 26 ⇒ 4x = 20 ⇒ x = 5। রহিমের বর্তমান বয়স = 3 × 5 = 15 বছর।'),
+  // ================= গণিত (Math) — Average & Age (২০) =================
+  q('গণিত', 'Average', 'Which of the following is the average of the first five prime numbers?', ['4.5', '5.6', '7.5', '8.6'], 1, 'First five prime numbers are 2, 3, 5, 7, 11. Sum = 2 + 3 + 5 + 7 + 11 = 28. Average = 28 ÷ 5 = 5.6'),
+  q('গণিত', 'Average', 'Average of all prime numbers between 30 to 50 is:', ['37', '37.8', '39.8', '39'], 2, 'Prime numbers between 30 and 50 are 31, 37, 41, 43, 47. Sum = 199. Average = 199 ÷ 5 = 39.8'),
+  q('গণিত', 'Average', 'Sum of 10 integers is 462. The average of first 4 numbers is 52 and the average of last 5 numbers is 38. What is the fifth number?', ['64', '60', '50', '62'], 0, 'Sum of first 4 numbers = 52 × 4 = 208. Sum of last 5 numbers = 38 × 5 = 190. Fifth number = 462 − (208 + 190) = 64.'),
+  q('গণিত', 'Average', 'The average of 6 numbers is 25. If 3 more numbers with an average of 22 are added to these numbers, what will be the average of the combined 9 numbers?', ['20', '24', '28', '32'], 1, 'Total of 6 numbers = 6 × 25 = 150. Total of 3 new numbers = 22 × 3 = 66. Total of 9 numbers = 216. Average = 216 ÷ 9 = 24.'),
+  q('গণিত', 'Average', 'The average of 6 numbers is 8.5. When one number is discarded, the average of the remaining numbers becomes 7.2. What is the discarded number?', ['7.8', '6.5', '16', '15'], 3, 'Sum of 6 numbers = 8.5 × 6 = 51. Sum of 5 numbers = 7.2 × 5 = 36. Discarded number = 51 − 36 = 15.'),
+  q('গণিত', 'Average', 'The average of 6 numbers is 6.5. When four more numbers are added to these six numbers, the new average of all 10 numbers is 7.9. What is the average of the four numbers added?', ['10', '11', '12.5', 'None of these'], 0, 'Sum of 6 numbers = 6 × 6.5 = 39. Sum of 10 numbers = 10 × 7.9 = 79. Sum of 4 new numbers = 40. Average = 40 ÷ 4 = 10.'),
+  q('গণিত', 'Average', 'The average (arithmetic mean) of 4 different integers is 75. If the largest integer is 90, what is the least possible value of the smallest integer?', ['1', '19', '29', '33'], 3, 'Sum = 75 × 4 = 300. Largest = 90. To make the smallest as small as possible, the two middle numbers must be as large as possible (89 and 88, distinct integers). Least value = 300 − (90 + 89 + 88) = 33.'),
+  q('গণিত', 'Average', 'The average of ten numbers is 7. If each number is multiplied by 12, then the average of the new set of numbers is:', ['44', '84', '48', '38'], 1, 'When each number is multiplied by a factor k, the average also multiplies by k. New average = 7 × 12 = 84.'),
+  q('গণিত', 'Average', 'The average of 20 numbers is zero. Of them, at the most, how many may be greater than zero?', ['0', '1', '10', '19'], 3, 'Sum of 20 numbers = 0 × 20 = 0. If 19 numbers are positive, their sum can be cancelled by a single negative 20th number of equal magnitude. So at most 19 can be greater than zero.'),
+  q('গণিত', 'Average', 'In a set of 3 numbers, the average of the first two numbers is 2, the average of the last two is 3, and the average of the first and the last numbers is 4. What is the average of the three numbers?', ['3', '2', '2.5', '3.5'], 0, 'Let the numbers be A, B, C. A + B = 4, B + C = 6, A + C = 8. Adding: 2(A + B + C) = 18 ⇒ A + B + C = 9. Average = 9 ÷ 3 = 3.'),
+  q('গণিত', 'Average', 'The average monthly income of P and Q is Tk. 5050. The average monthly income of Q and R is Tk. 6250 and the average monthly income of P and R is Tk. 5200. What is the monthly income of P?', ['3500', '4000', '4050', '5000'], 1, 'P + Q = 10100, Q + R = 12500, P + R = 10400. Adding: 2(P + Q + R) = 33000 ⇒ P + Q + R = 16500. P = 16500 − 12500 = Tk. 4000.'),
+  q('গণিত', 'Average', 'Which one of the following numbers can be removed from the set S = {0, 2, 4, 5, 9} without changing the average of set S?', ['0', '2', '4', '5'], 2, 'Sum = 0 + 2 + 4 + 5 + 9 = 20. Average = 20 ÷ 5 = 4. If a number equal to the average (4) is removed, the average of the remaining numbers stays 4.'),
+  q('গণিত', 'Average', 'The average weight of 9 mangoes increases by 20 g if one of them weighing 120 g is replaced by another. The weight of the new mango is:', ['300g', '350g', '400g', '200g'], 0, 'Total increase in weight = 9 × 20 g = 180 g. Weight of new mango = 120 g + 180 g = 300g.'),
+  q('গণিত', 'Average', 'A cricketer whose bowling average is 12.4 runs per wicket takes 5 wickets for 26 runs and thereby decreases his average by 0.4. The total number of wickets taken by him till the last match was:', ['64', '72', '80', '85'], 3, 'Let wickets till last match = x. (12.4x + 26) ÷ (x + 5) = 12.0 ⇒ 12.4x + 26 = 12x + 60 ⇒ 0.4x = 34 ⇒ x = 85.'),
+  q('গণিত', 'Average', 'A batsman makes a score of 87 runs in the 17th innings and thus increases his average by 3. Find his average after 17th innings.', ['38 runs', '36 runs', '39 runs', '45 runs'], 2, 'Let average after 17th innings = x, after 16th = x − 3. 16(x − 3) + 87 = 17x ⇒ 16x − 48 + 87 = 17x ⇒ x = 39 runs.'),
+  q('গণিত', 'Age', 'The average age of 32 students is 10 years. If the teacher\'s age is included, the average age increases by 1 year. What is the age of the teacher?', ['43 years', '50 years', '34 years', '32 years'], 0, 'Total age of 32 students = 32 × 10 = 320 years. Total with teacher (33 people) = 33 × 11 = 363 years. Teacher\'s age = 363 − 320 = 43 years.'),
+  q('গণিত', 'Age', '3 years ago, the average age of a family of 5 members was 17 years. A baby having been born, the average age of the family is the same today. The present age of the baby is:', ['1 year', '1 year 6 months', '2 years', '3 years'], 2, 'Present sum of 5 members = (5 × 17) + (5 × 3) = 100 years. Present sum of 6 members (with baby) = 17 × 6 = 102 years. Age of the baby = 102 − 100 = 2 years.'),
+  q('গণিত', 'Age', '5 years ago, the average age of P and Q was 15 years. The average age of P, Q and R today is 20 years. How old will R be after 10 years?', ['40', '30', '20', '65'], 1, 'Present age of (P + Q) = 2 × (15 + 5) = 40 years. Present age of (P + Q + R) = 3 × 20 = 60 years. R\'s present age = 20 years. After 10 years = 30 years.'),
+  q('গণিত', 'Age', 'Father is aged three times more than his son Ronit. After 8 years, he would be two and a half times of Ronit\'s age. After further 8 years, how many times would he be of Ronit\'s age?', ['2 times', '2.5 times', '2.75 times', '2.25 times'], 0, '"Three times more" means Father\'s present age = x + 3x = 4x. After 8 years: 4x + 8 = 2.5(x + 8) ⇒ 1.5x = 12 ⇒ x = 8. Present: Ronit = 8, Father = 32. After further 8 years: Ronit = 24, Father = 48. Ratio = 2 times.'),
+  q('গণিত', 'Age', 'At present, the ratio between the ages of Karim and Rahim is 4:3. After 6 years, Karim\'s age will be 26 years. What is the age of Rahim at present?', ['12', '15', '19', '21'], 1, 'Let present ages = 4x and 3x. 4x + 6 = 26 ⇒ 4x = 20 ⇒ x = 5. Rahim\'s present age = 3 × 5 = 15 years.'),
 
   // ================= বাংলাদেশ বিষয়াবলি (২০) =================
   q('বাংলাদেশ বিষয়াবলি', 'ভাষা আন্দোলন', 'ভাষা আন্দোলনের সাথে জড়িত প্রতিষ্ঠান \'তমদ্দুন মজলিশ\' কার নেতৃত্বে গঠিত হয়?', ['অধ্যাপক আবুল কাশেম', 'কামরুদ্দীন আহমদ', 'আবদুল মতিন', 'আবদুস সালাম'], 0, '১৯৪৭ সালের ২ সেপ্টেম্বর ঢাকা বিশ্ববিদ্যালয়ের পদার্থবিজ্ঞান বিভাগের অধ্যাপক আবুল কাশেমের নেতৃত্বে ভাষা আন্দোলনের প্রথম সংগঠন \'তমদ্দুন মজলিশ\' প্রতিষ্ঠিত হয়। এটি ছিল একটি ইসলামিক সাংস্কৃতিক সংগঠন।'),
@@ -108,7 +108,19 @@ const sourceRows = [
   q('আন্তর্জাতিক বিষয়াবলি', 'শিল্পবিপ্লব ও বিশ্বযুদ্ধ', 'ট্রুম্যান ডকট্রিন কবে ঘোষণা করা হয়?', ['১২ মার্চ, ১৯৪৭', '৫ জুন, ১৯৪৭', '১২ মে, ১৯৪৭', '৩ এপ্রিল, ১৯৪৮'], 0, 'ঠান্ডা যুদ্ধের প্রেক্ষাপটে ১২ মার্চ ১৯৪৭ তারিখে মার্কিন প্রেসিডেন্ট হ্যারি ট্রুম্যান কংগ্রেসে \'কনটেইনমেন্ট পলিসি\' ঘোষণা করেন, যাকে ট্রুম্যান ডকট্রিন বলা হয়। এতে তুরস্ক ও গ্রিসকে ৪০ কোটি ডলার সহায়তার ঘোষণা দেওয়া হয়।'),
   q('আন্তর্জাতিক বিষয়াবলি', 'শিল্পবিপ্লব ও বিশ্বযুদ্ধ', 'মার্শাল প্ল্যান অনুযায়ী ইউরোপকে কত অর্থনৈতিক সহায়তা দেওয়া হয়েছিল?', ['৪০ কোটি ডলার', '৬০ বিলিয়ন ডলার', '১২ বিলিয়ন ডলার', '১০০ বিলিয়ন ডলার'], 2, '১৯৪৭ সালের ৫ জুন হার্ভার্ড বিশ্ববিদ্যালয়ে তৎকালীন মার্কিন সেক্রেটারি অব স্টেট জর্জ সি. মার্শাল ইউরোপের অর্থনৈতিক পুনর্গঠনের জন্য ১২ বিলিয়ন ডলার সহায়তার ঘোষণা করেন — যাকে মার্শাল প্ল্যান বলা হয়।'),
   q('আন্তর্জাতিক বিষয়াবলি', 'শিল্পবিপ্লব ও বিশ্বযুদ্ধ', 'কিউবান মিসাইল ক্রাইসিস কত দিন ছিল?', ['৭ দিন', '১৩ দিন', '২১ দিন', '৩০ দিন'], 1, '১৯৬২ সালের ১৬ থেকে ২৮ অক্টোবর — মোট ১৩ দিন চলে কিউবান মিসাইল ক্রাইসিস। সোভিয়েত ইউনিয়ন কিউবায় ক্ষেপণাস্ত্র স্থাপনের উদ্যোগ নিলে মার্কিন-সোভিয়েত সম্পর্ক চরম তীব্রতা পায়; এটি ঠান্ডা যুদ্ধের সবচেয়ে বিপজ্জনক মুহূর্ত।'),
-  q('আন্তর্জাতিক বিষয়াবলি', 'শিল্পবিপ্লব ও বিশ্বযুদ্ধ', '১৯৯১ সালে সোভিয়েত ইউনিয়ন ভেঙে কয়টি স্বাধীন রাষ্ট্র গঠিত হয়?', ['১২টি', '১৪টি', '১৫টি', '১৬টি'], 2, '১৯২২ সালে গঠিত সোভিয়েত ইউনিয়ন ১৯৯১ সালে ভেঙে ১৫টি স্বাধীন রাষ্ট্র গঠিত হয় — যেমন: রাশিয়া, ইউক্রেন, বেলারুশ, কাজাখস্তান ইত্যাদি।')
+  q('আন্তর্জাতিক বিষয়াবলি', 'শিল্পবিপ্লব ও বিশ্বযুদ্ধ', '১৯৯১ সালে সোভিয়েত ইউনিয়ন ভেঙে কয়টি স্বাধীন রাষ্ট্র গঠিত হয়?', ['১২টি', '১৪টি', '১৫টি', '১৬টি'], 2, '১৯২২ সালে গঠিত সোভিয়েত ইউনিয়ন ১৯৯১ সালে ভেঙে ১৫টি স্বাধীন রাষ্ট্র গঠিত হয় — যেমন: রাশিয়া, ইউক্রেন, বেলারুশ, কাজাখস্তান ইত্যাদি।'),
+
+  // ================= আন্তর্জাতিক বিষয়াবলি — ডাটাবেজ থেকে (১০) =================
+  q('আন্তর্জাতিক বিষয়াবলি', 'জাতিপুঞ্জ', '\'লীগ অব নেশন্স\' স্থাপনে কে অগ্রণী ভূমিকা পালন করেন?', ['প্রেসিডেন্ট উইলসন', 'প্রেসিডেন্ট রুজভেল্ট', 'জেনারেল স্মাটস', 'উইনস্টন চার্চিল'], 0, 'আমেরিকার ২৮তম প্রেসিডেন্ট উড্রো উইলসন প্রথম বিশ্বযুদ্ধ শেষে শান্তি প্রতিষ্ঠার জন্য ১৪ দফা (14 Points) প্রস্তাব পেশ করেন, যার ওপর ভিত্তি করে \'লীগ অব নেশন্স\' বা জাতিপুঞ্জ প্রতিষ্ঠিত হয়।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'জাতিপুঞ্জ', 'বেলফোর ঘোষণা কি ?', ['মধ্যপ্রাচ্যে ইহুদি রাষ্ট্রের ঘোষণা', 'আরব ও ইহুদিদের মধ্যে শান্তি স্থাপনের ঘোষণা', 'মধ্যপ্রাচ্যে আরব সংহতি রক্ষার ঘোষণা', 'আরব ও ইহুদিদের সংঘর্ষের ঘোষণা'], 0, '১৯১৭ সালে ব্রিটিশ পররাষ্ট্রমন্ত্রী আর্থার বেলফোর ফিলিস্তিন ভূখণ্ডে ইহুদিদের জন্য একটি জাতীয় বাসস্থান (ইহুদি রাষ্ট্র) প্রতিষ্ঠার প্রতিশ্রুতি দিয়ে বেলফোর ঘোষণা দেন।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'দ্বিতীয় বিশ্বযুদ্ধ', 'হিরোশিমায় পারমাণবিক বোমা ফেলা হয়েছিল কবে?', ['১৯৪৫ সালের ৬ আগস্ট', '১৯৪৫ সালের ৯ আগস্ট', '১৯৪৬ সালের ৬ আগস্ট', '১৯৪৬ সালের ৯ আগস্ট'], 0, 'দ্বিতীয় বিশ্বযুদ্ধের সময় ১৯৪৫ সালের ৬ আগস্ট আমেরিকা জাপানের হিরোশিমা শহরে প্রথম পারমাণবিক বোমা ফেলে।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'দ্বিতীয় বিশ্বযুদ্ধ', 'জাপানের হিরোশিমায় নিক্ষেপ করা প্রথম আণবিক বোমার নাম কী?', ['লিটল বয়', 'ফ্যাট ম্যান', 'ব্যাট ম্যান', 'ফ্যাট বয়'], 0, 'হিরোশিমায় ৬ আগস্ট নিক্ষিপ্ত প্রথম আণবিক বোমার কোড নাম ছিল "Little Boy"।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'স্নায়ুযুদ্ধ', 'North Atlantic Treaty Organization (NATO) এর প্রতিষ্ঠাকালীন সদর দপ্তর কোথায় ছিল?', ['লন্ডন', 'প্যারিস', 'ব্রাসেলস', 'মাদ্রিদ'], 0, '১৯৪৯ সালে প্রতিষ্ঠার সময় ন্যাটোর সদর দপ্তর প্রথমে লন্ডনে অবস্থিত ছিল, যা পরবর্তীতে ১৯৬৭ সালে বেলজিয়ামের ব্রাসেলসে স্থানান্তরিত হয়।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'স্নায়ুযুদ্ধ', 'ফেয়ার ফ্যাক্স কী?', ['গোয়েন্দা সংস্থা', 'মানবাধিকার সংস্থা', 'পরিবেশবাদী আন্দোলন', 'বিশেষ ধরনের ফ্যাক্স'], 0, 'ফেয়ারফ্যাক্স (Fairfax) হলো যুক্তরাষ্ট্রের নিউ ইয়র্ক ভিত্তিক একটি বেসরকারি আন্তর্জাতিক প্রাইভেট গোয়েন্দা সংস্থা।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'কোরিয়া সংকট', '\'সানসাইন পলিসি\'র সাথে কোন দেশ জড়িত ?', ['চীন', 'উত্তর ও দক্ষিণ কোরিয়া', 'জাপান', 'তাইওয়ান'], 1, 'দক্ষিণ কোরিয়া কর্তৃক উত্তর কোরিয়ার সাথে সম্পর্ক উন্নয়নে ১৯৯৮ সাল থেকে গ্রহণ করা পররাষ্ট্রনীতি \'Sunshine Policy\' (সানসাইন পলিসি) নামে পরিচিত।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'কোরিয়া সংকট', 'উত্তর কোরিয়া ও দক্ষিণ কোরিয়া কবে বিভক্ত হয়?', ['১৯৪৪ সালে', '১৯৪৫ সালে', '১৯৪৬ সালে', '১৯৪৭ সালে'], 1, 'দ্বিতীয় বিশ্বযুদ্ধ শেষে ১৯৪৫ সালে ৩৮তম অক্ষরেখা বরাবর কোরীয় উপদ্বীপকে উত্তর (সোভিয়েত নিয়ন্ত্রিত) ও দক্ষিণ (মার্কিন নিয়ন্ত্রিত) অংশে বিভক্ত করা হয়।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', 'কিউবা ক্ষেপণাস্ত্র সংকট কোন সালে সংঘটিত হয়', ['১৯৫৯', '১৯৬১', '১৯৬২', '১৯৬৪'], 2, '১৯৬২ সালের অক্টোবরে যুক্তরাষ্ট্র ও সোভিয়েত ইউনিয়নের মধ্যে সংঘটিত কিউবান ক্ষেপণাস্ত্র সংকট (Cuban Missile Crisis) স্নায়ুযুদ্ধের অন্যতম চরম মুহূর্ত ছিল।'),
+  q('আন্তর্জাতিক বিষয়াবলি', 'যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট', 'মহান বিপ্লবী নেতা ফিদেল ক্যাস্ত্রো কোন দেশের নাগরিক ?', ['Argentina', 'USA', 'Cuba', 'Brazil'], 2, 'ফিদেল ক্যাস্ত্রো ছিলেন কিউবার বিখ্যাত কমিউনিস্ট বিপ্লবী নেতা ও সাবেক রাষ্ট্রপতি।'),
 ]
 
 const SUBJECT_CYCLE = ['ইংরেজি', 'বাংলা', 'গণিত', 'বাংলাদেশ বিষয়াবলি', 'আন্তর্জাতিক বিষয়াবলি']
@@ -120,21 +132,24 @@ for (let slot = 0; slot < longest; slot++) {
 }
 
 const toBanglaDigits = value => String(value).replace(/\d/g, digit => '০১২৩৪৫৬৭৮৯'[digit])
+// Math questions stay in English, so keep their digits in English (0-9).
+const formatDigits = row => row.subject === 'গণিত' ? (value => String(value)) : toBanglaDigits
 
 export const SEPTEMBER_14_LIVE_EXAM_QUESTIONS = order.map((sourceIndex, displayIndex) => {
   const row = sourceRows[sourceIndex]
-  const options = row.options.map(toBanglaDigits)
+  const digits = formatDigits(row)
+  const options = row.options.map(digits)
   return {
     id: `live-2026-09-14-${String(displayIndex + 1).padStart(3, '0')}`,
     display_order: displayIndex + 1,
     source_order: sourceIndex + 1,
     subject: row.subject,
     topic: row.topic,
-    question: toBanglaDigits(row.question),
+    question: digits(row.question),
     options,
     answer: options[row.answerIndex],
     answer_index: row.answerIndex,
-    explanation: toBanglaDigits(row.explanation),
+    explanation: digits(row.explanation),
     post_name: '১৪ সেপ্টেম্বর সাপ্তাহিক মডেল টেস্ট',
     exam_tag: 'live-2026-09-14'
   }
@@ -149,6 +164,6 @@ export const SEPTEMBER_14_LIVE_EXAM_COUNTS = {
   generalKnowledge: SEPTEMBER_14_LIVE_EXAM_QUESTIONS.filter(question => question.subject === 'আন্তর্জাতিক বিষয়াবলি').length
 }
 
-if (SEPTEMBER_14_LIVE_EXAM_COUNTS.total !== 90 || SEPTEMBER_14_LIVE_EXAM_COUNTS.english !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.bangla !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.math !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.bangladesh !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.generalKnowledge !== 10 || SEPTEMBER_14_LIVE_EXAM_QUESTIONS.some(question => !question.explanation || question.options[question.answer_index] !== question.answer)) {
+if (SEPTEMBER_14_LIVE_EXAM_COUNTS.total !== 100 || SEPTEMBER_14_LIVE_EXAM_COUNTS.english !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.bangla !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.math !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.bangladesh !== 20 || SEPTEMBER_14_LIVE_EXAM_COUNTS.generalKnowledge !== 20 || SEPTEMBER_14_LIVE_EXAM_QUESTIONS.some(question => !question.explanation || question.options[question.answer_index] !== question.answer)) {
   throw new Error('The 14 September weekly model paper is incomplete or has an invalid answer key')
 }
