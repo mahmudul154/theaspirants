@@ -8,7 +8,7 @@ export const LIVE_TEST_ADDITIONAL_EXAM_IDS = [
   'bcs-40-day-model-2026-09-12',
   'bcs-40-day-model-2026-09-14'
 ]
-export const LIVE_TEST_ADMIN_EMAILS = ['aakashh060@gmail.com', 'nafischy451@gmail.com']
+export const LIVE_TEST_ADMIN_EMAILS = ['nafischy451@gmail.com']
 export const LIVE_TEST_TODAY_EMAIL = 'nafischy451@gmail.com'
 export const LIVE_TEST_TODAY_EXAM_ID = 'bcs-40-day-model-2026-09-14'
 
