@@ -622,59 +622,6 @@ export function App() {
     const t = setInterval(() => setQuiz(q => q ? { ...q, left: q.left - 1 } : q), 1000)
     return () => clearInterval(t)
   }, [quiz?.title, page])
-  useEffect(() => {
-    if (!quiz?.liveExamSecurity || page !== 'quiz') return
-    let submitted = false
-    const autoSubmit = reason => {
-      if (submitted) return
-      submitted = true
-      setToastMsg(`${reason} — লাইভ পরীক্ষা স্বয়ংক্রিয়ভাবে জমা দেওয়া হয়েছে`)
-      finish()
-    }
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') autoSubmit('অন্য অ্যাপ বা ট্যাব খোলা হয়েছে')
-    }
-    const onWindowBlur = () => {
-      // Android Home/Overview and browser/app switching can emit blur before
-      // visibilitychange. The short delay avoids racing the browser event.
-      window.setTimeout(() => {
-        if (document.visibilityState === 'hidden' || !document.hasFocus()) autoSubmit('পরীক্ষার উইন্ডো থেকে বের হওয়া হয়েছে')
-      }, 0)
-    }
-    const onPageHide = () => autoSubmit('পরীক্ষার পেজ বন্ধ বা পরিবর্তন করা হয়েছে')
-    const blockClipboard = event => event.preventDefault()
-    const blockContextMenu = event => event.preventDefault()
-    const blockShortcuts = event => {
-      const key = String(event.key || '').toLowerCase()
-      if ((event.ctrlKey || event.metaKey) && ['c', 'v', 'x', 'u', 's', 'p'].includes(key)) event.preventDefault()
-      if (key === 'f12' || key === 'printscreen') event.preventDefault()
-    }
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    document.addEventListener('copy', blockClipboard)
-    document.addEventListener('cut', blockClipboard)
-    document.addEventListener('paste', blockClipboard)
-    document.addEventListener('contextmenu', blockContextMenu)
-    document.addEventListener('keydown', blockShortcuts, true)
-    window.addEventListener('blur', onWindowBlur)
-    window.addEventListener('pagehide', onPageHide)
-    // Some Android WebViews do not dispatch blur/visibility events reliably
-    // when the Home/Overview control opens another app. Poll focus as a final
-    // guard so Gemini or any external app still causes an immediate submit.
-    const focusWatcher = window.setInterval(() => {
-      if (document.visibilityState === 'hidden' || !document.hasFocus()) autoSubmit('পরীক্ষার উইন্ডো থেকে বের হওয়া হয়েছে')
-    }, 250)
-    return () => {
-      window.clearInterval(focusWatcher)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      document.removeEventListener('copy', blockClipboard)
-      document.removeEventListener('cut', blockClipboard)
-      document.removeEventListener('paste', blockClipboard)
-      document.removeEventListener('contextmenu', blockContextMenu)
-      document.removeEventListener('keydown', blockShortcuts, true)
-      window.removeEventListener('blur', onWindowBlur)
-      window.removeEventListener('pagehide', onPageHide)
-    }
-  }, [quiz, page])
   useEffect(() => { if (quiz && quiz.left <= 0) finish() }, [quiz?.left])
 
   function go(p, options = {}) {
@@ -831,7 +778,6 @@ export function App() {
       candidate,
       testing,
       rankingEligible,
-      liveExamSecurity: !!rankingEligible || !!testing,
       once: true
     })
   }
@@ -843,7 +789,9 @@ export function App() {
       return
     }
     if (!testing && !liveAttemptsReady) { setToastMsg('অ্যাটেম্পট যাচাই হচ্ছে—একটু অপেক্ষা করুন'); return }
-    if (!testing && liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
+    // The live window keeps the one-attempt rule; once a paper becomes
+    // past, learners may retake it as many times as they like.
+    if (!testing && exam.status !== 'past' && liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
     if (!testing && Date.now() < exam.startsAt) { setToastMsg('⏳ নির্ধারিত সময়ে পরীক্ষাটি শুরু হবে'); return }
     if (exam.collectCandidate) {
       const previous = load(`asp_live_candidate_${user.id}`, {})
@@ -1184,7 +1132,7 @@ export function App() {
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, liveExamSecurity: !!cfg.liveExamSecurity, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily })
     go('quiz')
   }
 
@@ -1426,7 +1374,7 @@ export function App() {
     <div className="lb-row" key={i}>
       <span className="rk">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : BN(i + 1)}</span>
       <div className="nm">{x.n || x.user_name}<span>{x.user_email ? `${x.user_email} • ${BN(x.e || x.total_exams)} পরীক্ষা` : `${BN(x.e || x.total_exams)} পরীক্ষা সম্পন্ন`}</span></div>
-      <span className="sc">{BN(x.s || x.avgScore)}<small> % গড়</small></span>
+      <span className="sc">{BN(x.s || x.avgScore)}<small> % সেরা</small></span>
     </div>
   )
 
@@ -1703,9 +1651,9 @@ export function App() {
           <section className="sec past-exam-section">
             <div className="head routine-head">
               <div><div className="eyebrow">আর্কাইভ</div><h2>বিগত <i>পরীক্ষা</i></h2></div>
-              <span className="once-chip">প্রতি পরীক্ষায় ১ বার</span>
+              <span className="once-chip">লাইভে ১ বার • বিগত যতবার</span>
             </div>
-            <p className="muted archive-note">মিস করেছেন? লগইন করে প্রতিটি শেষ হওয়া পরীক্ষা একবার করে দিন।</p>
+            <p className="muted archive-note">মিস করেছেন? লগইন করে শেষ হওয়া পরীক্ষা যতবার চান ততবার দিন — লিডারবোর্ডে সেরা স্কোরটিই দেখা যাবে।</p>
             <div className="past-exam-grid">
               {pastExams.map(exam => {
                 const testing = isTestExam(exam)
@@ -1722,8 +1670,8 @@ export function App() {
                   <h3>{exam.topic}</h3>
                   <time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)} • {formatLiveExamTime(exam.startsAt)}</time>
                   <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span></div>
-                  <button className={`btn ${attempted && !testing ? 'ghost' : 'primary'} sm`} disabled={!testing && (attempted || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(exam, testing)}>
-                    {!user ? <><SheetIco id="lock" /> লগইন করে দিন</> : testing ? 'টেস্ট মোডে শুরু করুন →' : attempted ? '✓ ইতিমধ্যে দিয়েছেন' : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
+                  <button className={`btn ${attempted && !testing ? 'ghost' : 'primary'} sm`} disabled={!testing && (!!user && !liveAttemptsReady)} onClick={() => startScheduledExam(exam, testing)}>
+                    {!user ? <><SheetIco id="lock" /> লগইন করে দিন</> : testing ? 'টেস্ট মোডে শুরু করুন →' : attempted ? 'আবার পরীক্ষা দিন →' : !liveAttemptsReady ? 'যাচাই হচ্ছে…' : 'একবার পরীক্ষা দিন →'}
                   </button>
                   <button className="btn ghost sm past-leaderboard-btn" onClick={() => go('leaderboard', { leaderboardDateKey: exam.dateKey, includeArchived: true })}>লিডারবোর্ড দেখুন →</button>
                 </article>
@@ -2123,7 +2071,6 @@ export function App() {
             <div className="eyebrow">{quiz.title} — {BN(quiz.qs.length)}টি প্রশ্ন • স্লাইড/স্ক্রল করে সব দেখো</div>
             {quiz.candidate && <div className="live-candidate-line" aria-label="পরীক্ষার্থীর তথ্য"><span>নাম: <b>{quiz.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{quiz.candidate.institution}</b></span></div>}
             {quiz.testing && <div className="live-candidate-line" role="status"><b>টেস্ট মোড</b><span>এই রানটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলের ফলাফলে যোগ হবে না।</span></div>}
-            {quiz.liveExamSecurity && <div className="live-security-notice" role="alert"><b>⚠ লাইভ পরীক্ষা নিরাপত্তা</b><span>অন্য অ্যাপ/ট্যাব, Home/Overview button বা পরীক্ষার উইন্ডো থেকে বের হলে পরীক্ষা সঙ্গে সঙ্গে জমা হয়ে যাবে। কপি, পেস্ট ও সাধারণ শর্টকাট বন্ধ আছে।</span></div>}
             {quiz.qs.map((q, qi) => (
               <div className="q-card qcard" id={'qcard-' + qi} key={qi} style={{ scrollMarginTop: 130 }}>
                 <div className="qno"><span>প্রশ্ন {BN(qi + 1)}</span>
@@ -2254,7 +2201,7 @@ export function App() {
               <span className="result-return-icon">✓</span>
               <div>{result.rankedLive
                 ? <><b>লাইভ পরীক্ষার ফল লিডারবোর্ডে যুক্ত হয়েছে</b><p>আপনার নম্বর স্বয়ংক্রিয়ভাবে আজকের লাইভ র‍্যাংকিংয়ে দেখা যাবে।</p></>
-                : <><b>বিগত পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>নির্ধারিত লাইভ সময় শেষ হওয়ার পরে দেওয়ায় এটি লিডারবোর্ডে যুক্ত হবে না; তবে এই পরীক্ষা আর একবার দেওয়া যাবে না।</p></>}</div>
+                : <><b>বিগত পরীক্ষার অ্যাটেম্পট সংরক্ষিত হয়েছে</b><p>নির্ধারিত লাইভ সময় শেষ হওয়ার পরে দেওয়ায় এটি লাইভ র‍্যাংকিংয়ে যুক্ত হবে না; বিগত লিডারবোর্ডে আপনার সেরা স্কোরটি দেখা যাবে। চাইলে আবার দিতে পারবেন।</p></>}</div>
               <button className="btn primary" onClick={() => go('exams')}>পরীক্ষা →</button>
             </div>}
           </section>
