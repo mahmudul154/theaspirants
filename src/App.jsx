@@ -12,7 +12,7 @@ import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
-import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest } from './live-test-access.js'
+import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -790,8 +790,10 @@ export function App() {
     }
     if (!testing && !liveAttemptsReady) { setToastMsg('অ্যাটেম্পট যাচাই হচ্ছে—একটু অপেক্ষা করুন'); return }
     // The live window keeps the one-attempt rule; once a paper becomes
-    // past, learners may retake it as many times as they like.
-    if (!testing && exam.status !== 'past' && liveAttempts[exam.id]) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
+    // past, learners may retake it as many times as they like. A granted
+    // official retake permission overrides the live-window lock.
+    if (!testing && exam.status !== 'past' && liveAttempts[exam.id]
+      && !canRetakeLiveExam(user?.email, exam.id)) { setToastMsg('✓ এই পরীক্ষাটি আপনি ইতিমধ্যে দিয়েছেন'); return }
     if (!testing && Date.now() < exam.startsAt) { setToastMsg('⏳ নির্ধারিত সময়ে পরীক্ষাটি শুরু হবে'); return }
     if (exam.collectCandidate) {
       const previous = load(`asp_live_candidate_${user.id}`, {})
@@ -1608,8 +1610,8 @@ export function App() {
                 <span>{isTestExam(featuredExam) ? 'প্রকাশিত প্রশ্নপত্র যাচাই' : featuredExam.status === 'live' ? 'লাইভ উইন্ডো শেষ হতে' : 'শুরু হতে বাকি'}</span>
                 <strong aria-live="polite">{isTestExam(featuredExam) ? 'টেস্ট রান' : formatExamCountdown(featuredExam.status === 'live' ? featuredExam.endsAt : featuredExam.startsAt, clock)}</strong>
                 {featuredExam.status === 'live' || isTestExam(featuredExam)
-                  ? <button className="btn primary" disabled={!isTestExam(featuredExam) && (!!liveAttempts[featuredExam.id] || (!!user && !liveAttemptsReady))} onClick={() => startScheduledExam(featuredExam, isTestExam(featuredExam))}>
-                      {!user ? <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</> : isTestExam(featuredExam) ? 'টেস্ট মোডে শুরু করুন →' : liveAttempts[featuredExam.id] ? '✓ পরীক্ষা দেওয়া হয়েছে' : !liveAttemptsReady ? 'অ্যাটেম্পট যাচাই হচ্ছে…' : 'এখনই শুরু করুন →'}
+                  ? <button className="btn primary" disabled={!liveAttemptsReady || (!isTestExam(featuredExam) && !!liveAttempts[featuredExam.id] && !canRetakeLiveExam(user?.email, featuredExam.id))} onClick={() => startScheduledExam(featuredExam, isTestExam(featuredExam))}>
+                      {!user ? <><SheetIco id="lock" /> লগইন করে পরীক্ষা দিন</> : isTestExam(featuredExam) ? 'টেস্ট মোডে শুরু করুন →' : liveAttempts[featuredExam.id] ? (canRetakeLiveExam(user?.email, featuredExam.id) ? 'আবার পরীক্ষা দিন →' : '✓ পরীক্ষা দেওয়া হয়েছে') : !liveAttemptsReady ? 'অ্যাটেম্পট যাচাই হচ্ছে…' : 'এখনই শুরু করুন →'}
                     </button>
                   : <button className="btn countdown-btn" disabled>নির্ধারিত সময়ে চালু হবে</button>}
               </div>
