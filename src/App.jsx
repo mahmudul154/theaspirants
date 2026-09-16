@@ -883,7 +883,9 @@ export function App() {
             }
             return query.order('id', { ascending: true }).order('created_at', { ascending: true }).limit(sampleSize)
           }
-          const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '')
+          // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
+// random questions so a bucket can blend appeared and fresh material on purpose.
+const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী')
           if (namedResult.error) throw namedResult.error
           const namedRows = uniqueQuestions(namedResult.data || [])
             .filter(question => !plannedQuestionKeys.has(questionKey(question)))
@@ -916,16 +918,22 @@ export function App() {
           }
           const copyFixedRows = rows => selectFixedRows(rows, Math.min(bucket.questions, rows.length))
             .map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
+          // A bucket may cap the previous-exam share (namedRatio, e.g. 0.3) so the rest
+          // of the paper comes from the random pool. The ratio is soft: a thin
+          // named pool never blocks the paper, the remainder simply stays named.
+          const namedTarget = bucket.namedRatio != null
+            ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
+            : bucket.questions
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
-            : mixQuestions(namedRows, Math.min(bucket.questions, namedRows.length))
+            : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
             // A planned bucket can already contain an OR of syllabus keywords;
             // use the actual generic `bcs` value here instead of adding a second
             // PostgREST OR filter that could broaden or replace that condition.
-            const genericResult = await makeQuery().ilike('post_name', 'bcs')
+            const genericResult = await makeQuery().or('post_name.ilike.bcs,post_name.eq.অনুশীলনী,post_name.is.null,post_name.eq.')
             if (genericResult.error) throw genericResult.error
             const genericRows = uniqueQuestions(genericResult.data || [])
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
@@ -933,7 +941,16 @@ export function App() {
               ? copyFixedRows(genericRows).slice(0, remaining)
               : mixQuestions(genericRows, remaining)
           }
-          const selected = [...selectedNamed, ...selectedGeneric]
+          let selectedTopUp = []
+          const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
+          if (topUpNeed && !bucket.fixed) {
+            const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
+            selectedTopUp = mixQuestions(
+              namedRows.filter(question => !usedKeys.has(questionKey(question))),
+              topUpNeed
+            )
+          }
+          const selected = [...selectedNamed, ...selectedGeneric, ...selectedTopUp]
           if (selected.length < bucket.questions) {
             throw new Error(`${bucket.label}: ${selected.length}/${bucket.questions}`)
           }
