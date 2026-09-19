@@ -5,6 +5,7 @@ import { SEPTEMBER_10_LIVE_EXAM_COUNTS, SEPTEMBER_10_LIVE_EXAM_QUESTIONS } from 
 import { SEPTEMBER_11_LIVE_EXAM_COUNTS, SEPTEMBER_11_LIVE_EXAM_QUESTIONS } from './september-11-live-exam.js'
 import { SEPTEMBER_14_LIVE_EXAM_COUNTS, SEPTEMBER_14_LIVE_EXAM_QUESTIONS } from './september-14-live-exam.js'
 import { SEPTEMBER_15_LIVE_EXAM_COUNTS, SEPTEMBER_15_LIVE_EXAM_QUESTIONS } from './september-15-live-exam.js'
+import { SEPTEMBER_18_LIVE_EXAM_COUNTS, SEPTEMBER_18_LIVE_EXAM_QUESTIONS } from './september-18-live-exam.js'
 import { FORTY_DAY_LIVE_PLAN, MODEL_LIVE_START_DATE, ROUTINE_END_DATEKEY, SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000
@@ -97,6 +98,7 @@ function modelLiveExamFor(day) {
   const isSeptember11FixedPaper = dateKey === '2026-09-11'
   const isSeptember14FixedPaper = dateKey === '2026-09-14'
   const isSeptember15FixedPaper = dateKey === '2026-09-15'
+  const isSeptember18FixedPaper = dateKey === '2026-09-18'
   // The older source-only papers retain their published compact headings. New
   // date-specific routine entries use the learner's full syllabus title.
   const legacyPhaseTitle = index === 1
@@ -127,7 +129,9 @@ function modelLiveExamFor(day) {
               ? SEPTEMBER_14_LIVE_EXAM_COUNTS.total
               : isSeptember15FixedPaper
                 ? SEPTEMBER_15_LIVE_EXAM_COUNTS.total
-                : questionPlan.reduce((total, bucket) => total + Number(bucket.questions || 0), 0),
+                : isSeptember18FixedPaper
+                  ? SEPTEMBER_18_LIVE_EXAM_COUNTS.total
+                  : questionPlan.reduce((total, bucket) => total + Number(bucket.questions || 0), 0),
     minutes: 60,
     planned: true,
     revision: !!routineOverride?.revision,
@@ -146,7 +150,9 @@ function modelLiveExamFor(day) {
               ? SEPTEMBER_14_LIVE_EXAM_QUESTIONS
               : isSeptember15FixedPaper
                 ? SEPTEMBER_15_LIVE_EXAM_QUESTIONS
-                : null,
+                : isSeptember18FixedPaper
+                  ? SEPTEMBER_18_LIVE_EXAM_QUESTIONS
+                  : null,
     distribution: isSeptember8SourcePaper
       ? [
           { label: 'English', questions: SEPTEMBER_8_LIVE_EXAM_COUNTS.english },
@@ -183,7 +189,15 @@ function modelLiveExamFor(day) {
                   { label: 'আন্তর্জাতিক', questions: SEPTEMBER_15_LIVE_EXAM_COUNTS.generalKnowledge },
                   { label: 'গণিত', questions: SEPTEMBER_15_LIVE_EXAM_COUNTS.math }
                 ]
-              : questionPlan.map(({ subject, questions }) => ({
+              : isSeptember18FixedPaper
+                ? [
+                    { label: 'ইংরেজি', questions: SEPTEMBER_18_LIVE_EXAM_COUNTS.english },
+                    { label: 'বাংলা', questions: SEPTEMBER_18_LIVE_EXAM_COUNTS.bangla },
+                    { label: 'বাংলাদেশ', questions: SEPTEMBER_18_LIVE_EXAM_COUNTS.bangladesh },
+                    { label: 'আন্তর্জাতিক', questions: SEPTEMBER_18_LIVE_EXAM_COUNTS.generalKnowledge },
+                    { label: 'গণিত', questions: SEPTEMBER_18_LIVE_EXAM_COUNTS.math }
+                  ]
+                : questionPlan.map(({ subject, questions }) => ({
             label: subject === 'English' ? 'ইংরেজি গ্রামার' : subject,
             questions
           }))
@@ -209,7 +223,7 @@ export function buildDailyLiveExams(now = Date.now()) {
     const month = date.getUTCMonth()
     const dayOfMonth = date.getUTCDate()
     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`
-    // The published routine ends on 22 September 2026; off days and anything
+    // The published routine ends on 16 October 2026; off days and anything
     // after that date have no exam at all.
     if (dateKey > ROUTINE_END_DATEKEY || SEPTEMBER_2026_ROUTINE[dateKey]?.rest) continue
     const plannedModel = modelLiveExamFor(day)
