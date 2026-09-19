@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+<defs>
+<linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fbfaf5"/><stop offset="1" stop-color="#eee9dc"/>
+</linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#18745b"/><stop offset="1" stop-color="#0a493b"/>
+</linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#48bde9"/><stop offset="1" stop-color="#1178b5"/>
+</linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+  <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#16362e" flood-opacity=".18"/>
+</filter>
+<filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+  <feGaussianBlur stdDeviation="18"/>
+</filter>
+
+<linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dcecf0"/><stop offset="1" stop-color="#b7d4da"/></linearGradient>
+</defs>
+<rect width="1200" height="800" fill="url(#paper)"/>
+
+
+<circle cx="600" cy="380" r="305" fill="#d9eee7" opacity=".55"/>
+<!-- neutral body silhouette -->
+<g fill="url(#body)" stroke="#63878d" stroke-width="5" filter="url(#shadow)">
+ <circle cx="600" cy="126" r="66"/>
+ <path d="M530 205 Q600 175 670 205 L710 405 680 650 640 650 630 780 570 780 560 650 520 650 490 405Z"/>
+ <path d="M510 235 410 470 455 490 550 310Z"/><path d="M690 235 790 470 745 490 650 310Z"/>
+</g>
+<!-- brain -->
+<path d="M567 113q-5-30 24-35 20-18 39 2 31 5 25 35 10 26-16 36-17 19-39 2-30 8-35-17-15-10 2-23z" fill="#d98aa4" stroke="#a75b78" stroke-width="4"/>
+<path d="M583 91q18 12 3 28m40-34q-15 15 0 30m-29 12q17-13 34 4" fill="none" stroke="#f3b7c8" stroke-width="4"/>
+<!-- lungs -->
+<path d="M581 237q-50 18-54 105 2 57 56 42zM619 237q50 18 54 105-2 57-56 42z" fill="#ef9a94" stroke="#bd615c" stroke-width="5"/>
+<path d="M600 218v144" stroke="#87a9ad" stroke-width="9"/>
+<!-- heart -->
+<path d="M600 342c-33-38-73 10-38 47l38 37 38-37c35-37-5-85-38-47z" fill="#d94445" stroke="#9c3034" stroke-width="5"/>
+<!-- liver -->
+<path d="M540 425q70-28 133 15l-20 70q-70 17-123-15z" fill="#8e4c3f" stroke="#67332d" stroke-width="5"/>
+<!-- stomach -->
+<path d="M625 500q60 10 43 77-13 47-70 24 35-26 11-59z" fill="#efa05f" stroke="#b86f37" stroke-width="5"/>
+<!-- intestines -->
+<g fill="none" stroke-linecap="round"><rect x="536" y="553" width="128" height="116" rx="45" stroke="#c77a56" stroke-width="18"/><path d="M565 580q65 0 45 28t-18 34q-24 17-39-5t33-26q32-8 49 17" stroke="#e6a078" stroke-width="13"/></g>
+<!-- bones -->
+<g stroke="#f9fbf8" stroke-width="9" opacity=".8"><path d="M440 330l-8 135M760 330l8 135M575 675l-8 98M625 675l8 98"/></g>
+<!-- callout dots, no text -->
+<g fill="#fff" stroke="#16735b" stroke-width="5"><circle cx="400" cy="125" r="12"/><circle cx="805" cy="335" r="12"/><circle cx="405" cy="565" r="12"/></g>
+<g stroke="#16735b" stroke-width="4"><path d="M412 125h120"/><path d="M793 335H675"/><path d="M417 565h112"/></g>
+</svg>

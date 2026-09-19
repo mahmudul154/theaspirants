@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+<defs>
+<linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fbfaf5"/><stop offset="1" stop-color="#eee9dc"/>
+</linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#18745b"/><stop offset="1" stop-color="#0a493b"/>
+</linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#48bde9"/><stop offset="1" stop-color="#1178b5"/>
+</linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+  <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#16362e" flood-opacity=".18"/>
+</filter>
+<filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+  <feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs>
+<rect width="1200" height="800" fill="url(#paper)"/>
+
+<circle cx="600" cy="335" r="260" fill="#d9483b" opacity=".1"/>
+<circle cx="600" cy="335" r="175" fill="#d9483b" opacity=".14"/>
+<circle cx="600" cy="335" r="104" fill="#d9483b"/>
+<path d="M0 675 Q260 600 480 655 T1200 630 V800 H0Z" fill="#153f34"/>
+<path d="M0 710 Q280 650 560 700 T1200 670 V800 H0Z" fill="#0b2d27" opacity=".78"/>
+<!-- National Martyrs' Memorial-inspired seven rising planes -->
+<g filter="url(#shadow)" transform="translate(600 650)">
+  <polygon points="-235,0 -185,-260 -150,0" fill="#e5e3da"/>
+  <polygon points="-170,0 -120,-345 -84,0" fill="#f3f0e8"/>
+  <polygon points="-105,0 -55,-445 -18,0" fill="#d7d8d2"/>
+  <polygon points="-38,0 0,-520 38,0" fill="#f8f6ef"/>
+  <polygon points="18,0 55,-445 105,0" fill="#d7d8d2"/>
+  <polygon points="84,0 120,-345 170,0" fill="#f3f0e8"/>
+  <polygon points="150,0 185,-260 235,0" fill="#e5e3da"/>
+</g>
+<!-- respectful human silhouettes -->
+<g fill="#101d1a">
+  <circle cx="260" cy="500" r="29"/><path d="M220 650 228 545 Q260 515 292 545 L307 650Z"/>
+  <path d="M235 555 178 620 195 635 250 590Z"/><path d="M282 555 345 615 330 633 273 590Z"/>
+  <circle cx="925" cy="500" r="29"/><path d="M887 650 893 545 Q925 515 958 545 L972 650Z"/>
+  <path d="M900 558 850 620 867 635 918 592Z"/><path d="M946 558 1007 608 993 628 936 592Z"/>
+</g>
+<!-- flag held at left -->
+<path d="M188 300 V642" stroke="#192824" stroke-width="10"/>
+<path d="M193 315 H390 V430 H193Z" fill="#176b50" filter="url(#shadow)"/>
+<circle cx="283" cy="372" r="38" fill="#e2433b"/>
+<!-- light rays -->
+<g stroke="#d9483b" opacity=".28" stroke-width="6">
+ <path d="M600 65V135"/><path d="M335 150l55 55"/><path d="M865 150l-55 55"/>
+ <path d="M245 335h82"/><path d="M873 335h82"/>
+</g>
+
+</svg>
