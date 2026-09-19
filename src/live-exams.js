@@ -14,8 +14,8 @@ const HOUR_MS = 60 * 60 * 1000
 const LIVE_START_UTC_HOUR = 17
 const LIVE_START_UTC_MINUTE = 30 // 23:30 in Asia/Dhaka
 // Every daily/model paper opens at 23:30 Asia/Dhaka and remains available
-// until 14:00 the following day (a 14-hour-30-minute response window).
-const LIVE_WINDOW_MS = 14 * HOUR_MS + 30 * 60 * 1000
+// until 16:00 the following day (a 16-hour-30-minute response window).
+const LIVE_WINDOW_MS = 16 * HOUR_MS + 30 * 60 * 1000
 
 // The shared syllabus supports government-job preliminary preparation beyond
 // one exam track, while keeping the existing schedule IDs stable.
@@ -54,8 +54,8 @@ export const SPECIAL_LIVE_EXAMS = [
     id: 'today-model-test-2026-09-07-2330',
     dateKey: '2026-09-07',
     startsAt: Date.UTC(2026, 8, 7, 17, 30), // 23:30 Asia/Dhaka
-    // The 60-minute paper stays available for submission until 14:00 the next day.
-    endsAt: Date.UTC(2026, 8, 8, 8, 0),
+    // The 60-minute paper stays available for submission until 16:00 the next day.
+    endsAt: Date.UTC(2026, 8, 8, 10, 0),
     subject: 'আজকের মডেল পরীক্ষা',
     topic: 'বাংলা • সাধারণ জ্ঞান • মানসিক দক্ষতা',
     title: 'আজকের মডেল পরীক্ষা • বাংলা, সাধারণ জ্ঞান ও মানসিক দক্ষতা',
