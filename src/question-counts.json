@@ -2,7 +2,7 @@
   "source": "supabase",
   "updatedAt": "2026-09-16T16:56:16.038050+00:00",
   "refreshAfterSeconds": 21600,
-  "total": 61303,
+  "total": 60525,
   "subjects": {
     "English": {
       "total": 9378,
@@ -630,25 +630,6 @@
         "বন্যা, সুনামি ও দুর্যোগ ব্যবস্থাপনা": 397,
         " দুর্যোগ": 22,
         "বিসিএস": 25
-      }
-    },
-    "Microcontroller": {
-      "total": 778,
-      "topics": {
-        "Electronics": 25,
-        "Architecture": 5,
-        "Arduino Basics": 264,
-        "Arduino+port language": 72,
-        "Arduino Code": 78,
-        "Digital read": 50,
-        "Digital write": 31,
-        "Port Manipulation": 9,
-        "Interrupts": 118,
-        "Timers": 8,
-        "Timers/Counters": 102,
-        "Timers/Interrupts": 6,
-        "Performance": 4,
-        "Optimization": 6
       }
     }
   }

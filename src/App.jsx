@@ -50,7 +50,7 @@ const ICOS = {
   mountain: <path d="M8 3l4 8 5-5 5 15H2z" />,
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
-const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain' }
 const ROUTINE_SUBJECT_LABELS = {
   English: 'ইংরেজি',
   'গাণিতিক যুক্তি': 'গণিত'
@@ -90,7 +90,6 @@ const SUBJECT_TEACHERS = {
   'কম্পিউটার ও তথ্যপ্রযুক্তি': 'কম্পিউটার ও তথ্যপ্রযুক্তি বিষয়ের শিক্ষক',
   'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'নৈতিকতা, মূল্যবোধ ও সুশাসন বিষয়ের শিক্ষক',
   'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা বিষয়ের শিক্ষক',
-  'Microcontroller': 'মাইক্রোকন্ট্রোলার বিষয়ের শিক্ষক',
   'ভিজ্যুয়াল জিকে': 'সাধারণ জ্ঞান বিষয়ের শিক্ষক'
 }
 const Ico = ({ id, size = 22 }) => (
@@ -1005,8 +1004,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         // are intentionally skipped here so one source can combine all its topics.
         if (selectedPostNames.length === 1) filtered = filtered.eq('post_name', selectedPostNames[0])
         else if (selectedPostNames.length > 1) filtered = filtered.in('post_name', selectedPostNames)
-        // The full BCS mix is the whole active job pool except Microcontroller.
-        // This avoids an oversized 70+ value IN filter while retaining ~93K rows.
+        // The full BCS mix is the whole active job pool except the legacy
+        // মাইক্রোকন্ট্রোলার rows. The subject is no longer offered anywhere in the
+        // app, but those rows still exist in the database, so they stay excluded.
+        // This also avoids an oversized 70+ value IN filter while retaining ~93K rows.
         else if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
         else if (dbSubjects.length) filtered = filtered.in('subject', dbSubjects)
         if (selectedTopics.length) filtered = filtered.in('topic', selectedTopics)

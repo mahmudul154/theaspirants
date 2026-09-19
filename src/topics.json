@@ -814,21 +814,5 @@
     "বন্যা, সুনামি ও দুর্যোগ ব্যবস্থাপনা",
     " দুর্যোগ",
     "বিসিএস"
-  ],
-  "Microcontroller": [
-    "Electronics",
-    "Architecture",
-    "Arduino Basics",
-    "Arduino+port language",
-    "Arduino Code",
-    "Digital read",
-    "Digital write",
-    "Port Manipulation",
-    "Interrupts",
-    "Timers",
-    "Timers/Counters",
-    "Timers/Interrupts",
-    "Performance",
-    "Optimization"
   ]
 }
