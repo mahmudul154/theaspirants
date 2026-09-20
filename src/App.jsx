@@ -10,7 +10,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, ROUTINE_SYLLABUS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
 
@@ -30,6 +30,10 @@ const dhakaDateKey = (now = Date.now(), dayOffset = 0) => {
 }
 const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
+}).format(new Date(`${dateKey}T12:00:00+06:00`))
+// রুটিন সিরিয়ালের কম্প্যাক্ট তারিখ — বছর ছাড়া (যেমন "১০ সেপ্টেম্বর")
+const dhakaDayMonthLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
+  timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 const OFFLINE_CACHE_KEY = 'asp_offline_question_cache_v1'
@@ -55,6 +59,11 @@ const ROUTINE_SUBJECT_LABELS = {
   English: 'ইংরেজি',
   'গাণিতিক যুক্তি': 'গণিত'
 }
+// কাস্টম এক্সামের টপিক তালিকায় রুটিনের কোন দিনটি শুরুতে খোলা থাকবে — আজকের
+// দিন থাকলে সেটি, নাহলে সিরিয়ালের প্রথম দিন।
+const ROUTINE_DEFAULT_OPEN_KEY = ROUTINE_SYLLABUS.some(day => day.dateKey === dhakaDateKey())
+  ? dhakaDateKey()
+  : (ROUTINE_SYLLABUS[0]?.dateKey ?? null)
 const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
 // "৪০ দিনে প্রিলি • দিন ৫" → "দিন ৫" (heading-এ শুধু দিন দেখাতে)
 const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] || ''
@@ -374,16 +383,35 @@ export function App() {
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cTopics, setCTopics] = useState([])
   const [cTopicSearch, setCTopicSearch] = useState('')
+  // রুটিন সিরিয়ালের কোন কোন দিন খোলা আছে — ব্যবহারকারীর টগল মনে রাখতে,
+  // নইলে টপিক বাছার রি-রেন্ডারে হাতে খোলা দিন আবার বন্ধ হয়ে যেত।
+  const [cOpenRoutineDays, setCOpenRoutineDays] = useState(() => (ROUTINE_DEFAULT_OPEN_KEY ? [ROUTINE_DEFAULT_OPEN_KEY] : []))
   const [cCount, setCCount] = useState(25)
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
   const cTopicNeedle = cTopicSearch.trim().toLocaleLowerCase()
   const cVisibleTopics = cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle))
+  // তারিখ অনুযায়ী রুটিন সিরিয়াল — কাস্টম এক্সামে টপিক দ্রুত খুঁজে পাওয়ার জন্য
+  // প্রকাশিত রুটিনের দিনগুলো (দিন ৩ → ২৩) সবার আগে, তারপর বাকি সব টপিক।
+  const cRoutineSearchActive = cTopicNeedle.length > 0
+  const cRoutineDays = ROUTINE_SYLLABUS
+    .map(day => {
+      const subjects = day.subjects
+        .filter(item => cSubs.includes(item.subject))
+        .map(item => ({ ...item, topics: item.topics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle)) }))
+        .filter(item => item.topics.length)
+      return { ...day, subjects, topics: [...new Set(subjects.flatMap(item => item.topics))] }
+    })
+    .filter(day => day.topics.length)
+  const cRoutineTopicSet = new Set(cRoutineDays.flatMap(day => day.topics))
+  // রুটিনে দেখানো টপিকগুলো নিচের তালিকা থেকে বাদ, যাতে একই টপিক দুবার না আসে।
+  const cRemainingTopics = cVisibleTopics.filter(topic => !cRoutineTopicSet.has(topic))
+  const cTodayDateKey = dhakaDateKey()
   const cMathTopicGroups = MATH_TOPIC_GROUPS
-    .map(group => ({ ...group, topics: group.topics.filter(topic => cVisibleTopics.includes(topic)) }))
+    .map(group => ({ ...group, topics: group.topics.filter(topic => cRemainingTopics.includes(topic)) }))
     .filter(group => group.topics.length)
-  const toggleMathTopicGroup = groupTopics => setCTopics(current => {
+  const toggleTopicGroup = groupTopics => setCTopics(current => {
     const isSelected = groupTopics.every(topic => current.includes(topic))
     return isSelected
       ? current.filter(topic => !groupTopics.includes(topic))
@@ -1857,11 +1885,73 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                           <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
                           <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
                         </label>
+
+                        {!!cRoutineDays.length && <div className="routine-serial">
+                          <div className="routine-serial-head">
+                            <b>তারিখ অনুযায়ী সিলেবাস</b>
+                            <small>রুটিনের দিন ধরে ধরে টপিক বাছুন — সিরিয়াল অনুযায়ী সাজানো</small>
+                          </div>
+                          {cRoutineDays.map(day => {
+                            const selectedInDay = day.topics.filter(topic => cTopics.includes(topic)).length
+                            const allSelected = selectedInDay === day.topics.length
+                            return (
+                              <details
+                                className={`routine-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
+                                key={day.dateKey}
+                                open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
+                                onToggle={event => {
+                                  // সার্চ চলাকালীন সব দিন জোর করে খোলা থাকে;
+                                  // সেই টগল ব্যবহারকারীর পছন্দ হিসেবে জমা রাখি না।
+                                  if (cRoutineSearchActive) return
+                                  const isOpen = event.currentTarget.open
+                                  setCOpenRoutineDays(current => isOpen
+                                    ? (current.includes(day.dateKey) ? current : [...current, day.dateKey])
+                                    : current.filter(key => key !== day.dateKey))
+                                }}>
+                                <summary>
+                                  <span className="routine-day-badge">দিন {BN(day.day)}</span>
+                                  <span className="routine-day-meta">
+                                    <b>
+                                      {dhakaDayMonthLabel(day.dateKey)}
+                                      {day.revision && <em className="routine-day-revision">রিভিশন</em>}
+                                      {day.dateKey === cTodayDateKey && <em className="routine-day-today">আজ</em>}
+                                    </b>
+                                    <small>{day.subjects.map(item => ROUTINE_SUBJECT_LABELS[item.subject] || item.subject).join(' • ')} — {BN(day.topics.length)} টপিক</small>
+                                  </span>
+                                  {!!selectedInDay && <span className={`routine-day-count ${allSelected ? 'all' : ''}`}>{BN(selectedInDay)} ✓</span>}
+                                  <i aria-hidden="true">⌄</i>
+                                </summary>
+                                <div className="routine-day-body">
+                                  <label className="topic-check-option all-option">
+                                    <input type="checkbox" checked={allSelected} onChange={() => toggleTopicGroup(day.topics)} />
+                                    <span><b>এই দিনের সব টপিক</b><small>{BN(day.topics.length)}টি টপিক একসঙ্গে নির্বাচন করুন</small></span>
+                                  </label>
+                                  {day.subjects.map(item => (
+                                    <div className="routine-day-subject" key={item.subject}>
+                                      <span className="routine-day-subject-head">
+                                        <Ico id={item.subject} size={13} />
+                                        {ROUTINE_SUBJECT_LABELS[item.subject] || item.subject}
+                                      </span>
+                                      {item.topics.map(topic => (
+                                        <label className="topic-check-option" key={topic}>
+                                          <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(entry => entry !== topic) : [...current, topic])} />
+                                          <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            )
+                          })}
+                          <div className="routine-serial-divider"><span>রুটিনের বাইরের অন্যান্য টপিক</span></div>
+                        </div>}
+
                         {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
                           ? cMathTopicGroups.map(group => (
                               <div className="topic-check-group" key={group.label}>
                                 <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
-                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleMathTopicGroup(group.topics)} />
+                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
                                   <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
                                 </label>
                                 {group.topics.map(topic => (
@@ -1872,7 +1962,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                                 ))}
                               </div>
                             ))
-                          : cVisibleTopics.map(topic => (
+                          : cRemainingTopics.map(topic => (
                               <label className="topic-check-option" key={topic}>
                                 <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
                                 <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>

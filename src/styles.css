@@ -274,6 +274,39 @@ html.dark .leaderboard-list .lb-row:first-child{background:color-mix(in srgb,var
 .topic-check-group-title small{color:var(--ink3);font-size:.62rem;font-weight:500;white-space:nowrap}
 .topic-check-group-title.selected b{color:var(--accent)}
 .topic-check-group .topic-check-option{padding:8px 5px}
+/* ---------- custom exam: routine date serial ---------- */
+.routine-serial{margin:2px 0 4px}
+.routine-serial-head{padding:8px 9px 9px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.routine-serial-head b{display:block;color:var(--ink);font-size:.8rem;font-weight:700}
+.routine-serial-head small{display:block;color:var(--ink3);font-size:.68rem;margin-top:2px;line-height:1.45}
+.routine-day{margin:0 0 7px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 42%,var(--card));overflow:hidden}
+.routine-day.today{border-color:color-mix(in srgb,var(--accent) 45%,var(--line2))}
+.routine-day>summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:9px;padding:9px 10px;cursor:pointer;list-style:none}
+.routine-day>summary::-webkit-details-marker{display:none}
+.routine-day>summary:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.routine-day[open]>summary{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.routine-day-badge{flex:none;padding:3px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:.66rem;font-weight:700;white-space:nowrap}
+.routine-day.today .routine-day-badge{background:var(--accent);color:#fff}
+.routine-day-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.routine-day-meta b{color:var(--ink);font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.routine-day-meta small{color:var(--ink3);font-size:.67rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.routine-day-revision,.routine-day-today{font-style:normal;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:99px;border:1px solid var(--line2);color:var(--ink3);white-space:nowrap}
+.routine-day-today{border-color:color-mix(in srgb,var(--green) 45%,var(--line2));color:var(--green)}
+.routine-day-count{flex:none;font-size:.66rem;font-weight:700;color:var(--accent);white-space:nowrap}
+.routine-day-count.all{color:var(--green)}
+.routine-day>summary>i{font-style:normal;color:var(--ink3);font-size:1rem;transition:transform .18s}
+.routine-day[open]>summary>i{transform:rotate(180deg)}
+.routine-day-body{padding:6px 6px 7px}
+.routine-day-body .all-option{margin-bottom:6px}
+.routine-day-subject{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.routine-day-subject:first-of-type{margin-top:0}
+.routine-day-subject-head{display:flex;align-items:center;gap:6px;padding:3px 6px 5px;color:var(--ink3);font-size:.68rem;font-weight:700;letter-spacing:.01em}
+.routine-day-subject-head svg{flex:none;color:var(--ink3)}
+.routine-day-subject .topic-check-option{padding:7px 5px}
+.routine-serial-divider{display:flex;align-items:center;gap:10px;margin:12px 4px 8px;color:var(--ink3);font-size:.67rem;font-weight:600}
+.routine-serial-divider:before,.routine-serial-divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.routine-serial-divider span{white-space:nowrap}
+@media(max-width:700px){.routine-day>summary{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:10px}.routine-day>summary>i{display:none}.routine-day-meta b{font-size:.84rem}.routine-day-meta small{white-space:normal}.routine-day-count{grid-column:2}}
 .topic-check-option input{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin:0;border:1.5px solid var(--line2);border-radius:4px;background:var(--paper);display:grid;place-items:center;cursor:pointer;transition:all .15s}
 .topic-check-option input:checked{border-color:var(--accent);background:var(--accent)}
 .topic-check-option input:checked:after{content:"✓";color:#fff;font-size:.78rem;font-weight:800;line-height:1}

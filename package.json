@@ -9,6 +9,7 @@
     "validate:today-model": "node scripts/validate-todays-model-exam.mjs",
     "validate:september-8-live": "node scripts/validate-september-8-live-exam.mjs",
     "validate:september-9-live": "node scripts/validate-september-9-live-exam.mjs",
+    "validate:routine-syllabus": "node scripts/validate-routine-syllabus.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
