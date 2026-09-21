@@ -10,7 +10,7 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, GOVT_CIRCULARS, GOVT_CIRCULARS_UPDATED, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
 
@@ -182,11 +182,154 @@ const SHEET_ICONS = {
   file: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
   building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M8 8h1M12 8h1M16 8h1M8 12h1M12 12h1M16 12h1M10 21v-5h4v5" /></>,
   book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" /><path d="M4 5.5v16M8 7h8M8 11h8" /></>,
-  school: <><path d="m3 10 9-6 9 6-9 6z" /><path d="M6 12v5c3 2 9 2 12 0v-5M21 10v7" /></>
+  school: <><path d="m3 10 9-6 9 6-9 6z" /><path d="M6 12v5c3 2 9 2 12 0v-5M21 10v7" /></>,
+  shield: <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />,
+  wifi: <><path d="M5 13a10 10 0 0 1 14 0" /><path d="M8.5 16.5a5 5 0 0 1 7 0" /><path d="M2 8.82a15 15 0 0 1 20 0" /><line x1="12" y1="20" x2="12.01" y2="20" /></>,
+  heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
+  leaf: <><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></>,
+  flask: <><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" /><path d="M8.5 2h7" /><path d="M7 16h10" /></>,
+  anchor: <><circle cx="12" cy="5" r="3" /><line x1="12" y1="22" x2="12" y2="8" /><path d="M5 12H2a10 10 0 0 0 20 0h-3" /></>
 }
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
 )
+/* ---------- চলমান সরকারি সার্কুলার: লাইভ কাউন্টডাউন (সময় এশিয়া/ঢাকা +06) ---------- */
+const useNow = (intervalMs = 1000) => {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), intervalMs)
+    return () => clearInterval(t)
+  }, [intervalMs])
+  return now
+}
+const circularClock = ms => {
+  const t = Math.max(0, ms)
+  return { d: Math.floor(t / 864e5), h: Math.floor(t % 864e5 / 36e5), m: Math.floor(t % 36e5 / 6e4), s: Math.floor(t % 6e4 / 1e3) }
+}
+const circularState = (c, now) => {
+  const start = c.start ? Date.parse(c.start) : null
+  const end = Date.parse(c.end)
+  if (start && now < start) return { key: 'upcoming', ms: start - now, progress: 0 }
+  if (now >= end) return { key: 'closed', ms: 0, progress: 100 }
+  return { key: 'open', ms: end - now, progress: start ? (now - start) / (end - start) * 100 : 0 }
+}
+const urgencyOf = st => st.key === 'closed' ? 'over' : st.key === 'upcoming' ? 'ok' : st.ms < 3 * 864e5 ? 'danger' : st.ms < 7 * 864e5 ? 'warn' : 'ok'
+const remainingShort = ms => {
+  const { d, h, m } = circularClock(ms)
+  if (d > 0) return `${BN(d)} দিন ${BN(h)} ঘণ্টা`
+  if (h > 0) return `${BN(h)} ঘণ্টা ${BN(m)} মিনিট`
+  return `${BN(m)} মিনিট`
+}
+const applyHost = url => { try { return new URL(url).host } catch { return url } }
+const CircularCdBoxes = ({ ms }) => {
+  const c = circularClock(ms)
+  const two = n => BN(String(n).padStart(2, '0'))
+  return (
+    <div className="gov-cd" role="timer">
+      <span><b>{BN(c.d)}</b><small>দিন</small></span>
+      <span><b>{two(c.h)}</b><small>ঘণ্টা</small></span>
+      <span><b>{two(c.m)}</b><small>মিনিট</small></span>
+      <span><b>{two(c.s)}</b><small>সেকেন্ড</small></span>
+    </div>
+  )
+}
+const GovCircularCard = ({ c, now }) => {
+  const st = circularState(c, now)
+  const open = st.key === 'open'
+  const upcoming = st.key === 'upcoming'
+  return (
+    <article className={`gov-card gov-u-${urgencyOf(st)}`}>
+      <div className="gov-top">
+        <span className={`gov-ico gov-ico-${c.icon}`}><SheetIco id={c.icon} /></span>
+        <span className="gov-names"><b>{c.org}</b><small>{c.post}</small></span>
+        <span className="gov-tag">{c.tag}</span>
+      </div>
+      <div className="gov-count">
+        {st.key === 'closed'
+          ? <span className="gov-closed">আবেদনের সময় শেষ</span>
+          : <><small>{upcoming ? 'আবেদন শুরু হতে বাকি' : 'আবেদনের শেষ সময় বাকি'}</small><CircularCdBoxes ms={st.ms} /></>}
+      </div>
+      <div className="gov-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, Math.max(0, st.progress))}%` }} /></div>
+      <div className="gov-deadline"><SheetIco id="timer" /> শেষ সময়: {c.endLabel}</div>
+      <ul className="gov-info">
+        {c.rows.map(r => <li key={r.k}><span>{r.k}</span><b>{r.v}</b></li>)}
+      </ul>
+      <div className="gov-actions">
+        <a className="btn ghost sm" href={c.circularUrl} target="_blank" rel="noopener noreferrer">মূল সার্কুলার <SheetIco id="external" /></a>
+        {open
+          ? <a className="btn primary sm" href={c.applyUrl} target="_blank" rel="noopener noreferrer">এখনই আবেদন <SheetIco id="external" /></a>
+          : <span className="gov-apply-disabled">{upcoming ? 'শুরু হলে আবেদন খুলবে' : 'আবেদন বন্ধ'}</span>}
+      </div>
+      <div className="gov-server">
+        <i aria-hidden="true">{c.portal === 'teletalk' ? '🛰️' : '🏛️'}</i>
+        <span>আবেদন সার্ভার: <b>{applyHost(c.applyUrl)}</b>{c.portal === 'teletalk' ? ' (টেলিটক)' : ''}</span>
+      </div>
+    </article>
+  )
+}
+function CircularPage({ go }) {
+  const now = useNow(1000)
+  const [filter, setFilter] = useState('all')
+  const items = GOVT_CIRCULARS.map(c => ({ c, st: circularState(c, now) }))
+  const openCount = items.filter(x => x.st.key === 'open').length
+  const nearest = items.filter(x => x.st.key === 'open').sort((a, b) => a.st.ms - b.st.ms)[0]
+  const filtered = items.filter(({ c, st }) => {
+    if (filter === 'teletalk') return c.portal === 'teletalk' && st.key !== 'closed'
+    if (filter === 'official') return c.portal === 'official' && st.key !== 'closed'
+    if (filter === 'urgent') return st.key === 'open' && st.ms < 3 * 864e5
+    return true
+  })
+  return (
+    <section className="sec circular-page">
+      <div className="head">
+        <div className="eyebrow">চলমান নিয়োগ বিজ্ঞপ্তি</div>
+        <h2>চাকরির <i>সার্কুলার</i></h2>
+        <p className="muted">বাংলাদেশের চলমান সরকারি নিয়োগ বিজ্ঞপ্তি — কোনটিতে আবেদন করতে কত সময় বাকি, এক নজরে। হালনাগাদ: {GOVT_CIRCULARS_UPDATED}</p>
+      </div>
+      <div className="gov-summary">
+        <div className="gov-summary-item"><b>{BN(openCount)}টি</b><small>চলমান বিজ্ঞপ্তি</small></div>
+        <div className="gov-summary-item"><b>{BN(1800)}+</b><small>মোট শূন্যপদ</small></div>
+        <div className="gov-summary-item gov-summary-nearest">
+          {nearest
+            ? <><b>{nearest.c.short}</b><small>সবচেয়ে কাছের শেষসময় — বাকি {remainingShort(nearest.st.ms)}</small></>
+            : <><b>—</b><small>এই মুহূর্তে চলমান কোনো বিজ্ঞপ্তি নেই</small></>}
+        </div>
+      </div>
+      <div className="gov-chips">
+        {[['all', 'সব'], ['urgent', '৩ দিনের মধ্যে শেষ'], ['teletalk', 'টেলিটক সার্ভার'], ['official', 'অফিসিয়াল পোর্টাল']].map(([id, label]) => (
+          <button key={id} className={`chip ${filter === id ? 'on' : ''}`} onClick={() => setFilter(id)}>{label}</button>
+        ))}
+      </div>
+      <div className="gov-grid">
+        {filtered.map(({ c, st }) => <GovCircularCard key={c.id} c={c} now={now} />)}
+        {!filtered.length && <div className="gov-empty">এই ফিল্টারে কোনো বিজ্ঞপ্তি নেই — অন্য ফিল্টারে দেখুন।</div>}
+      </div>
+      <div className="circular-tip"><span>💡</span><span><b>শেষ দিনে সার্ভারে চাপ বেশি!</b><small>টেলিটক সার্ভারে শেষ মুহূর্তে ভিড় হয় — আগেভাগে ফর্ম পূরণ ও ফি জমা দিন। আবেদনের আগে অবশ্যই মূল বিজ্ঞপ্তি (PDF) মিলিয়ে নিন।</small></span></div>
+    </section>
+  )
+}
+const CircularMiniBoard = ({ go }) => {
+  const now = useNow(30000)
+  const items = GOVT_CIRCULARS
+    .map(c => ({ c, st: circularState(c, now) }))
+    .filter(x => x.st.key === 'open')
+    .sort((a, b) => a.st.ms - b.st.ms)
+    .slice(0, 4)
+  if (!items.length) return <div className="gov-empty">এই মুহূর্তে চলমান কোনো সরকারি নিয়োগ বিজ্ঞপ্তি নেই — নিয়মিত চেক করুন।</div>
+  return items.map(({ c, st }) => (
+    <button className="circular-card" key={c.id} onClick={() => go('circular')}>
+      <span className={`gov-ico gov-ico-${c.icon}`}><SheetIco id={c.icon} /></span>
+      <span className="circular-card-copy">
+        <span className="circular-tag">{c.tag}</span>
+        <b>{c.short}</b>
+        <small>শেষ: {c.endLabel}</small>
+        <span className={`gov-mini gov-mini-${urgencyOf(st)}`}>⏳ {remainingShort(st.ms)} বাকি</span>
+      </span>
+      <i aria-hidden="true">→</i>
+    </button>
+  ))
+}
+
 function calcStreak(days) {
   const set = new Set(days); const d = new Date()
   if (!set.has(d.toDateString())) d.setDate(d.getDate() - 1)
@@ -1529,15 +1672,11 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
           <section className="sec home-circular-section">
             <div className="head circular-section-head">
-              <div><div className="eyebrow">চাকরির আপডেট</div><h2>সাম্প্রতিক <i>সার্কুলার</i></h2></div>
+              <div><div className="eyebrow">চাকরির আপডেট</div><h2>চলমান <i>সার্কুলার</i></h2></div>
               <button className="btn sm ghost" onClick={() => go('circular')}>সব সার্কুলার →</button>
             </div>
             <div className="circular-card-grid">
-              {CIRCULARS.map(item => <button className="circular-card" key={item.title} onClick={() => go(item.page)}>
-                <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
-                <span className="circular-card-copy"><span className="circular-tag">{item.tag}</span><b>{item.title}</b><small>{item.desc}</small></span>
-                <i aria-hidden="true">→</i>
-              </button>)}
+              <CircularMiniBoard go={go} />
             </div>
           </section>
 
@@ -1966,27 +2105,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         </>}
 
         {/* ================= চাকরির সার্কুলার ================= */}
-        {page === 'circular' && <>
-          <section className="sec circular-page">
-            <div className="head">
-              <div className="eyebrow">চাকরির আপডেট</div>
-              <h2>চাকরির <i>সার্কুলার</i></h2>
-              <p className="muted">বিভিন্ন চাকরির প্রস্তুতি, প্রশ্নব্যাংক ও মডেল পরীক্ষায় দ্রুত যেতে একটি জায়গা থেকে বেছে নিন।</p>
-            </div>
-            <div className="circular-page-grid">
-              {CIRCULARS.map(item => <article className="circular-page-card" key={item.title}>
-                <div className="circular-page-card-top">
-                  <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
-                  <span className="circular-tag">{item.tag}</span>
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-                <button className="btn primary sm" onClick={() => go(item.page)}>{item.action} →</button>
-              </article>)}
-            </div>
-            <div className="circular-tip"><span>💡</span><span><b>সার্কুলার দেখে প্রস্তুতি নিন</b><small>প্রতিটি ক্যাটাগরি থেকে সংশ্লিষ্ট প্রশ্ন ও মডেল পরীক্ষা দ্রুত খুলে নিতে পারবেন।</small></span></div>
-          </section>
-        </>}
+        {page === 'circular' && <CircularPage go={go} />}
 
         {/* ================= পত্রিকা (কারেন্ট অ্যাফেয়ার্স) ================= */}
         {page === 'potrika' && <>
