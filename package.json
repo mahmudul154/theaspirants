@@ -11,6 +11,7 @@
     "validate:september-9-live": "node scripts/validate-september-9-live-exam.mjs",
     "validate:routine-syllabus": "node scripts/validate-routine-syllabus.mjs",
     "validate:duplicate-option-detector": "node scripts/validate-duplicate-option-detector.mjs",
+    "validate:job-circulars": "node scripts/validate-job-circulars.mjs",
     "audit:duplicate-options": "node scripts/find-duplicate-options.mjs",
     "preview": "vite preview"
   },
