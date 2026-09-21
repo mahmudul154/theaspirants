@@ -12,6 +12,7 @@
     "validate:routine-syllabus": "node scripts/validate-routine-syllabus.mjs",
     "validate:duplicate-option-detector": "node scripts/validate-duplicate-option-detector.mjs",
     "validate:job-circulars": "node scripts/validate-job-circulars.mjs",
+    "validate:job-circular-render": "node scripts/render-smoke-job-circulars.mjs",
     "audit:duplicate-options": "node scripts/find-duplicate-options.mjs",
     "preview": "vite preview"
   },

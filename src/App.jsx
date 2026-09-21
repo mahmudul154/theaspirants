@@ -209,7 +209,9 @@ const CIRCULAR_FILTER_LABEL = { open: 'চলছে', upcoming: 'শুরু �
  * `now` is passed in (rather than read here) so the parent's single 1s ticker
  * drives every card and the countdowns stay in step with each other.
  */
-function JobCircularCard({ circular, now, compact = false, onDetails, onApply }) {
+// Exported so it can be render-tested outside the browser (see
+// scripts/render-smoke-job-circulars.mjs); nothing else imports it.
+export function JobCircularCard({ circular, now, compact = false, onDetails, onApply }) {
   const status = circularStatus(circular, now)
   const urgency = circularUrgency(circular, now)
   const daysLeft = circularDaysLeft(circular, now)
