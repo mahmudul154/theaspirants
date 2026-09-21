@@ -1378,3 +1378,108 @@ html.dark .circular-icon-building{color:#ffab91;background:#38221d;border-color:
 .quiz-main .q-card,.quiz-main .q-card *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .quiz-main .q-card .qopt{cursor:pointer}
 @media(max-width:560px){.offline-quiz-note{font-size:.6rem;padding:8px 9px}}
+
+/* ---------- job circular hub: live apply countdowns ---------- */
+.job-circular-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.job-circular-card{min-width:0;display:flex;flex-direction:column;gap:11px;border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:14px;background:var(--card);padding:15px;transition:border-color .18s,background .18s,transform .18s}
+.job-circular-card:hover{border-color:color-mix(in srgb,var(--accent) 34%,var(--line));transform:translateY(-1px)}
+.job-circular-card.compact{gap:9px;padding:13px}
+/* Urgency is carried by the left rule so the list scans top-to-bottom. */
+.job-circular-card.is-today{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 40%,var(--card))}
+.job-circular-card.is-urgent{border-left-color:#d9741f}
+.job-circular-card.is-soon{border-left-color:var(--amber)}
+.job-circular-card.is-normal{border-left-color:var(--green)}
+.job-circular-card.is-closed{border-left-color:var(--line2);opacity:.72}
+.job-circular-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px}
+.job-circular-top .circular-icon{width:36px;height:36px}
+.job-circular-org{min-width:0;display:flex;flex-direction:column;gap:4px}
+.job-circular-org b{font-size:.88rem;line-height:1.35;overflow-wrap:anywhere}
+.job-status{width:max-content;border-radius:99px;padding:3px 8px;font-size:.56rem;font-weight:700;white-space:nowrap;border:1px solid currentColor}
+.job-status-open{color:var(--green);background:color-mix(in srgb,var(--green) 9%,transparent)}
+.job-status-upcoming{color:#2b6db5;background:color-mix(in srgb,#2b6db5 9%,transparent)}
+.job-status-closed{color:var(--ink3);background:transparent}
+.job-circular-summary{color:var(--ink2);font-size:.72rem;line-height:1.65}
+.job-circular-card.compact .job-circular-summary{font-size:.66rem;min-height:0}
+.job-circular-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0}
+.job-circular-meta span,.job-circular-facts span{display:grid;gap:2px;min-width:0}
+.job-circular-meta small,.job-circular-facts small,.job-circular-highlights dt{color:var(--ink3);font-size:.58rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.job-circular-meta strong,.job-circular-facts strong{font-size:.72rem;line-height:1.45;font-weight:600;overflow-wrap:anywhere}
+.job-countdown{display:grid;gap:3px;border-radius:11px;padding:10px 12px;background:color-mix(in srgb,var(--ink) 4%,transparent);border:1px solid var(--line)}
+.job-countdown>span{color:var(--ink3);font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.job-countdown>b{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:1.32rem;font-weight:700;line-height:1.2;color:var(--accent);letter-spacing:-.01em}
+.job-countdown>small{color:var(--ink2);font-size:.64rem;line-height:1.5}
+.job-countdown.closed>b{color:var(--ink3);font-size:.9rem}
+.is-today .job-countdown{background:color-mix(in srgb,var(--accent) 9%,transparent);border-color:color-mix(in srgb,var(--accent) 26%,var(--line))}
+.job-circular-actions{display:flex;gap:8px;margin-top:auto}
+.job-circular-actions .btn{flex:1;justify-content:center;padding:9px 12px;font-size:.72rem}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.job-circular-filters{display:flex;flex-wrap:wrap;gap:7px}
+.job-circular-filters button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:99px;background:var(--card);padding:7px 13px;font-size:.72rem;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .18s}
+.job-circular-filters button:hover{border-color:var(--ink);color:var(--ink)}
+.job-circular-filters button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.job-circular-filters .num{font-variant-numeric:tabular-nums;font-size:.64rem;opacity:.72}
+.circular-page>.job-circular-grid{margin:14px 0}
+.circular-page>.head+.job-circular-filters{margin-bottom:2px}
+
+/* ---------- circular detail modal ---------- */
+.job-circular-modal{width:min(620px,100%)}
+.job-circular-modal .ai-modal-head>div>span{color:var(--accent)}
+.job-circular-modal-body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.job-countdown.modal>b{font-size:1.7rem}
+.job-circular-modal-summary{color:var(--ink2);font-size:.86rem;line-height:1.75}
+.job-circular-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;border:1px solid var(--line);border-radius:12px;padding:13px}
+.job-circular-highlights h4{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.job-circular-highlights dl{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.job-circular-highlights dl>div{display:grid;grid-template-columns:minmax(110px,.42fr) minmax(0,1fr);gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+.job-circular-highlights dl>div:last-child{border-bottom:none}
+.job-circular-highlights dl>div:nth-child(odd){background:color-mix(in srgb,var(--ink) 2.5%,transparent)}
+.job-circular-highlights dd{font-size:.78rem;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.job-circular-note{display:flex;gap:9px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--amber) 34%,var(--line));border-radius:11px;background:color-mix(in srgb,var(--amber) 9%,transparent);padding:11px 13px;color:var(--ink2);font-size:.72rem;line-height:1.6}
+.job-circular-note svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--amber)}
+.job-circular-verify{display:grid;gap:4px;border-left:2px solid var(--line2);padding-left:12px}
+.job-circular-verify b{font-size:.74rem}
+.job-circular-verify small{color:var(--ink3);font-size:.66rem;line-height:1.6}
+.job-circular-modal-actions{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.job-circular-modal-actions .btn{flex:1;min-width:150px;justify-content:center}
+.job-circular-modal-actions svg{width:15px;height:15px}
+/* Icon tints reused by the modal head, which would otherwise be violet. */
+.circular-icon-layers{color:#2b6db5;background:#edf4ff;border-color:#b9cef0}
+.circular-icon-news{color:#c45b39;background:#fff1eb;border-color:#efb8a5}
+.circular-icon-exam{color:#7654b8;background:#f3efff;border-color:#d2c4f0}
+.circular-icon-lock{color:#1a5f8a;background:#e9f4fb;border-color:#a8cfe4}
+html.dark .circular-icon-layers{color:#9bc5ff;background:#202f45;border-color:#456287}
+html.dark .circular-icon-news{color:#ffab91;background:#38221d;border-color:#75483c}
+html.dark .circular-icon-exam{color:#ccb1ff;background:#2c2341;border-color:#604c88}
+html.dark .circular-icon-lock{color:#8fd0f2;background:#17303d;border-color:#3d6a83}
+/* No override needed for .ai-modal-icon here: the tint classes above are
+   declared later in the file than .ai-modal-icon, so at equal specificity the
+   tint already wins over the modal's default violet. */
+
+@media(max-width:900px){
+  .job-circular-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .job-circular-card{padding:12px;border-radius:12px}
+  .job-countdown>b{font-size:1.14rem}
+}
+@media(max-width:680px){
+  .job-circular-grid{grid-template-columns:minmax(0,1fr)}
+  .job-circular-top{grid-template-columns:auto minmax(0,1fr);gap:9px}
+  .job-status{grid-column:2;justify-self:start;margin-top:-2px}
+  .job-circular-org b{font-size:.84rem}
+  .job-circular-modal{padding:18px}
+  .job-circular-modal-body{gap:12px}
+  .job-countdown.modal>b{font-size:1.4rem}
+  .job-circular-highlights dl>div{grid-template-columns:minmax(0,1fr);gap:3px}
+  .job-circular-modal-actions .btn{min-width:0;width:100%}
+}
+@media(max-width:560px){
+  .job-circular-card{gap:9px;padding:11px;border-radius:11px}
+  .job-circular-card.compact{padding:10px}
+  .job-circular-top .circular-icon{width:31px;height:31px;border-radius:9px}
+  .job-circular-summary{font-size:.68rem;line-height:1.6}
+  .job-circular-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 0}
+  .job-circular-meta strong{font-size:.66rem}
+  .job-countdown{padding:9px 11px}
+  .job-countdown>b{font-size:1.16rem}
+  .job-circular-actions .btn{padding:8px 8px;font-size:.66rem}
+  .job-circular-filters button{padding:6px 11px;font-size:.67rem}
+}
