@@ -660,6 +660,7 @@ export function App() {
       setSheetOpen(false)
       setSearchOpen(false)
       setNotifOpen(false)
+      setCircularDetail(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape) }
@@ -713,7 +714,7 @@ export function App() {
 
   function go(p, options = {}) {
     if (p === 'profile' && !user) p = 'login'
-    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
+    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false); setCircularDetail(null)
     if (p !== 'visual') setVSel(null)
     if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey, !!options.includeArchived)
     if (p === 'profile') fetchProfile()
