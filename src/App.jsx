@@ -1463,13 +1463,27 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             {/* Greeting - like screenshot top bar */}
             <div className="ai-greet">
               <div className="ai-greet-left">
-                <button onClick={() => go('profile')} aria-label="প্রোফাইল খুলুন" style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
+                <button onClick={() => go(user ? 'profile' : 'login')} aria-label={user ? 'প্রোফাইল খুলুন' : 'লগইন করুন'} style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
                   <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" style={{display:'block'}} />
                 </button>
-                <div className="ai-greet-text">
-                  <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
-                  <p>Keep learning, keep growing <span>✨</span></p>
+                <div className={`ai-greet-text ${!user ? 'ai-greet-login' : ''}`} onClick={() => !user && go('login')} style={!user ? {cursor:'pointer'} : undefined}>
+                  {user ? (
+                    <>
+                      <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
+                      <p>Keep learning, keep growing <span>✨</span></p>
+                    </>
+                  ) : (
+                    <>
+                      <h2>স্বাগতম 👋</h2>
+                      <p>লগইন করে শুরু করুন</p>
+                    </>
+                  )}
                 </div>
+                {!user && (
+                  <button className="ai-greet-login-arrow" aria-label="লগইন করুন" onClick={() => go('login')}>
+                    <span>›</span>
+                  </button>
+                )}
               </div>
               <div className="ai-greet-actions">
                 <button className="ai-bell" aria-label="সার্চ খুলুন" onClick={() => { setSearchOpen(v=>!v); setNotifOpen(false) }}>
