@@ -1478,19 +1478,43 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
-            {/* Govt Job Hero - no image, platform focus */}
-            <div className="ai-hero-card govt-hero">
-              <div className="ai-hero-content" style={{maxWidth:'720px'}}>
-                <span className="ai-hero-badge"><i>🏛️</i> সরকারি চাকরির প্রস্তুতি • BCS • Bank • Primary • NTRCA</span>
-                <h3>সরকারি চাকরির<br/>নিশ্চিত প্রস্তুতি</h3>
-                <p>বিসিএস, ব্যাংক, প্রাথমিক ও শিক্ষক নিবন্ধনের ১,৫০,০০০+ প্রশ্ন, প্রতিদিন লাইভ পরীক্ষা, স্মার্ট রিভিশন ও রিয়েল-টাইম লিডারবোর্ড — সব এক প্ল্যাটফর্মে।</p>
-                <div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginTop:'6px'}}>
-                  <button className="ai-chat-btn" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>লাইভ পরীক্ষা দিন <span>→</span></button>
-                  <button className="ai-chat-btn" onClick={() => go('setup')} style={{background:'#111',color:'#fff',borderColor:'#111'}}>কাস্টম কুইজ বানান <span style={{background:'#fff',color:'#111'}}>›</span></button>
-                </div>
-                <div style={{display:'flex',gap:'18px',marginTop:'14px',flexWrap:'wrap',color:'var(--accent)',fontSize:'.76rem',fontWeight:700}}>
-                  <span>✓ ১,৫০,০০০+ প্রশ্ন</span><span>✓ প্রতিদিন লাইভ</span>
-                </div>
+            {/* Stats strip - minimal, replaces hero */}
+            <div className="home-stat-strip">
+              <span className="hss-dot" aria-hidden="true" />
+              <b>১,৫০,০০০+ প্রশ্ন</b>
+              <span>•</span><span>প্রতিদিন ১১:৩০ PM</span>
+              <span>•</span><span className="hss-live">লাইভ</span>
+            </div>
+
+            {/* Circular - app style, immediate access */}
+            <div className="ai-section circular-home">
+              <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
+              <div className="circular-home-grid">
+                {CIRCULARS.map(c=>(
+                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                    <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>
+                    <span className="circular-card-copy"><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.tag}</small></span>
+                    <i>›</i>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick start - 4 tiles, fresh & minimal */}
+            <div className="ai-section quick-home">
+              <div className="quick-grid">
+                <button className="quick-card quick-live" onClick={()=> liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>
+                  <span className="qk-icon"><SheetIco id="timer" /></span><b>লাইভ</b><small>{liveExam ? formatLiveExamTime(liveExam.startsAt) : '১১:৩০ PM'}</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('setup')}>
+                  <span className="qk-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('questionBank')}>
+                  <span className="qk-icon"><SheetIco id="bank" /></span><b>ব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('review')}>
+                  <span className="qk-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)} টি</small>
+                </button>
               </div>
             </div>
 
@@ -1499,28 +1523,22 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               <div className="ai-tutor-actions">
                 <button className="ai-action" onClick={() => go('setup')}>
                   <span className="ai-action-icon">💡</span>
-                  <span><b>Explain this concept</b><small>যেকোনো টপিক বুঝুন</small></span>
+                  <span><b>বুঝে নিন</b><small>যেকোনো টপিক</small></span>
                 </button>
                 <button className="ai-action" onClick={() => go('setup')}>
                   <span className="ai-action-icon">📘</span>
-                  <span><b>Give me a practice question</b><small>অনুশীলন প্রশ্ন</small></span>
+                  <span><b>প্র্যাকটিস</b><small>প্রশ্ন করুন</small></span>
                 </button>
                 <button className="ai-action" onClick={() => go('review')}>
                   <span className="ai-action-icon">📄</span>
-                  <span><b>Help with my assignment</b><small>ভুল পর্যালোচনা</small></span>
+                  <span><b>ভুল খাতা</b><small>রিভিশন</small></span>
                 </button>
                 <button className="ai-action" onClick={() => go('setup')}>
                   <span className="ai-action-icon">📅</span>
-                  <span><b>Create a study plan</b><small>৪০ দিনে প্রিলি</small></span>
+                  <span><b>স্টাডি প্ল্যান</b><small>৪০ দিন</small></span>
                 </button>
               </div>
-              <div className="ai-ask-box">
-                <div className="ai-ask-label">✦ Ask a question</div>
-                <div className="ai-ask-input">
-                  <input placeholder="Type your question here..." onKeyDown={e=>{if(e.key==='Enter'){go('setup')}}} />
-                  <button className="ai-send" onClick={() => go('setup')}><SheetIco id="external" /></button>
-                </div>
-              </div>
+
             </div>
 
             {/* Continue Learning - like screenshot 1 */}
@@ -1580,61 +1598,18 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   <b>React Native</b>
                   <span>Bank • 80 Qs</span>
                 </button>
-                <button className="ai-pop-card" onClick={() => go('exams')}>
-                  <span className="ai-pop-icon">🎨</span>
-                  <b>UI/UX</b>
-                  <span>Design • 45 Qs</span>
-                </button>
+
                 <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['বাংলা'] })}>
                   <span className="ai-pop-icon">📖</span>
                   <b>Bangla</b>
                   <span>সাহিত্য</span>
                 </button>
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['সাধারণ বিজ্ঞান'] })}>
-                  <span className="ai-pop-icon">🧪</span>
-                  <b>Science</b>
-                  <span>General</span>
-                </button>
+
                 <button className="ai-pop-card" onClick={() => go('questionBank')}>
                   <span className="ai-pop-icon">🏛️</span>
                   <b>BCS Bank</b>
                   <span>প্রশ্নব্যাংক</span>
                 </button>
-              </div>
-            </div>
-
-            {/* Featured Course Card - like screenshot 3rd screen UI/UX Fundamentals */}
-            <div className="ai-section">
-              <div className="ai-course-card" onClick={() => featuredExam && startScheduledExam(featuredExam, isTestExam(featuredExam))}>
-                <div className="ai-course-thumb">
-                  <img src="/poster1.png" alt="course" style={{objectFit:'cover'}} />
-                  <div className="ai-course-thumb-overlay" />
-                  <span className="ai-beginner">✦ {featuredExam?.planned ? '৪০ দিনে প্রিলি' : 'Beginner'}</span>
-                  <span className="ai-play-overlay">▶</span>
-                  <span className="ai-duration">{featuredExam ? `${BN(featuredExam.minutes)} min` : '42 min'}</span>
-                </div>
-                <div className="ai-course-body">
-                  <h3>{featuredExam ? `${featuredExam.subject} — ${featuredExam.topic}` : 'UI/UX Design Fundamentals'}</h3>
-                  <p>{featuredExam ? `${formatLiveExamDate(featuredExam.startsAt)} • ${formatLiveExamTime(featuredExam.startsAt)} • ${BN(featuredExam.questions)} প্রশ্ন` : 'Learn the core principles of user experience and interface design.'}</p>
-                  <div className="ai-course-stats">
-                    <span className="ai-stat"><span className="ai-stat-icon">★</span> <b>4.8</b> <small style={{color:'var(--ink3)'}}>(2.4k)</small></span>
-                    <span className="ai-stat"><span className="ai-stat-icon">▦</span> <b>{featuredExam ? BN(featuredExam.questions) : '12'}</b> Lessons</span>
-                    <span className="ai-stat"><span className="ai-stat-icon">◷</span> <b>{featuredExam ? `${BN(featuredExam.minutes)}m` : '6h'}</b> Total</span>
-                  </div>
-                  <div className="ai-modules">
-                    <h4>Course Modules</h4>
-                    {(homeLiveExams.length ? homeLiveExams.slice(0,3) : [{topic:'Introduction to UI/UX', minutes:42, status:'completed', done:true},{topic:'User Research', minutes:38, status:'upcoming', done:false},{topic:'Wireframing & Prototyping', minutes:55, status:'upcoming', done:false}]).map((exam, idx)=>(
-                      <div key={idx} className="ai-module" onClick={(e)=>{e.stopPropagation(); if(exam.id) go('exams')}}>
-                        <span className="ai-module-num">{idx+1}</span>
-                        <span className="ai-module-body">
-                          <b>{exam.topic || exam.title || `Module ${idx+1}`}</b>
-                          <small>{exam.minutes ? `${BN(exam.minutes)} min • ${exam.status==='live'?'Live': exam.done ? 'Completed':'Not started'}` : exam.duration || '—'}</small>
-                        </span>
-                        {exam.status==='live' || exam.done ? <span className="ai-module-check">✓</span> : <span style={{color:'var(--ink3)'}}>›</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 
