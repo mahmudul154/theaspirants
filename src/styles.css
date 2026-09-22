@@ -2003,3 +2003,134 @@ header .hdr-right .header-search-btn{display:grid!important}
   .lah-content h3{font-size:1.55rem}
   .lah-content p{font-size:.82rem}
 }
+
+/* ===== Best App View — Web Inspired (UI/UX Designer) ===== */
+/* Web inspiration: 10MS / Shikho / Stripe / Linear — editorial, trust, airy, but app-compact on mobile */
+
+/* App container — web centered, but app padding */
+.ai-landing{
+  max-width:1120px;
+  margin:0 auto;
+  padding:14px 0 52px;
+  gap:22px;
+}
+/* Greeting — web top bar like Notion/Linear: avatar + name + subtle subtitle + bell */
+.ai-greet{
+  padding:8px 4px 2px;
+  gap:16px;
+}
+.ai-greet-text h2{font-size:1.16rem;font-weight:800;letter-spacing:-.02em}
+.ai-greet-text p{font-size:.80rem;color:var(--ink2);gap:6px}
+.ai-bell{width:40px;height:40px;border-radius:14px;border:1px solid var(--line);background:var(--card);box-shadow:0 4px 16px -10px rgb(0 0 0 / .08)}
+.ai-bell:hover{border-color:var(--accent);color:var(--accent)}
+/* Hero — web hero editorial, but app card */
+.live-arena-hero{
+  padding:30px 32px;
+  border-radius:28px;
+  gap:20px;
+  background:
+    radial-gradient(ellipse at 92% 12%, color-mix(in srgb, var(--accent) 9%, transparent) 0 26%, transparent 27%),
+    radial-gradient(ellipse at 8% 88%, color-mix(in srgb, #ffedd5 60%, transparent) 0 22%, transparent 23%),
+    linear-gradient(135deg, #fff 0%, #fff7ed 18%, var(--accent-soft) 58%, #fff 100%);
+  border:1px solid color-mix(in srgb, var(--accent) 10%, var(--line));
+  box-shadow:0 24px 60px -32px color-mix(in srgb, var(--accent) 18%, transparent), 0 10px 24px -16px rgb(0 0 0 / .06);
+}
+.lah-pill{padding:7px 13px;font-size:.68rem;letter-spacing:.02em;box-shadow:0 6px 18px -10px color-mix(in srgb,var(--accent) 20%, transparent)}
+.lah-content h3{font-size:clamp(1.65rem,2.9vw,2.35rem);line-height:1.12;letter-spacing:-.03em}
+.lah-content p{font-size:.88rem;line-height:1.65;max-width:38ch;color:var(--ink2)}
+.lah-btn{padding:13px 20px;font-size:.86rem;box-shadow:0 12px 24px -14px rgb(0 0 0 / .14);border:1px solid color-mix(in srgb,var(--accent) 8%,var(--line))}
+.lah-visual{min-height:220px}
+.lah-robot{width:min(240px,100%);filter:drop-shadow(0 24px 36px color-mix(in srgb,var(--accent) 16%, transparent))}
+/* Stats — web stats bar (like Stripe) but compact */
+.home-stat-strip{
+  padding:10px 16px;
+  border-radius:999px;
+  gap:10px;
+  font-size:.72rem;
+  background:color-mix(in srgb, var(--card) 88%, var(--accent-soft));
+  border:1px solid color-mix(in srgb, var(--accent) 8%, var(--line));
+  box-shadow:0 8px 20px -14px rgb(0 0 0 / .06);
+  backdrop-filter:blur(8px);
+}
+.home-stat-strip b{font-weight:800}
+.hss-dot{width:8px;height:8px;box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 10%, transparent)}
+/* Section heads — web editorial: small eyebrow + large h3 + See all link */
+.ai-section-head.compact h3{font-size:1.02rem;font-weight:800;letter-spacing:-.015em}
+.ai-section-head.compact button{font-size:.76rem;font-weight:700;color:var(--accent);padding:6px 10px;border-radius:99px;border:1px solid transparent}
+.ai-section-head.compact button:hover{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 12%,var(--line))}
+/* Cards — web card premium: 20px radius, soft shadow, lift */
+.circular-card.compact, .cat-card, .feat-card, .quick-card{
+  border-radius:18px!important;
+  border:1px solid color-mix(in srgb, var(--line) 88%, transparent)!important;
+  box-shadow:0 8px 24px -16px rgb(0 0 0 / .06)!important;
+  transition:all .22s cubic-bezier(.22,.8,.24,1)!important;
+}
+.circular-card.compact:hover, .cat-card:hover, .feat-card:hover, .quick-card:hover{
+  transform:translateY(-3px)!important;
+  box-shadow:0 18px 36px -18px rgb(0 0 0 / .12)!important;
+  border-color:color-mix(in srgb, var(--accent) 14%, var(--line))!important;
+}
+.circular-home-grid{gap:11px}
+.quick-grid{gap:11px}
+.cats-home-grid{gap:11px}
+.features-grid{gap:10px}
+.circular-card.compact{padding:13px;gap:9px}
+.circular-card.compact .circular-icon{width:36px;height:36px;border-radius:12px}
+.qk-icon{width:38px;height:38px;border-radius:12px}
+.cat-card{padding:13px;gap:11px}
+.cat-card img{width:44px;height:44px;border-radius:12px;box-shadow:0 4px 12px -6px rgb(0 0 0 / .10)}
+.feat-card{padding:15px 8px;gap:8px}
+.feat-icon{width:40px;height:40px;border-radius:12px}
+/* Popular Courses — web course cards with image top */
+.ai-popular-grid{gap:12px}
+.ai-pop-card{
+  border-radius:20px;
+  padding:16px 12px;
+  gap:9px;
+  border:1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  box-shadow:0 8px 24px -16px rgb(0 0 0 / .06);
+}
+.ai-pop-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px -18px rgb(0 0 0 / .12);border-color:color-mix(in srgb,var(--accent) 12%,var(--line))}
+.ai-pop-icon{width:46px;height:46px;border-radius:14px;font-size:22px}
+/* Tutor actions — web quick actions row */
+.ai-tutor-actions{gap:11px}
+.ai-action{
+  border-radius:16px;
+  padding:14px 12px;
+  gap:10px;
+  border:1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  box-shadow:0 8px 24px -16px rgb(0 0 0 / .06);
+  background:var(--card);
+}
+.ai-action:hover{transform:translateY(-2px);box-shadow:0 14px 30px -16px rgb(0 0 0 / .10);border-color:color-mix(in srgb,var(--accent) 12%,var(--line))}
+/* Live small cards + Leaderboard — web list */
+.ai-continue-card{
+  border-radius:16px;
+  border:1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  box-shadow:0 8px 20px -14px rgb(0 0 0 / .05);
+}
+.leaderboard-list{border-radius:20px;box-shadow:0 16px 36px -20px rgb(0 0 0 / .10);border:1px solid color-mix(in srgb, var(--line) 88%, transparent)}
+/* Header — web premium but app clean (center hidden for app view, web shows on >1100) */
+header{background:color-mix(in srgb, var(--card) 94%, var(--paper));backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid color-mix(in srgb,var(--line) 88%, transparent);box-shadow:0 8px 32px -20px rgb(0 0 0 / .10)}
+.hdr-in{max-width:1120px;margin:0 auto;height:62px;padding:0 20px}
+.wordmark{font-size:1.32rem;font-weight:800;letter-spacing:-.02em}
+/* Bottom nav — web app floating capsule stays */
+.bnav{box-shadow:0 18px 40px -18px rgb(0 0 0 / .14),0 4px 16px -10px rgb(0 0 0 / .06)}
+/* Responsive — keep app compact on phone, web airy on desktop */
+@media(min-width:1100px){
+  .ai-landing{gap:26px;padding:18px 0 60px}
+  .live-arena-hero{padding:36px 36px;gap:24px}
+  .circular-home-grid{grid-template-columns:repeat(4,1fr)}
+  .quick-grid{grid-template-columns:repeat(4,1fr)}
+  .cats-home-grid{grid-template-columns:repeat(4,1fr)}
+  .features-grid{grid-template-columns:repeat(5,1fr)}
+}
+@media(max-width:560px){
+  .ai-landing{padding:10px 0 36px;gap:16px}
+  .live-arena-hero{padding:20px 18px;border-radius:24px;gap:16px}
+  .lah-content h3{font-size:1.55rem}
+  .home-stat-strip{padding:8px 12px;font-size:.68rem}
+  .circular-card.compact, .cat-card{border-radius:16px}
+  .feat-card{border-radius:16px;padding:12px 6px}
+  .ai-pop-card{border-radius:18px}
+}
