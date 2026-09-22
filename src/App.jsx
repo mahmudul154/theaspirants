@@ -209,6 +209,29 @@ function questionFingerprint(q) {
   return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
 }
 
+// Deterministic hash for live exams: same scheduleId → same offset for everyone
+function liveHash(str) {
+  let h = 2166136261
+  for (let i = 0; i < String(str).length; i++) h = Math.imul(h ^ String(str).charCodeAt(i), 16777619)
+  return h >>> 0
+}
+function mixQuestionsLocked(rows, limit) {
+  const byTopic = {}
+  rows.forEach(r => { const t = r.topic || 'Others'; (byTopic[t] ||= []).push(r) })
+  Object.values(byTopic).forEach(a => a.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||''))))
+  const topics = Object.keys(byTopic).sort()
+  const out = []
+  const n = limit ? Math.min(limit, rows.length) : rows.length
+  while (out.length < n) {
+    let added = false
+    for (const topic of topics) {
+      if (out.length >= n) break
+      if (byTopic[topic].length) { out.push(byTopic[topic].shift()); added = true }
+    }
+    if (!added) break
+  }
+  return out.map(r => ({ ...r, options: r.options ? [...r.options] : [] }))
+}
 function uniqueQuestions(items) {
   const unique = new Map()
   const questions = Array.isArray(items) ? items : []
@@ -872,7 +895,7 @@ export function App() {
           }
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী')
+const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')
           if (namedResult.error) throw namedResult.error
           const namedRows = uniqueQuestions(namedResult.data || [])
             .filter(question => !plannedQuestionKeys.has(questionKey(question)))
@@ -911,9 +934,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           const namedTarget = bucket.namedRatio != null
             ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
             : bucket.questions
+          const isLiveLocked = !!cfg.scheduleId
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
-            : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length))
+            : (isLiveLocked ? mixQuestionsLocked(namedRows, Math.min(namedTarget, namedRows.length)) : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length)))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
@@ -926,13 +950,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
               ? copyFixedRows(genericRows).slice(0, remaining)
-              : mixQuestions(genericRows, remaining)
+              : (isLiveLocked ? mixQuestionsLocked(genericRows, remaining) : mixQuestions(genericRows, remaining))
           }
           let selectedTopUp = []
           const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
           if (topUpNeed && !bucket.fixed) {
             const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
-            selectedTopUp = mixQuestions(
+            selectedTopUp = (isLiveLocked ? mixQuestionsLocked : mixQuestions)(
               namedRows.filter(question => !usedKeys.has(questionKey(question))),
               topUpNeed
             )
@@ -977,7 +1001,8 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           rows = uniqueQuestions([...interleavedRows, ...unusedRows, ...(cfg.supplementalRows || [])])
         } else {
           rows = uniqueQuestions([...plannedBuckets.flatMap(({ rows: bucketRows }) => bucketRows), ...(cfg.supplementalRows || [])])
-          rows.sort(() => Math.random() - .5)
+          if (cfg.scheduleId) rows.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||'')))
+          else rows.sort(() => Math.random() - .5)
         }
         databaseRowsArePrioritized = true
       } else {
@@ -1058,8 +1083,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         let collected = []
         const usedOffsets = new Set()
         for (let attempt = 0; attempt < attempts; attempt++) {
-          let offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-          if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          let offset
+          if (cfg.scheduleId && maxOffset) {
+            const tag = applyPoolFilter === applyAppearedQuestionFilter ? 'appeared' : 'generic'
+            offset = liveHash(String(cfg.scheduleId) + ':' + tag + ':' + attempt) % (maxOffset + 1)
+            let probe = 0
+            while (usedOffsets.has(offset) && probe < (maxOffset + 1)) { offset = (offset + 1) % (maxOffset + 1); probe++ }
+          } else {
+            offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+            if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          }
           usedOffsets.add(offset)
           const { data, error } = await applyPoolFilter(applyQuestionFilters(
             supabase.from('mcq_questions_job').select('*')
@@ -1086,7 +1119,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           appearedAvailable,
           requestedLimit
         )
-        const appearedRows = mixQuestions(appearedPool, requestedLimit)
+        const appearedRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(appearedPool, requestedLimit)
         const remaining = Math.max(0, requestedLimit - appearedRows.length)
         let genericRows = []
 
@@ -1099,7 +1132,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             genericAvailable,
             remaining
           )
-          genericRows = mixQuestions(genericPool, remaining)
+          genericRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(genericPool, remaining)
         }
 
         if (appearedRows.length || genericRows.length) {
@@ -1124,7 +1157,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     }
     rows = uniqueQuestions(rows)
-    const qs = databaseRowsArePrioritized || cfg.preserveOrder ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
+    // Lock live exam: same questions for everyone + remove Dhoni/sound question if present
+    if (cfg.scheduleId) {
+      rows = rows.filter(q => !/dhoni/i.test(q.question||'') && !/ধোনি|ধোনী|ধ্বনি/.test(q.question||''))
+      // ensure 22 Sep revision set is restored (DAY11) — already via routine
+    }
+    const qs = databaseRowsArePrioritized || cfg.preserveOrder || cfg.scheduleId ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
     setLoading(false)
     if (!qs.length) {
       setToastMsg(avoidSeen
@@ -1410,27 +1448,26 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
 
-          {notifOpen && <div className="npanel header-npanel">
-            <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
-            {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
-            {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
-          </div>}
-
-          {searchOpen && <div className="header-search-panel">
-            <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
-            <div className="sres">
-              {q.trim().length <= 1 ? <>
-                <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
-                {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
-              </> : searchRes.length ? searchRes.map((result, index) => (
-                <button key={index} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
-                  <span>{result.t}</span><span>{result.sb}</span>
-                </button>
-              )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
-            </div>
-          </div>}
         </div>
       </header>}
+      {page !== 'quiz' && notifOpen && <div className="npanel header-npanel">
+        <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
+        {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
+        {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
+      </div>}
+      {page !== 'quiz' && searchOpen && <div className="header-search-panel">
+        <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
+        <div className="sres">
+          {q.trim().length <= 1 ? <>
+            <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
+            {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
+          </> : searchRes.length ? searchRes.map((result, index) => (
+            <button key={index} onClick={() => { setQ(''); setSearchOpen(false); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
+              <span>{result.t}</span><span>{result.sb}</span>
+            </button>
+          )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
+        </div>
+      </div>}
 
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
@@ -1439,13 +1476,27 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             {/* Greeting - like screenshot top bar */}
             <div className="ai-greet">
               <div className="ai-greet-left">
-                <button onClick={() => go('profile')} aria-label="প্রোফাইল খুলুন" style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
+                <button onClick={() => go(user ? 'profile' : 'login')} aria-label={user ? 'প্রোফাইল খুলুন' : 'লগইন করুন'} style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
                   <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" style={{display:'block'}} />
                 </button>
-                <div className="ai-greet-text">
-                  <h2>Hello, {(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma')} 👋</h2>
-                  <p>Keep learning, keep growing <span>✨</span></p>
+                <div className={`ai-greet-text ${!user ? 'ai-greet-login' : ''}`} onClick={() => !user && go('login')} style={!user ? {cursor:'pointer'} : undefined}>
+                  {user ? (
+                    <>
+                      <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
+                      <p>Keep learning, keep growing <span>✨</span></p>
+                    </>
+                  ) : (
+                    <>
+                      <h2>স্বাগতম 👋</h2>
+                      <p>লগইন করে শুরু করুন</p>
+                    </>
+                  )}
                 </div>
+                {!user && (
+                  <button className="ai-greet-login-arrow" aria-label="লগইন করুন" onClick={() => go('login')}>
+                    <span>›</span>
+                  </button>
+                )}
               </div>
               <div className="ai-greet-actions">
                 <button className="ai-bell" aria-label="সার্চ খুলুন" onClick={() => { setSearchOpen(v=>!v); setNotifOpen(false) }}>
@@ -1490,17 +1541,21 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               <span>•</span><span className="hss-live">লাইভ</span>
             </div>
 
-            {/* Circular - app style, immediate access */}
+            {/* Circular - recent with logos + slide arrows */}
             <div className="ai-section circular-home">
               <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
-              <div className="circular-home-grid">
-                {CIRCULARS.map(c=>(
-                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
-                    <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>
-                    <span className="circular-card-copy"><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.tag}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
+              <div className="circular-scroll-wrap">
+                <button className="circular-arrow circular-arrow-left" aria-label="পূর্ববর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:-280,behavior:'smooth'})}>‹</button>
+                <div id="circularScroll" className="circular-home-grid circular-scroll">
+                  {[...CIRCULARS, {tag:'BPSC • ৪৭তম', title:'৪৭তম বিসিএস প্রিলি', desc:'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo:'/assets/institutions/bpsc.png', icon:'building', page:'questionBank'}, {tag:'বাংলাদেশ ব্যাংক', title:'সিনিয়র অফিসার ২০২৬', desc:'৯২ পদ • সম্মিলিত ব্যাংক', logo:'/assets/institutions/bb.svg', icon:'bank', page:'setup'}, {tag:'NTRCA', title:'১৯তম নিবন্ধন', desc:'স্কুল-কলেজ • শীঘ্রই', logo:'/assets/institutions/other.png', icon:'book', page:'circular'}, {tag:'প্রাথমিক', title:'সহকারী শিক্ষক', desc:'ডিপিই • নতুন সার্কুলার', logo:'/assets/institutions/primary.png', icon:'school', page:'exams'}].map(c=>(
+                    <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                      {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
+                      <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.desc || c.tag}</small></span>
+                      <i>›</i>
+                    </button>
+                  ))}
+                </div>
+                <button className="circular-arrow circular-arrow-right" aria-label="পরবর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:280,behavior:'smooth'})}>›</button>
               </div>
             </div>
 
@@ -1522,32 +1577,36 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
-            {/* Category - BCS Bank NTRCA Primary (kept) */}
+            {/* Category - BCS/Bank active, NTRCA/Primary coming soon */}
             <div className="ai-section cats-home">
               <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব →</button></div>
               <div className="cats-home-grid">
-                {APP_CATS.map(c=>(
-                  <button key={c.id} className="cat-card" onClick={()=> openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
-                    <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
-                    <span><b>{c.name}</b><small>{c.d}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
+                {APP_CATS.map(c=>{
+                  const isComingSoon = c.id === 'ntrca' || c.id === 'primary'
+                  return (
+                    <button key={c.id} className={`cat-card ${isComingSoon ? 'coming-soon' : ''}`} onClick={()=> isComingSoon ? setToastMsg('Coming Soon — শীঘ্রই আসছে') : openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
+                      <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
+                      <span><b>{c.name}</b><small>{isComingSoon ? 'Coming Soon' : c.d}</small></span>
+                      <i>{isComingSoon ? '◷' : '›'}</i>
+                      {isComingSoon && <span className="coming-soon-badge">Soon</span>}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* Features quick access - all app features in one section */}
+            {/* Features - bento unique, live bigger, heading ফিচারস */}
             <div className="ai-section features-home">
-              <div className="ai-section-head compact"><h3>শর্টকাট</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>স্লাইড করুন →</span></div>
-              <div className="features-grid">
-                <button className="feat-card" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>পরীক্ষা</b><small>লাইভ</small></button>
+              <div className="ai-section-head compact"><h3>ফিচারস</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>এক ক্লিকে সব</span></div>
+              <div className="features-grid bento-grid">
+                <button className="feat-card feat-live" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>লাইভ পরীক্ষা</b><small>প্রতিদিন ১১:৩০ PM</small><span className="feat-live-badge">Live</span></button>
                 <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
                 <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
                 <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
                 <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
                 <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
                 <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
-                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>র‍্যাংকিং</b><small>লিডারবোর্ড</small></button>
+                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>লিডারবোর্ড</b><small>র‍্যাংকিং</small></button>
                 <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
                 <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
               </div>
@@ -1576,10 +1635,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             </div>
 
-            {/* Leaderboard */}
+            {/* Leaderboard - tag leaderboard */}
             <div className="ai-section">
               <div className="ai-section-head">
-                <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
+                <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                  <span className="leaderboard-eyebrow">leaderboard • লিডারবোর্ড</span>
+                  <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
+                </div>
                 <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
               </div>
               {homeLbData === null
