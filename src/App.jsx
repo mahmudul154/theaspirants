@@ -1397,6 +1397,30 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               <span className="wordmark">অভ্যাস</span>
             </button>
           </div>
+          <div className="hdr-center">
+            <div className="hdr-search" role="search">
+              <SheetIco id="search" />
+              <input
+                value={q}
+                onChange={e=>setQ(e.target.value)}
+                placeholder="বিষয়, টপিক বা প্রশ্ন খুঁজুন..."
+                onKeyDown={e=>{
+                  if(e.key==='Enter' && searchRes.length){
+                    const r=searchRes[0];
+                    setQ('');
+                    openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(r.sb) ? 'bcs' : 'bank', subjects:[r.sb], topics:[r.t] });
+                  }
+                }}
+              />
+              {q && <button className="hdr-search-clear" aria-label="clear" onClick={()=>setQ('')}>×</button>}
+            </div>
+            <nav className="hdr-nav" aria-label="Primary">
+              <button className={page==='home'?'on':''} onClick={()=>go('home')}>হোম</button>
+              <button className={page==='exams'?'on':''} onClick={()=>go('exams')}>পরীক্ষা</button>
+              <button className={page==='questionBank'?'on':''} onClick={()=>go('questionBank')}>প্রশ্নব্যাংক</button>
+              <button className={page==='potrika'?'on':''} onClick={()=>go('potrika')}>পত্রিকা</button>
+            </nav>
+          </div>
           <div className="hdr-right">
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
@@ -1464,7 +1488,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   <button className="ai-chat-btn" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>লাইভ পরীক্ষা দিন <span>→</span></button>
                   <button className="ai-chat-btn" onClick={() => go('setup')} style={{background:'#111',color:'#fff',borderColor:'#111'}}>কাস্টম কুইজ বানান <span style={{background:'#fff',color:'#111'}}>›</span></button>
                 </div>
-                <div style={{display:'flex',gap:'18px',marginTop:'14px',flexWrap:'wrap',color:'#4338ca',fontSize:'.76rem',fontWeight:700}}>
+                <div style={{display:'flex',gap:'18px',marginTop:'14px',flexWrap:'wrap',color:'var(--accent)',fontSize:'.76rem',fontWeight:700}}>
                   <span>✓ ১,৫০,০০০+ প্রশ্ন</span><span>✓ প্রতিদিন লাইভ</span><span>✓ ১০,০০০+ শিক্ষার্থী</span>
                 </div>
               </div>
