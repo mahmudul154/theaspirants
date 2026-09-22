@@ -1436,102 +1436,222 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
-          <section className="home-hero">
-            <div className="home-hero-copy">
-              <h1>চাকরির পরীক্ষায়<br /><span>নিশ্চিত সাফল্য</span></h1>
-              <p className="home-hero-lead">বিসিএস ও ব্যাংক জবের হাজারো প্রশ্নের সমাধানে তৈরি করুন নিজের কাস্টম কুইজ। বিশ্লেষণ করুন আপনার দুর্বলতা এবং এগিয়ে থাকুন প্রতিযোগিতায়।</p>
-              <div className="home-hero-cta">
-                <button className="home-hero-btn" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-                <button className="home-hero-link" onClick={() => go('setup')}>নিজের কুইজ তৈরি করুন</button>
-              </div>
-            </div>
-            <div className="home-hero-visual">
-              <img src="/poster1.png" alt="অভ্যাস অ্যাপে অনুশীলন করছেন একজন শিক্ষার্থী" />
-              <div className="home-hero-stats">
-                <div><small>মোট প্রশ্ন</small><b>১,৫০,০০০+</b></div>
-                <i aria-hidden="true" />
-                <div><small>সফল শিক্ষার্থী</small><b className="green">১০,০০০+</b></div>
-              </div>
-            </div>
-          </section>
-
-          <section className="sec home-smart-panel" style={{ paddingTop: 28 }}>
-            <div className="panel" style={{ gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                <h3 style={{ margin: 0 }}>{greet()}, {(user?.user_metadata?.full_name || user?.name || 'শিক্ষার্থী').split(' ')[0]} 👋</h3>
-                <div className="hero-chips">
-                  {goalDays != null && <span className="hchip">⏳ {goal.name}: আর <b>{BN(goalDays)}</b> দিন</span>}
-                  {trend != null && trend !== 0 && <span className="hchip">{trend > 0 ? '📈' : '📉'} <b>{BN(Math.abs(trend))}%</b> ট্রেন্ড</span>}
-                  <span className="hchip">🔥 <b>{BN(streak)}</b> স্ট্রিক</span>
+          <div className="ai-landing">
+            {/* Greeting - like screenshot top bar */}
+            <div className="ai-greet">
+              <div className="ai-greet-left">
+                <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" />
+                <div className="ai-greet-text">
+                  <h2>Hello, {(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma')} 👋</h2>
+                  <p>Keep learning, keep growing <span>✨</span></p>
                 </div>
               </div>
-              <span className="lbl" style={{ margin: 0 }}>চাকরির পরীক্ষায় এগিয়ে থাকতে আজকের প্রস্তুতি গুছিয়ে নিন</span>
-              <div className="chips">
-                {dueList.length > 0 && <button className="chip on" onClick={() => beginQuiz({ title: 'স্মার্ট রিভিশন', rows: dueList, limit: Math.min(10, dueList.length), minutes: 10 })}>🔁 {BN(dueList.length)}টি রিভিশন due</button>}
-                {subjBars.length > 0 && subjBars[subjBars.length - 1].avg < 80 && <button className="chip" onClick={() => beginQuiz({ title: 'দুর্বল বিষয় • ' + subjBars[subjBars.length - 1].s, tag: 'bcs', subjects: [subjBars[subjBars.length - 1].s], limit: 10, minutes: 10, fallback: [subjBars[subjBars.length - 1].s] })}>🎯 {subjBars[subjBars.length - 1].s} দুর্বল — ১০ প্রশ্ন</button>}
-                {localStorage.getItem('asp_daily') !== new Date().toDateString() && <button className="chip" onClick={() => go('daily')}>🔥 ডেইলি চ্যালেঞ্জ</button>}
-                <button className="chip" onClick={() => go('potrika')}>📰 আজকের পত্রিকা</button>
-                <button className="chip" onClick={() => go('visual')}>🖼 ছবি দিয়ে শেখো</button>
-                <button className="chip" onClick={() => go('exams')}>📘 নতুন টপিক ধরো</button>
-                <button className="chip" onClick={() => go('questionBank')}>🏛 প্রশ্নব্যাংক</button>
+              <div className="ai-greet-actions">
+                <button className="ai-bell" onClick={() => setNotifOpen(v=>!v)} aria-label="notification">
+                  <SheetIco id="bell" />
+                  <span className="ai-bell-dot" />
+                </button>
               </div>
             </div>
-          </section>
 
-          <section className="sec home-live-attraction">
-            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
-            <div className="slider" aria-label="লাইভ পরীক্ষার সংক্ষিপ্ত তালিকা">
-              {homeLiveExams.map(exam => {
-                const isToday = exam.dateKey === todayLeaderboardDateKey
-                const isLive = exam.status === 'live'
-                const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
-                const planDay = examPlanDay(exam)
-                const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
-                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
-                  {exam.planned && <span className="live-plan-mini-tag">৪০ দিনে প্রিলি</span>}
-                  <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
-                  <h3 title={exam.subject}>{heading}</h3>
-                  <div className="top">{exam.topic}</div>
-                  <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
-                  {isLive
-                    ? <span className="today-card-countdown"><small>লাইভ শেষ হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                    : isToday
-                      ? <span className="today-card-countdown"><small>শুরু হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                      : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
-                </button>
-              })}
-            </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
-          </section>
-
-
-          <section className="sec">
-            <div className="head"><div className="eyebrow">অনুশীলন</div><h2>বিষয়সমূহ</h2></div>
-            <div className="subj-tiles">
-              {SUBJECTS.map(s => (
-                <button className="tile" key={s} onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(s) ? 'bcs' : 'bank', subjects: [s] })}>
-                  <span className="e"><Ico id={s} size={26} /></span><b>{s}</b>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="sec leaderboard-section">
-            <div className="head leaderboard-head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div>
-                <div className="eyebrow">লাইভ ফলাফল</div>
-                <h2 style={{ marginTop: 10 }}>{liveLeaderboardActive ? <>আজকের <i>লিডারবোর্ড</i></> : <>গতকালের <i>লিডারবোর্ড</i></>}</h2>
-                <p className="muted leaderboard-copy">{liveLeaderboardActive ? 'ফল জমা হলে প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} • লাইভ ফলাফল`}</p>
+            {/* AI Hero Card - like screenshot 1st screen purple gradient */}
+            <div className="ai-hero-card">
+              <div className="ai-hero-content">
+                <span className="ai-hero-badge"><i>◐</i> AI Learning Assistant</span>
+                <h3>Your personal<br/>AI tutor is here</h3>
+                <p>Get instant help, personalized explanations and study plans.</p>
+                <button className="ai-chat-btn" onClick={() => go('setup')}>Chat with AI <span>›</span></button>
               </div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
+              <div className="ai-robot">
+                <img src="/ai-robot.png" className="ai-robot-img" alt="AI Tutor" />
+              </div>
             </div>
-            {homeLbData === null
-              ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
-              : homeLbData.length
-                ? <div className="lb">{homeLbData.slice(0, 4).map(LBRow)}</div>
-                : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
-          </section>
 
+            {/* AI Tutor Quick Actions - like screenshot middle screen */}
+            <div className="ai-section">
+              <div className="ai-tutor-actions">
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">💡</span>
+                  <span><b>Explain this concept</b><small>যেকোনো টপিক বুঝুন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📘</span>
+                  <span><b>Give me a practice question</b><small>অনুশীলন প্রশ্ন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('review')}>
+                  <span className="ai-action-icon">📄</span>
+                  <span><b>Help with my assignment</b><small>ভুল পর্যালোচনা</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📅</span>
+                  <span><b>Create a study plan</b><small>৪০ দিনে প্রিলি</small></span>
+                </button>
+              </div>
+              <div className="ai-ask-box">
+                <div className="ai-ask-label">✦ Ask a question</div>
+                <div className="ai-ask-input">
+                  <input placeholder="Type your question here..." onKeyDown={e=>{if(e.key==='Enter'){go('setup')}}} />
+                  <button className="ai-send" onClick={() => go('setup')}><SheetIco id="external" /></button>
+                </div>
+              </div>
+            </div>
+
+            {/* Continue Learning - like screenshot 1 */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <h3>Continue Learning</h3>
+                <button onClick={() => go('exams')}>See All ›</button>
+              </div>
+              <div className="ai-continue-grid">
+                {subjBars.length ? subjBars.slice(0,2).map(bar=>(
+                  <div key={bar.s} className="ai-continue-card" onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(bar.s) ? 'bcs' : 'bank', subjects: [bar.s] })}>
+                    <div className="ai-continue-thumb"><Ico id={bar.s} size={32} /></div>
+                    <div className="ai-continue-body">
+                      <b>{bar.s}</b>
+                      <div className="ai-progress"><i style={{width: `${Math.min(100, bar.avg)}%`}} /></div>
+                      <div className="ai-continue-meta"><span>{BN(bar.avg)}% progress</span><span>•</span><span>{bar.s}</span></div>
+                    </div>
+                    <button className="ai-play">▶</button>
+                  </div>
+                )) : <>
+                  <div className="ai-continue-card" onClick={() => openCustomQuiz({ category: 'bcs', subjects: ['গাণিতিক যুক্তি'] })}>
+                    <div className="ai-continue-thumb"><img src="/poster1.png" alt="" /></div>
+                    <div className="ai-continue-body">
+                      <b>Data Structures and Algorithms</b>
+                      <div className="ai-progress"><i style={{width:'60%'}} /></div>
+                      <div className="ai-continue-meta"><span>60% • In progress</span></div>
+                    </div>
+                    <button className="ai-play">▶</button>
+                  </div>
+                  <div className="ai-continue-card" onClick={() => openCustomQuiz({ category: 'bcs', subjects: ['English'] })}>
+                    <div className="ai-continue-thumb" style={{background:'#e0e7ff'}}><span style={{fontSize:28}}>📘</span></div>
+                    <div className="ai-continue-body">
+                      <b>English Grammar</b>
+                      <div className="ai-progress"><i style={{width:'45%'}} /></div>
+                      <div className="ai-continue-meta"><span>45% • In progress</span></div>
+                    </div>
+                    <button className="ai-play">▶</button>
+                  </div>
+                </>}
+              </div>
+            </div>
+
+            {/* Popular Courses - like screenshot 1 bottom */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <h3>Popular Courses</h3>
+                <button onClick={() => go('questionBank')}>See All ›</button>
+              </div>
+              <div className="ai-popular-grid">
+                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['English'] })}>
+                  <span className="ai-pop-icon">🐍</span>
+                  <b>Python</b>
+                  <span>BCS • 120 Qs</span>
+                </button>
+                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bank', subjects:['গাণিতিক যুক্তি'] })}>
+                  <span className="ai-pop-icon">⚛️</span>
+                  <b>React Native</b>
+                  <span>Bank • 80 Qs</span>
+                </button>
+                <button className="ai-pop-card" onClick={() => go('exams')}>
+                  <span className="ai-pop-icon">🎨</span>
+                  <b>UI/UX</b>
+                  <span>Design • 45 Qs</span>
+                </button>
+                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['বাংলা'] })}>
+                  <span className="ai-pop-icon">📖</span>
+                  <b>Bangla</b>
+                  <span>সাহিত্য</span>
+                </button>
+                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['সাধারণ বিজ্ঞান'] })}>
+                  <span className="ai-pop-icon">🧪</span>
+                  <b>Science</b>
+                  <span>General</span>
+                </button>
+                <button className="ai-pop-card" onClick={() => go('questionBank')}>
+                  <span className="ai-pop-icon">🏛️</span>
+                  <b>BCS Bank</b>
+                  <span>প্রশ্নব্যাংক</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Featured Course Card - like screenshot 3rd screen UI/UX Fundamentals */}
+            <div className="ai-section">
+              <div className="ai-course-card" onClick={() => featuredExam && startScheduledExam(featuredExam, isTestExam(featuredExam))}>
+                <div className="ai-course-thumb">
+                  <img src="/poster1.png" alt="course" style={{objectFit:'cover'}} />
+                  <div className="ai-course-thumb-overlay" />
+                  <span className="ai-beginner">✦ {featuredExam?.planned ? '৪০ দিনে প্রিলি' : 'Beginner'}</span>
+                  <span className="ai-play-overlay">▶</span>
+                  <span className="ai-duration">{featuredExam ? `${BN(featuredExam.minutes)} min` : '42 min'}</span>
+                </div>
+                <div className="ai-course-body">
+                  <h3>{featuredExam ? `${featuredExam.subject} — ${featuredExam.topic}` : 'UI/UX Design Fundamentals'}</h3>
+                  <p>{featuredExam ? `${formatLiveExamDate(featuredExam.startsAt)} • ${formatLiveExamTime(featuredExam.startsAt)} • ${BN(featuredExam.questions)} প্রশ্ন` : 'Learn the core principles of user experience and interface design.'}</p>
+                  <div className="ai-course-stats">
+                    <span className="ai-stat"><span className="ai-stat-icon">★</span> <b>4.8</b> <small style={{color:'var(--ink3)'}}>(2.4k)</small></span>
+                    <span className="ai-stat"><span className="ai-stat-icon">▦</span> <b>{featuredExam ? BN(featuredExam.questions) : '12'}</b> Lessons</span>
+                    <span className="ai-stat"><span className="ai-stat-icon">◷</span> <b>{featuredExam ? `${BN(featuredExam.minutes)}m` : '6h'}</b> Total</span>
+                  </div>
+                  <div className="ai-modules">
+                    <h4>Course Modules</h4>
+                    {(homeLiveExams.length ? homeLiveExams.slice(0,3) : [{topic:'Introduction to UI/UX', minutes:42, status:'completed', done:true},{topic:'User Research', minutes:38, status:'upcoming', done:false},{topic:'Wireframing & Prototyping', minutes:55, status:'upcoming', done:false}]).map((exam, idx)=>(
+                      <div key={idx} className="ai-module" onClick={(e)=>{e.stopPropagation(); if(exam.id) go('exams')}}>
+                        <span className="ai-module-num">{idx+1}</span>
+                        <span className="ai-module-body">
+                          <b>{exam.topic || exam.title || `Module ${idx+1}`}</b>
+                          <small>{exam.minutes ? `${BN(exam.minutes)} min • ${exam.status==='live'?'Live': exam.done ? 'Completed':'Not started'}` : exam.duration || '—'}</small>
+                        </span>
+                        {exam.status==='live' || exam.done ? <span className="ai-module-check">✓</span> : <span style={{color:'var(--ink3)'}}>›</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Arena */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <h3>লাইভ এরিনা</h3>
+                <button onClick={() => go('exams')}>সব দেখুন ›</button>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'12px'}}>
+                {homeLiveExams.map(exam => {
+                  const isToday = exam.dateKey === todayLeaderboardDateKey
+                  const isLive = exam.status === 'live'
+                  const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
+                  const planDay = examPlanDay(exam)
+                  const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
+                  return (
+                    <div key={exam.id} className="ai-continue-card" style={{flexDirection:'column', alignItems:'flex-start', padding:'14px', gap:'8px'}} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
+                      <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`} style={{fontSize:'.62rem'}}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
+                      <b style={{fontSize:'.9rem'}}>{heading}</b>
+                      <small style={{color:'var(--ink3)', fontSize:'.72rem'}}>{exam.topic}</small>
+                      <div style={{display:'flex', gap:'8px', color:'var(--ink3)', fontSize:'.66rem'}}>
+                        <span>{formatLiveExamDate(exam.startsAt)}</span><span>•</span><span>{formatLiveExamTime(exam.startsAt)}</span>
+                      </div>
+                      <small style={{color:'#6366f1', fontWeight:700}}>{isLive ? 'শেষ হতে ' : 'শুরু হতে '} {countdown}</small>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Leaderboard */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <h3>{liveLeaderboardActive ? 'আজকের লিডারবোর্ড' : 'গতকালের লিডারবোর্ড'}</h3>
+                <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
+              </div>
+              {homeLbData === null
+                ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
+                : homeLbData.length
+                  ? <div className="leaderboard-list">{homeLbData.slice(0,4).map(LBRow)}</div>
+                  : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
+            </div>
+          </div>
         </>}
 
         {/* ================= LIVE EXAM CENTER ================= */}
