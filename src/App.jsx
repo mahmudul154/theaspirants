@@ -1572,46 +1572,6 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             </div>
 
-            {/* Continue Learning - like screenshot 1 */}
-            <div className="ai-section">
-              <div className="ai-section-head">
-                <h3>Continue Learning</h3>
-                <button onClick={() => go('exams')}>See All ›</button>
-              </div>
-              <div className="ai-continue-grid">
-                {subjBars.length ? subjBars.slice(0,2).map(bar=>(
-                  <div key={bar.s} className="ai-continue-card" onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(bar.s) ? 'bcs' : 'bank', subjects: [bar.s] })}>
-                    <div className="ai-continue-thumb"><Ico id={bar.s} size={32} /></div>
-                    <div className="ai-continue-body">
-                      <b>{bar.s}</b>
-                      <div className="ai-progress"><i style={{width: `${Math.min(100, bar.avg)}%`}} /></div>
-                      <div className="ai-continue-meta"><span>{BN(bar.avg)}% progress</span><span>•</span><span>{bar.s}</span></div>
-                    </div>
-                    <button className="ai-play">▶</button>
-                  </div>
-                )) : <>
-                  <div className="ai-continue-card" onClick={() => openCustomQuiz({ category: 'bcs', subjects: ['গাণিতিক যুক্তি'] })}>
-                    <div className="ai-continue-thumb"><img src="/poster1.png" alt="" /></div>
-                    <div className="ai-continue-body">
-                      <b>Data Structures and Algorithms</b>
-                      <div className="ai-progress"><i style={{width:'60%'}} /></div>
-                      <div className="ai-continue-meta"><span>60% • In progress</span></div>
-                    </div>
-                    <button className="ai-play">▶</button>
-                  </div>
-                  <div className="ai-continue-card" onClick={() => openCustomQuiz({ category: 'bcs', subjects: ['English'] })}>
-                    <div className="ai-continue-thumb" style={{background:'#e0e7ff'}}><span style={{fontSize:28}}>📘</span></div>
-                    <div className="ai-continue-body">
-                      <b>English Grammar</b>
-                      <div className="ai-progress"><i style={{width:'45%'}} /></div>
-                      <div className="ai-continue-meta"><span>45% • In progress</span></div>
-                    </div>
-                    <button className="ai-play">▶</button>
-                  </div>
-                </>}
-              </div>
-            </div>
-
             {/* Popular Courses - like screenshot 1 bottom */}
             <div className="ai-section">
               <div className="ai-section-head">
@@ -2593,7 +2553,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন'], ['profile', 'user', 'প্রোফাইল']
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>

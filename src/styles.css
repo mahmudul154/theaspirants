@@ -1765,3 +1765,16 @@ html.dark .feat-icon{background:color-mix(in srgb,var(--ink) 6%,var(--card))}
   .feat-icon{width:34px;height:34px}
   .feat-card b{font-size:.68rem}
 }
+
+/* ===== Fix header math (upper nav alignment) ===== */
+header .hdr-in{display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 16px;gap:12px}
+.hdr-left{display:flex;align-items:center;gap:10px;flex:none}
+.hdr-center{flex:1 1 auto;display:flex;align-items:center;gap:10px;max-width:640px;margin:0 16px;justify-content:flex-start;min-width:0}
+.hdr-search{flex:1 1 280px;min-width:160px;max-width:360px;height:38px;padding:0 12px}
+.hdr-search input{font-size:.82rem}
+.hdr-nav{flex:none;display:flex;gap:3px}
+.hdr-nav button{padding:6px 10px;font-size:.76rem;white-space:nowrap}
+.hdr-right{flex:none;display:flex;align-items:center;gap:6px}
+.ibtn.wide{padding:0 12px}
+@media(max-width:1100px){.hdr-center{max-width:420px}.hdr-nav{display:none}}
+@media(max-width:900px){.hdr-center{display:none}.hdr-in{height:56px;padding:0 12px}}
