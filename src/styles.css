@@ -2259,3 +2259,86 @@ html.dark .circular-icon, html.dark .feat-card .feat-icon{box-shadow:0 8px 18px 
 .home-stat-strip{display:none!important} /* hide extra strip for cleaner hero-first look */
 .quick-grid{display:none!important} /* hide quick 4-tiles since sliding menus cover */
 .ai-tutor-actions{display:none!important} /* hide tutor actions for smart minimal */
+
+/* ===== Mobile friendly + upper nav completely removed + side bar right + logo hidden + hero no image ===== */
+/* Hide entire upper nav bar (header) visually but keep panels for noti */
+header{border:none!important;box-shadow:none!important;background:transparent!important;position:static!important;height:0!important;min-height:0!important;overflow:visible!important}
+header .hdr-in{display:none!important;height:0!important;padding:0!important;overflow:hidden!important}
+header .npanel.header-npanel{position:fixed!important;right:12px!important;top:14px!important;left:auto!important;z-index:82!important}
+/* Hide logo completely */
+.logo, .wordmark, .hdr-logo{display:none!important}
+/* Side bar on right */
+.side-nav{
+  left:auto!important;
+  right:0!important;
+  border-right:none!important;
+  border-left:1px solid var(--line)!important;
+  box-shadow:-18px 0 60px -26px rgb(0 0 0 / .45)!important;
+  transform:translateX(102%)!important;
+}
+.side-nav.open{transform:translateX(0)!important}
+.side-nav-bg{inset:0!important}
+.side-nav-head{flex-direction:row-reverse!important}
+/* Greeting now acts as top bar — make it sticky like header, mobile friendly */
+.ai-greet{
+  position:sticky!important;
+  top:0!important;
+  z-index:30!important;
+  background:color-mix(in srgb, var(--paper) 92%, transparent)!important;
+  backdrop-filter:blur(14px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(150%)!important;
+  margin:0 -4px!important;
+  padding:10px 4px!important;
+  border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent)!important;
+}
+.ai-greet-actions{gap:8px!important}
+.ai-greet-actions .ai-bell{width:40px!important;height:40px!important;border-radius:12px!important}
+@media(max-width:560px){
+  .ai-greet{padding:8px 2px!important;margin:0 -2px!important}
+  .ai-greet-avatar{width:36px!important;height:36px!important}
+  .ai-greet-text h2{font-size:1.02rem!important}
+  .ai-greet-text p{font-size:.74rem!important}
+  .ai-greet-actions .ai-bell{width:38px!important;height:38px!important}
+  header .npanel.header-npanel{right:8px!important;left:8px!important;top:58px!important;width:auto!important}
+}
+/* Hero without image — single column, compact, mobile 1/3 removed, now auto but mobile friendly */
+.live-arena-hero{
+  grid-template-columns:1fr!important;
+  padding:22px 22px!important;
+  gap:12px!important;
+  min-height:auto!important;
+  height:auto!important;
+  max-height:none!important;
+}
+.lah-visual{display:none!important}
+.lah-content h3{font-size:clamp(1.35rem,2.6vw,1.95rem)!important}
+@media(max-width:560px){
+  .live-arena-hero{
+    padding:16px 16px!important;
+    border-radius:20px!important;
+    gap:10px!important;
+    min-height:auto!important;
+    height:auto!important;
+    max-height:none!important;
+  }
+  .lah-content h3{font-size:1.28rem!important}
+  .lah-content p{font-size:.78rem!important}
+  .lah-meta{font-size:.68rem!important}
+  .lah-btn{width:100%!important;justify-content:center!important}
+}
+/* Mobile friendly overall: ensure no horizontal overflow, touch scroll smooth */
+.ai-landing{padding:10px 0 40px!important;gap:16px!important;overflow-x:hidden!important}
+.circular-home-grid, .cats-home-grid, .features-grid{
+  scroll-padding:12px!important;
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
+@media(max-width:560px){
+  .ai-landing{padding:8px 0 36px!important;gap:14px!important}
+  main{padding-left:12px!important;padding-right:12px!important;padding-bottom:90px!important}
+  .bnav{bottom:max(10px, env(safe-area-inset-bottom))!important}
+}
+/* Hide quick/tutor/popular already hidden, ensure leaderboard smart on mobile */
+@media(max-width:560px){
+  .leaderboard-list .lb-row{padding:10px 12px!important}
+}

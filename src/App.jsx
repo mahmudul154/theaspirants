@@ -1450,6 +1450,9 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   <SheetIco id="bell" />
                   <span className="ai-bell-dot" />
                 </button>
+                <button className="ai-bell" aria-label="মেনু খুলুন" onClick={() => setSheetOpen(true)}>
+                  <SheetIco id="menu" />
+                </button>
               </div>
             </div>
 
@@ -1472,10 +1475,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                 ) : <p>প্রতিদিন রাত ১১:৩০ — BCS • Bank প্রস্তুতি</p>}
                 <button className="lah-btn" onClick={event => { event.stopPropagation(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}>{featuredExam?.status==='live' ? 'পরীক্ষা দিন' : featuredExam ? 'রুটিন দেখুন' : 'শুরু করুন'} <span>›</span></button>
               </div>
-              <div className="lah-visual" aria-hidden="true">
-                <img src="/live-robot.png" alt="" className="lah-robot" loading="lazy" />
-                <span className="lah-stars"><i>✦</i><i>✧</i><i>✦</i><i>✦</i></span>
-              </div>
+
             </div>
 
             <div className="home-stat-strip">
