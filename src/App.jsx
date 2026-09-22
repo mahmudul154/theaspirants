@@ -1489,7 +1489,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   <button className="ai-chat-btn" onClick={() => go('setup')} style={{background:'#111',color:'#fff',borderColor:'#111'}}>কাস্টম কুইজ বানান <span style={{background:'#fff',color:'#111'}}>›</span></button>
                 </div>
                 <div style={{display:'flex',gap:'18px',marginTop:'14px',flexWrap:'wrap',color:'var(--accent)',fontSize:'.76rem',fontWeight:700}}>
-                  <span>✓ ১,৫০,০০০+ প্রশ্ন</span><span>✓ প্রতিদিন লাইভ</span><span>✓ ১০,০০০+ শিক্ষার্থী</span>
+                  <span>✓ ১,৫০,০০০+ প্রশ্ন</span><span>✓ প্রতিদিন লাইভ</span>
                 </div>
               </div>
             </div>
