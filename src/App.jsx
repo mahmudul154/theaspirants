@@ -1454,16 +1454,19 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
-            {/* AI Hero Card - like screenshot 1st screen purple gradient */}
-            <div className="ai-hero-card">
-              <div className="ai-hero-content">
-                <span className="ai-hero-badge"><i>◐</i> AI Learning Assistant</span>
-                <h3>Your personal<br/>AI tutor is here</h3>
-                <p>Get instant help, personalized explanations and study plans.</p>
-                <button className="ai-chat-btn" onClick={() => go('setup')}>Chat with AI <span>›</span></button>
-              </div>
-              <div className="ai-robot">
-                <img src="/ai-robot.png" className="ai-robot-img" alt="AI Tutor" />
+            {/* Govt Job Hero - no image, platform focus */}
+            <div className="ai-hero-card govt-hero">
+              <div className="ai-hero-content" style={{maxWidth:'720px'}}>
+                <span className="ai-hero-badge"><i>🏛️</i> সরকারি চাকরির প্রস্তুতি • BCS • Bank • Primary • NTRCA</span>
+                <h3>সরকারি চাকরির<br/>নিশ্চিত প্রস্তুতি</h3>
+                <p>বিসিএস, ব্যাংক, প্রাথমিক ও শিক্ষক নিবন্ধনের ১,৫০,০০০+ প্রশ্ন, প্রতিদিন লাইভ পরীক্ষা, স্মার্ট রিভিশন ও রিয়েল-টাইম লিডারবোর্ড — সব এক প্ল্যাটফর্মে।</p>
+                <div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginTop:'6px'}}>
+                  <button className="ai-chat-btn" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>লাইভ পরীক্ষা দিন <span>→</span></button>
+                  <button className="ai-chat-btn" onClick={() => go('setup')} style={{background:'#111',color:'#fff',borderColor:'#111'}}>কাস্টম কুইজ বানান <span style={{background:'#fff',color:'#111'}}>›</span></button>
+                </div>
+                <div style={{display:'flex',gap:'18px',marginTop:'14px',flexWrap:'wrap',color:'#4338ca',fontSize:'.76rem',fontWeight:700}}>
+                  <span>✓ ১,৫০,০০০+ প্রশ্ন</span><span>✓ প্রতিদিন লাইভ</span><span>✓ ১০,০০০+ শিক্ষার্থী</span>
+                </div>
               </div>
             </div>
 

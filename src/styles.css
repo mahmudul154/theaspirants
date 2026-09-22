@@ -1505,3 +1505,12 @@ html.dark .ai-module{background:#1e293b}
   .ai-stat{font-size:.68rem}
   .ai-stat b{font-size:.76rem}
 }
+
+/* Govt hero override - no image */
+.ai-hero-card.govt-hero{grid-template-columns:1fr;padding:32px 34px 28px;background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 30%,#f5f3ff 68%,#ffffff 100%);border-color:#e0e7ff}
+.ai-hero-card.govt-hero .ai-hero-content h3{font-size:clamp(1.75rem,3vw,2.4rem);color:#1e1b4b;line-height:1.15}
+.ai-hero-card.govt-hero .ai-hero-badge{background:#fff;color:#4338ca;border-color:#e0e7ff;font-weight:800}
+.ai-hero-card.govt-hero .ai-hero-badge i{background:#4338ca}
+@media(max-width:900px){
+  .ai-hero-card.govt-hero{padding:24px 20px}
+}
