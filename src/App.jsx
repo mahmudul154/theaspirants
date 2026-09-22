@@ -209,6 +209,12 @@ function questionFingerprint(q) {
   return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
 }
 
+// Deterministic hash for live exams: same scheduleId → same offset for everyone
+function liveHash(str) {
+  let h = 2166136261
+  for (let i = 0; i < String(str).length; i++) h = Math.imul(h ^ String(str).charCodeAt(i), 16777619)
+  return h >>> 0
+}
 function mixQuestionsLocked(rows, limit) {
   const byTopic = {}
   rows.forEach(r => { const t = r.topic || 'Others'; (byTopic[t] ||= []).push(r) })
@@ -1077,8 +1083,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         let collected = []
         const usedOffsets = new Set()
         for (let attempt = 0; attempt < attempts; attempt++) {
-          let offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-          if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          let offset
+          if (cfg.scheduleId && maxOffset) {
+            const tag = applyPoolFilter === applyAppearedQuestionFilter ? 'appeared' : 'generic'
+            offset = liveHash(String(cfg.scheduleId) + ':' + tag + ':' + attempt) % (maxOffset + 1)
+            let probe = 0
+            while (usedOffsets.has(offset) && probe < (maxOffset + 1)) { offset = (offset + 1) % (maxOffset + 1); probe++ }
+          } else {
+            offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+            if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          }
           usedOffsets.add(offset)
           const { data, error } = await applyPoolFilter(applyQuestionFilters(
             supabase.from('mcq_questions_job').select('*')
