@@ -209,6 +209,23 @@ function questionFingerprint(q) {
   return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
 }
 
+function mixQuestionsLocked(rows, limit) {
+  const byTopic = {}
+  rows.forEach(r => { const t = r.topic || 'Others'; (byTopic[t] ||= []).push(r) })
+  Object.values(byTopic).forEach(a => a.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||''))))
+  const topics = Object.keys(byTopic).sort()
+  const out = []
+  const n = limit ? Math.min(limit, rows.length) : rows.length
+  while (out.length < n) {
+    let added = false
+    for (const topic of topics) {
+      if (out.length >= n) break
+      if (byTopic[topic].length) { out.push(byTopic[topic].shift()); added = true }
+    }
+    if (!added) break
+  }
+  return out.map(r => ({ ...r, options: r.options ? [...r.options] : [] }))
+}
 function uniqueQuestions(items) {
   const unique = new Map()
   const questions = Array.isArray(items) ? items : []
@@ -872,7 +889,7 @@ export function App() {
           }
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী')
+const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')
           if (namedResult.error) throw namedResult.error
           const namedRows = uniqueQuestions(namedResult.data || [])
             .filter(question => !plannedQuestionKeys.has(questionKey(question)))
@@ -911,9 +928,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           const namedTarget = bucket.namedRatio != null
             ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
             : bucket.questions
+          const isLiveLocked = !!cfg.scheduleId
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
-            : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length))
+            : (isLiveLocked ? mixQuestionsLocked(namedRows, Math.min(namedTarget, namedRows.length)) : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length)))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
@@ -926,13 +944,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
               ? copyFixedRows(genericRows).slice(0, remaining)
-              : mixQuestions(genericRows, remaining)
+              : (isLiveLocked ? mixQuestionsLocked(genericRows, remaining) : mixQuestions(genericRows, remaining))
           }
           let selectedTopUp = []
           const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
           if (topUpNeed && !bucket.fixed) {
             const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
-            selectedTopUp = mixQuestions(
+            selectedTopUp = (isLiveLocked ? mixQuestionsLocked : mixQuestions)(
               namedRows.filter(question => !usedKeys.has(questionKey(question))),
               topUpNeed
             )
@@ -977,7 +995,8 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           rows = uniqueQuestions([...interleavedRows, ...unusedRows, ...(cfg.supplementalRows || [])])
         } else {
           rows = uniqueQuestions([...plannedBuckets.flatMap(({ rows: bucketRows }) => bucketRows), ...(cfg.supplementalRows || [])])
-          rows.sort(() => Math.random() - .5)
+          if (cfg.scheduleId) rows.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||'')))
+          else rows.sort(() => Math.random() - .5)
         }
         databaseRowsArePrioritized = true
       } else {
@@ -1086,7 +1105,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           appearedAvailable,
           requestedLimit
         )
-        const appearedRows = mixQuestions(appearedPool, requestedLimit)
+        const appearedRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(appearedPool, requestedLimit)
         const remaining = Math.max(0, requestedLimit - appearedRows.length)
         let genericRows = []
 
@@ -1099,7 +1118,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             genericAvailable,
             remaining
           )
-          genericRows = mixQuestions(genericPool, remaining)
+          genericRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(genericPool, remaining)
         }
 
         if (appearedRows.length || genericRows.length) {
@@ -1124,7 +1143,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     }
     rows = uniqueQuestions(rows)
-    const qs = databaseRowsArePrioritized || cfg.preserveOrder ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
+    // Lock live exam: same questions for everyone + remove Dhoni/sound question if present
+    if (cfg.scheduleId) {
+      rows = rows.filter(q => !/dhoni/i.test(q.question||'') && !/ধোনি|ধোনী|ধ্বনি/.test(q.question||''))
+      // ensure 22 Sep revision set is restored (DAY11) — already via routine
+    }
+    const qs = databaseRowsArePrioritized || cfg.preserveOrder || cfg.scheduleId ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
     setLoading(false)
     if (!qs.length) {
       setToastMsg(avoidSeen
@@ -1443,7 +1467,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" style={{display:'block'}} />
                 </button>
                 <div className="ai-greet-text">
-                  <h2>Hello, {(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma')} 👋</h2>
+                  <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
                   <p>Keep learning, keep growing <span>✨</span></p>
                 </div>
               </div>

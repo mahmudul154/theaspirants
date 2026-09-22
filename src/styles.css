@@ -1910,7 +1910,7 @@ html.dark .bnav{
 }
 .lah-content h3{
   font-size:clamp(1.55rem,2.8vw,2.15rem);
-  font-weight:800;
+  font-weight:600;
   line-height:1.15;
   letter-spacing:-.02em;
   color:var(--ink);
@@ -2449,3 +2449,5 @@ header .npanel.header-npanel{position:fixed!important;right:12px!important;top:1
   box-shadow:0 18px 44px -16px rgb(0 0 0 / .18)!important;
 }
 @media(max-width:560px){.header-search-panel{right:8px!important;left:8px!important;top:58px!important;width:auto!important}}
+/* 2026-09-22: hero আজকের চলমান over-bold fix — reduce from 800 to 600 (override all later clamps) */
+.lah-content h3{font-weight:600!important}
