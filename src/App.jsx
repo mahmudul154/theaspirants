@@ -1518,6 +1518,37 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
+            {/* Category - BCS Bank NTRCA Primary (kept) */}
+            <div className="ai-section cats-home">
+              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব ক্যাটাগরি →</button></div>
+              <div className="cats-home-grid">
+                {APP_CATS.map(c=>(
+                  <button key={c.id} className="cat-card" onClick={()=> openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
+                    <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
+                    <span><b>{c.name}</b><small>{c.d}</small></span>
+                    <i>›</i>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Features quick access - all app features in one section */}
+            <div className="ai-section features-home">
+              <div className="ai-section-head compact"><h3>দ্রুত মেনু</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>সব ফিচার এক ক্লিকে</span></div>
+              <div className="features-grid">
+                <button className="feat-card" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>পরীক্ষা</b><small>লাইভ</small></button>
+                <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
+                <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
+                <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
+                <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
+                <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
+                <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
+                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>র‍্যাংকিং</b><small>লিডারবোর্ড</small></button>
+                <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
+                <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
+              </div>
+            </div>
+
             {/* AI Tutor Quick Actions - like screenshot middle screen */}
             <div className="ai-section">
               <div className="ai-tutor-actions">
