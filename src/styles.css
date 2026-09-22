@@ -1778,3 +1778,75 @@ header .hdr-in{display:flex;align-items:center;justify-content:space-between;hei
 .ibtn.wide{padding:0 12px}
 @media(max-width:1100px){.hdr-center{max-width:420px}.hdr-nav{display:none}}
 @media(max-width:900px){.hdr-center{display:none}.hdr-in{height:56px;padding:0 12px}}
+
+/* ===== Bottom nav — fresh clean modern (floating capsule) override ===== */
+.bnav{
+  left:50%!important;
+  right:auto!important;
+  bottom:max(12px, env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  width:min(420px, calc(100% - 16px))!important;
+  height:auto!important;
+  padding:6px!important;
+  gap:4px!important;
+  background:color-mix(in srgb, var(--card) 92%, transparent)!important;
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+  border:1px solid color-mix(in srgb, var(--line) 88%, transparent)!important;
+  border-top:1px solid color-mix(in srgb, var(--line) 88%, transparent)!important;
+  border-radius:24px!important;
+  box-shadow:0 14px 36px -16px rgb(0 0 0 / .16), 0 4px 16px -10px rgb(0 0 0 / .08)!important;
+  justify-content:space-between!important;
+}
+.bnav button{
+  flex:1!important;
+  min-width:0!important;
+  border-radius:16px!important;
+  padding:8px 2px 6px!important;
+  gap:4px!important;
+  font-size:.60rem!important;
+  font-weight:600!important;
+  letter-spacing:.01em!important;
+  line-height:1!important;
+  color:var(--ink3)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.bnav button svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:1.9!important;
+  transition:transform .18s, color .18s!important;
+}
+.bnav button:hover{color:var(--ink2)!important;background:transparent!important;transform:none!important}
+.bnav button:active{transform:scale(.96)!important}
+.bnav button.on{
+  color:var(--accent)!important;
+  background:var(--accent-soft)!important;
+  box-shadow:none!important;
+}
+.bnav button.on svg{color:var(--accent)!important;transform:translateY(-1px)!important}
+.bnav button.on:after{
+  content:""!important;
+  position:absolute!important;
+  bottom:3px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:4px!important;
+  height:4px!important;
+  border-radius:50%!important;
+  background:var(--accent)!important;
+  display:block!important;
+}
+.bnav button.on:before{display:none!important}
+@media(max-width:900px){.bnav{display:flex!important}}
+@media(max-width:560px){
+  .bnav{width:min(390px, calc(100% - 12px))!important;padding:5px!important;border-radius:20px!important;gap:2px!important}
+  .bnav button{font-size:.58rem!important;gap:3px!important;padding:7px 2px 6px!important}
+  .bnav button svg{width:20px!important;height:20px!important}
+}
+html.dark .bnav{
+  background:color-mix(in srgb, var(--card) 90%, transparent)!important;
+  border-color:var(--line)!important;
+  box-shadow:0 16px 40px -12px rgb(0 0 0 / .55)!important;
+}
