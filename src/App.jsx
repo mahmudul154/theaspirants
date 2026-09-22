@@ -1448,27 +1448,26 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
 
-          {notifOpen && <div className="npanel header-npanel">
-            <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
-            {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
-            {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
-          </div>}
-
-          {searchOpen && <div className="header-search-panel">
-            <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
-            <div className="sres">
-              {q.trim().length <= 1 ? <>
-                <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
-                {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
-              </> : searchRes.length ? searchRes.map((result, index) => (
-                <button key={index} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
-                  <span>{result.t}</span><span>{result.sb}</span>
-                </button>
-              )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
-            </div>
-          </div>}
         </div>
       </header>}
+      {page !== 'quiz' && notifOpen && <div className="npanel header-npanel">
+        <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
+        {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
+        {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
+      </div>}
+      {page !== 'quiz' && searchOpen && <div className="header-search-panel">
+        <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
+        <div className="sres">
+          {q.trim().length <= 1 ? <>
+            <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
+            {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
+          </> : searchRes.length ? searchRes.map((result, index) => (
+            <button key={index} onClick={() => { setQ(''); setSearchOpen(false); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
+              <span>{result.t}</span><span>{result.sb}</span>
+            </button>
+          )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
+        </div>
+      </div>}
 
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
