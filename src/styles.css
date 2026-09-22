@@ -1850,3 +1850,156 @@ html.dark .bnav{
   border-color:var(--line)!important;
   box-shadow:0 16px 40px -12px rgb(0 0 0 / .55)!important;
 }
+
+/* ===== Live Arena hero — pic er moto box, kintu app color (accent) ===== */
+.live-arena-hero{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(180px,.85fr);
+  align-items:center;
+  gap:18px;
+  padding:28px 30px;
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--accent) 7%, transparent) 0 22%, transparent 23%),
+    radial-gradient(circle at 12% 12%, color-mix(in srgb, #ffedd5 70%, transparent) 0 18%, transparent 19%),
+    linear-gradient(135deg, #fff7ed 0%, #ffedd5 18%, var(--accent-soft) 52%, #fff 100%);
+  border:1px solid color-mix(in srgb, var(--accent) 12%, var(--line));
+  box-shadow:0 22px 56px -30px color-mix(in srgb, var(--accent) 22%, transparent), 0 8px 20px -14px rgb(0 0 0 / .06);
+}
+.live-arena-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 74% 22%, rgb(255 255 255 / .55) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 80% 78%, rgb(255 255 255 / .45) 0 1.2px, transparent 1.7px);
+  pointer-events:none;
+  opacity:.9;
+}
+.lah-content{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  gap:13px;
+  min-width:0;
+}
+.lah-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  width:fit-content;
+  padding:7px 12px;
+  border-radius:99px;
+  background:#fff;
+  border:1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
+  color:var(--accent);
+  font-size:.70rem;
+  font-weight:800;
+  letter-spacing:.02em;
+  box-shadow:0 4px 14px -8px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.lah-pill-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+  display:inline-block;
+}
+.lah-content h3{
+  font-size:clamp(1.55rem,2.8vw,2.15rem);
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:-.02em;
+  color:var(--ink);
+  margin:0;
+}
+.lah-content p{
+  color:var(--ink2);
+  font-size:.88rem;
+  line-height:1.6;
+  max-width:36ch;
+  margin:0;
+}
+.lah-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  width:fit-content;
+  margin-top:4px;
+  padding:12px 18px;
+  border-radius:99px;
+  background:#fff;
+  border:1px solid color-mix(in srgb, var(--accent) 10%, var(--line));
+  color:var(--ink);
+  font-weight:700;
+  font-size:.84rem;
+  cursor:pointer;
+  box-shadow:0 10px 22px -14px rgb(0 0 0 / .12);
+  transition:all .2s;
+  font-family:inherit;
+}
+.lah-btn:hover{transform:translateY(-2px);box-shadow:0 16px 30px -16px rgb(0 0 0 / .14);border-color:color-mix(in srgb,var(--accent) 18%,var(--line))}
+.lah-btn span{
+  width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--accent);color:#fff;
+  font-size:1rem;line-height:1;
+  transition:transform .18s;
+}
+.lah-btn:hover span{transform:translateX(3px)}
+.lah-visual{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  min-height:200px;
+}
+.lah-robot{
+  width:min(220px, 100%);
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 22px 30px color-mix(in srgb, var(--accent) 14%, transparent));
+  animation:lahFloat 5.5s ease-in-out infinite;
+}
+@keyframes lahFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.lah-stars{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.lah-stars i{
+  position:absolute;
+  color:color-mix(in srgb, var(--accent) 22%, #fff);
+  font-style:normal;
+  font-size:14px;
+  opacity:.9;
+}
+.lah-stars i:nth-child(1){right:18px;top:18px;transform:rotate(12deg)}
+.lah-stars i:nth-child(2){right:44px;top:56px;font-size:11px}
+.lah-stars i:nth-child(3){right:92px;bottom:44px;font-size:9px}
+.lah-stars i:nth-child(4){left:42%;top:16px;font-size:10px}
+html.dark .live-arena-hero{
+  background:
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--accent) 14%, transparent) 0 22%, transparent 23%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, #1c1512) 0%, color-mix(in srgb, var(--accent-soft) 90%, #1a1a18) 48%, var(--card) 100%);
+  border-color:color-mix(in srgb, var(--accent) 18%, var(--line));
+}
+html.dark .lah-pill{background:var(--card);border-color:color-mix(in srgb,var(--accent) 18%,var(--line))}
+html.dark .lah-btn{background:var(--card);color:var(--ink);border-color:var(--line)}
+html.dark .lah-content p{color:var(--ink2)}
+/* Header clean like pic — remove shurur nav */
+header .hdr-center{display:none!important}
+header .hdr-in{height:60px;padding:0 16px;gap:12px}
+header .hdr-right .wide{display:none!important}
+header .hdr-right .header-search-btn{display:grid!important}
+@media(max-width:900px){header .hdr-in{height:56px;padding:0 12px}}
+@media(max-width:560px){
+  .live-arena-hero{grid-template-columns:1fr;gap:16px;padding:20px 18px;border-radius:24px}
+  .lah-visual{min-height:0;order:-1;justify-content:start}
+  .lah-robot{width:150px}
+  .lah-content h3{font-size:1.55rem}
+  .lah-content p{font-size:.82rem}
+}

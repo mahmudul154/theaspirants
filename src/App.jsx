@@ -1478,129 +1478,17 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
-            {/* Stats strip - minimal, replaces hero */}
-            <div className="home-stat-strip">
-              <span className="hss-dot" aria-hidden="true" />
-              <b>১,৫০,০০০+ প্রশ্ন</b>
-              <span>•</span><span>প্রতিদিন ১১:৩০ PM</span>
-              <span>•</span><span className="hss-live">লাইভ</span>
-            </div>
-
-            {/* Circular - app style, immediate access */}
-            <div className="ai-section circular-home">
-              <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
-              <div className="circular-home-grid">
-                {CIRCULARS.map(c=>(
-                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
-                    <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>
-                    <span className="circular-card-copy"><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.tag}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
+            {/* Live Arena Hero — pic er moto box, app color */}
+            <div className="live-arena-hero" role="button" tabIndex={0} onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')} onKeyDown={event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams') }}}>
+              <div className="lah-content">
+                <span className="lah-pill"><span className="lah-pill-dot" aria-hidden="true" /> Live Learning Assistant</span>
+                <h3>Your personal<br/>Live Arena is here</h3>
+                <p>Get instant help, personalized explanations and study plans. প্রতিদিন ১১:৩০ PM লাইভ পরীক্ষা।</p>
+                <button className="lah-btn" onClick={event => { event.stopPropagation(); liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams') }}>Chat with Live <span>›</span></button>
               </div>
-            </div>
-
-            {/* Quick start - 4 tiles, fresh & minimal */}
-            <div className="ai-section quick-home">
-              <div className="quick-grid">
-                <button className="quick-card quick-live" onClick={()=> liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>
-                  <span className="qk-icon"><SheetIco id="timer" /></span><b>লাইভ</b><small>{liveExam ? formatLiveExamTime(liveExam.startsAt) : '১১:৩০ PM'}</small>
-                </button>
-                <button className="quick-card" onClick={()=>go('setup')}>
-                  <span className="qk-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small>
-                </button>
-                <button className="quick-card" onClick={()=>go('questionBank')}>
-                  <span className="qk-icon"><SheetIco id="bank" /></span><b>ব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small>
-                </button>
-                <button className="quick-card" onClick={()=>go('review')}>
-                  <span className="qk-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)} টি</small>
-                </button>
-              </div>
-            </div>
-
-            {/* Category - BCS Bank NTRCA Primary (kept) */}
-            <div className="ai-section cats-home">
-              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব ক্যাটাগরি →</button></div>
-              <div className="cats-home-grid">
-                {APP_CATS.map(c=>(
-                  <button key={c.id} className="cat-card" onClick={()=> openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
-                    <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
-                    <span><b>{c.name}</b><small>{c.d}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Features quick access - all app features in one section */}
-            <div className="ai-section features-home">
-              <div className="ai-section-head compact"><h3>দ্রুত মেনু</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>সব ফিচার এক ক্লিকে</span></div>
-              <div className="features-grid">
-                <button className="feat-card" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>পরীক্ষা</b><small>লাইভ</small></button>
-                <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
-                <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
-                <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
-                <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
-                <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
-                <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
-                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>র‍্যাংকিং</b><small>লিডারবোর্ড</small></button>
-                <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
-                <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
-              </div>
-            </div>
-
-            {/* AI Tutor Quick Actions - like screenshot middle screen */}
-            <div className="ai-section">
-              <div className="ai-tutor-actions">
-                <button className="ai-action" onClick={() => go('setup')}>
-                  <span className="ai-action-icon">💡</span>
-                  <span><b>বুঝে নিন</b><small>যেকোনো টপিক</small></span>
-                </button>
-                <button className="ai-action" onClick={() => go('setup')}>
-                  <span className="ai-action-icon">📘</span>
-                  <span><b>প্র্যাকটিস</b><small>প্রশ্ন করুন</small></span>
-                </button>
-                <button className="ai-action" onClick={() => go('review')}>
-                  <span className="ai-action-icon">📄</span>
-                  <span><b>ভুল খাতা</b><small>রিভিশন</small></span>
-                </button>
-                <button className="ai-action" onClick={() => go('setup')}>
-                  <span className="ai-action-icon">📅</span>
-                  <span><b>স্টাডি প্ল্যান</b><small>৪০ দিন</small></span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* Popular Courses - like screenshot 1 bottom */}
-            <div className="ai-section">
-              <div className="ai-section-head">
-                <h3>Popular Courses</h3>
-                <button onClick={() => go('questionBank')}>See All ›</button>
-              </div>
-              <div className="ai-popular-grid">
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['English'] })}>
-                  <span className="ai-pop-icon">🐍</span>
-                  <b>Python</b>
-                  <span>BCS • 120 Qs</span>
-                </button>
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bank', subjects:['গাণিতিক যুক্তি'] })}>
-                  <span className="ai-pop-icon">⚛️</span>
-                  <b>React Native</b>
-                  <span>Bank • 80 Qs</span>
-                </button>
-
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['বাংলা'] })}>
-                  <span className="ai-pop-icon">📖</span>
-                  <b>Bangla</b>
-                  <span>সাহিত্য</span>
-                </button>
-
-                <button className="ai-pop-card" onClick={() => go('questionBank')}>
-                  <span className="ai-pop-icon">🏛️</span>
-                  <b>BCS Bank</b>
-                  <span>প্রশ্নব্যাংক</span>
-                </button>
+              <div className="lah-visual" aria-hidden="true">
+                <img src="/live-robot.png" alt="" className="lah-robot" loading="lazy" />
+                <span className="lah-stars"><i>✦</i><i>✧</i><i>✦</i><i>✦</i></span>
               </div>
             </div>
 
