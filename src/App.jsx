@@ -104,19 +104,6 @@ const APP_CATS = [
   { id: 'primary', name: 'প্রাথমিক', img: '/assets/primary1.png', d: 'সহকারী শিক্ষক নিয়োগ' }
 ]
 
-// Auto-sliding feature strip — প্রতিটি ফিচারের নিজস্ব brand color (icon8-স্টাইল)
-const HOME_FEATURES = [
-  { icon: 'exam', label: 'লাইভ পরীক্ষা', sub: 'আজকের পরীক্ষা ও রুটিন', page: 'exams', color: '#e53935', bg: 'linear-gradient(135deg,#ff7043,#d32f2f)' },
-  { icon: 'sliders', label: 'কাস্টম কুইজ', sub: 'বিষয় ও টপিক বেছে নিন', page: 'setup', color: '#1e88e5', bg: 'linear-gradient(135deg,#42a5f5,#1565c0)' },
-  { icon: 'flame', label: 'ডেইলি চ্যালেঞ্জ', sub: 'প্রতিদিন ১০টি প্রশ্ন', page: 'daily', color: '#f57c00', bg: 'linear-gradient(135deg,#ffa726,#ef6c00)' },
-  { icon: 'layers', label: 'রিভিশন', sub: 'ভুল প্রশ্ন আবার অনুশীলন', page: 'review', color: '#7e57c2', bg: 'linear-gradient(135deg,#9575cd,#5e35b1)' },
-  { icon: 'bank', label: 'প্রশ্নব্যাংক', sub: 'বিগত পরীক্ষার প্রশ্ন', page: 'questionBank', color: '#00897b', bg: 'linear-gradient(135deg,#26a69a,#00695c)' },
-  { icon: 'trophy', label: 'লিডারবোর্ড', sub: 'আজকের র‍্যাংকিং', page: 'leaderboard', color: '#f9a825', bg: 'linear-gradient(135deg,#ffca28,#f57f17)' },
-  { icon: 'news', label: 'আজকের পত্রিকা', sub: 'কারেন্ট অ্যাফেয়ার্স', page: 'potrika', color: '#0288d1', bg: 'linear-gradient(135deg,#29b6f6,#0277bd)' },
-  { icon: 'file', label: 'চাকরির সার্কুলার', sub: 'নতুন নিয়োগ আপডেট', page: 'circular', color: '#00796b', bg: 'linear-gradient(135deg,#4db6ac,#00695c)' },
-  { icon: 'image', label: 'ছবি দিয়ে শেখো', sub: 'ভিজ্যুয়াল লার্নিং', page: 'visual', color: '#d81b60', bg: 'linear-gradient(135deg,#f06292,#c2185b)' }
-]
-
 const NOTICES = [
   { t: 'এসএসসি ফল: পাসের হার ৬২.২৫% — বিশ্লেষণ দেখো পত্রিকায়', d: 'আজ' },
   { t: 'বাংলা কিউআর লেনদেনে ফি শূন্য + প্রণোদনা — অর্থনীতি অংশে গুরুত্বপূর্ণ', d: 'আজ' },
@@ -581,7 +568,7 @@ export function App() {
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { threshold: .08 })
-    document.querySelectorAll('.page.on .sec, .page.on .hero-panel').forEach(el => { el.classList.add('fade'); io.observe(el) })
+    document.querySelectorAll('.page.on .sec, .page.on .hero-panel, .page.on .home-hero').forEach(el => { el.classList.add('fade'); io.observe(el) })
     return () => io.disconnect()
   }, [page])
   useEffect(() => { if (!toastMsg) return; const t = setTimeout(() => setToastMsg(''), 2400); return () => clearTimeout(t) }, [toastMsg])
@@ -1449,31 +1436,21 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
-          <section className="hero-panel">
-            <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
-            <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>১ লাখ+</b> প্রশ্ন আছে</span>
-              <span className="hchip"><b>কাস্টম</b> কুইজ</span>
-              <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
-              <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
+          <section className="home-hero">
+            <div className="home-hero-copy">
+              <h1>চাকরির পরীক্ষায়<br /><span>নিশ্চিত সাফল্য</span></h1>
+              <p className="home-hero-lead">বিসিএস ও ব্যাংক জবের হাজারো প্রশ্নের সমাধানে তৈরি করুন নিজের কাস্টম কুইজ। বিশ্লেষণ করুন আপনার দুর্বলতা এবং এগিয়ে থাকুন প্রতিযোগিতায়।</p>
+              <div className="home-hero-cta">
+                <button className="home-hero-btn" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
+                <button className="home-hero-link" onClick={() => go('setup')}>নিজের কুইজ তৈরি করুন</button>
+              </div>
             </div>
-            <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
-            </div>
-          </section>
-
-          <section className="sec home-features-section">
-            <div className="head"><div className="eyebrow">দ্রুত ফিচার</div><h2>সবকিছু <i>এক জায়গায়</i></h2></div>
-            <div className="feature-marquee" aria-label="ফিচার ক্যারোসেল">
-              <div className="feature-track">
-                {[...HOME_FEATURES, ...HOME_FEATURES].map((feature, index) => (
-                  <button className="feature-chip" key={`${feature.page}-${index}`} onClick={() => go(feature.page)} style={{ '--fc': feature.color, '--fbg': feature.bg }} title={feature.label}>
-                    <span className="feature-chip-icon"><SheetIco id={feature.icon} /></span>
-                    <span className="feature-chip-text"><b>{feature.label}</b><small>{feature.sub}</small></span>
-                  </button>
-                ))}
+            <div className="home-hero-visual">
+              <img src="/poster1.png" alt="অভ্যাস অ্যাপে অনুশীলন করছেন একজন শিক্ষার্থী" />
+              <div className="home-hero-stats">
+                <div><small>মোট প্রশ্ন</small><b>১,৫০,০০০+</b></div>
+                <i aria-hidden="true" />
+                <div><small>সফল শিক্ষার্থী</small><b className="green">১০,০০০+</b></div>
               </div>
             </div>
           </section>
@@ -1527,36 +1504,6 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
           </section>
 
-          <section className="sec home-circular-section">
-            <div className="head circular-section-head">
-              <div><div className="eyebrow">চাকরির আপডেট</div><h2>সাম্প্রতিক <i>সার্কুলার</i></h2></div>
-              <button className="btn sm ghost" onClick={() => go('circular')}>সব সার্কুলার →</button>
-            </div>
-            <div className="circular-card-grid">
-              {CIRCULARS.map(item => <button className="circular-card" key={item.title} onClick={() => go(item.page)}>
-                <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
-                <span className="circular-card-copy"><span className="circular-tag">{item.tag}</span><b>{item.title}</b><small>{item.desc}</small></span>
-                <i aria-hidden="true">→</i>
-              </button>)}
-            </div>
-          </section>
-
-          <section className="sec home-target-section">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">টার্গেট বাছো</div><h2 style={{ marginTop: 10 }}>কোন <i>পরীক্ষা</i> দিবে?</h2></div>
-            </div>
-            <div className="cat-scroll">
-              {APP_CATS.map(c => (
-                <button className="cat-card" key={c.id} onClick={() => {
-                  if (c.id === 'bcs' || c.id === 'bank') openCustomQuiz({ category: c.id })
-                  else setToastMsg('শীঘ্রই আসছে: ' + c.name)
-                }}>
-                  <div className="im">{c.img ? <img src={c.img} alt="" /> : c.e}</div>
-                  <div className="bd"><b>{c.name}</b><span>{c.d}</span></div>
-                </button>
-              ))}
-            </div>
-          </section>
 
           <section className="sec">
             <div className="head"><div className="eyebrow">অনুশীলন</div><h2>বিষয়সমূহ</h2></div>
