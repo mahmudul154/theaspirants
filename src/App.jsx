@@ -1542,17 +1542,21 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               <span>•</span><span className="hss-live">লাইভ</span>
             </div>
 
-            {/* Circular - app style, immediate access */}
+            {/* Circular - recent with logos + slide arrows */}
             <div className="ai-section circular-home">
               <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
-              <div className="circular-home-grid">
-                {CIRCULARS.map(c=>(
-                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
-                    <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>
-                    <span className="circular-card-copy"><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.tag}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
+              <div className="circular-scroll-wrap">
+                <button className="circular-arrow circular-arrow-left" aria-label="পূর্ববর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:-280,behavior:'smooth'})}>‹</button>
+                <div id="circularScroll" className="circular-home-grid circular-scroll">
+                  {[...CIRCULARS, {tag:'BPSC • ৪৭তম', title:'৪৭তম বিসিএস প্রিলি', desc:'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo:'/assets/institutions/bpsc.png', icon:'building', page:'questionBank'}, {tag:'বাংলাদেশ ব্যাংক', title:'সিনিয়র অফিসার ২০২৬', desc:'৯২ পদ • সম্মিলিত ব্যাংক', logo:'/assets/institutions/bb.svg', icon:'bank', page:'setup'}, {tag:'NTRCA', title:'১৯তম নিবন্ধন', desc:'স্কুল-কলেজ • শীঘ্রই', logo:'/assets/institutions/other.png', icon:'book', page:'circular'}, {tag:'প্রাথমিক', title:'সহকারী শিক্ষক', desc:'ডিপিই • নতুন সার্কুলার', logo:'/assets/institutions/primary.png', icon:'school', page:'exams'}].map(c=>(
+                    <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                      {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
+                      <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.desc || c.tag}</small></span>
+                      <i>›</i>
+                    </button>
+                  ))}
+                </div>
+                <button className="circular-arrow circular-arrow-right" aria-label="পরবর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:280,behavior:'smooth'})}>›</button>
               </div>
             </div>
 
@@ -1574,32 +1578,36 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               </div>
             </div>
 
-            {/* Category - BCS Bank NTRCA Primary (kept) */}
+            {/* Category - BCS/Bank active, NTRCA/Primary coming soon */}
             <div className="ai-section cats-home">
               <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব →</button></div>
               <div className="cats-home-grid">
-                {APP_CATS.map(c=>(
-                  <button key={c.id} className="cat-card" onClick={()=> openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
-                    <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
-                    <span><b>{c.name}</b><small>{c.d}</small></span>
-                    <i>›</i>
-                  </button>
-                ))}
+                {APP_CATS.map(c=>{
+                  const isComingSoon = c.id === 'ntrca' || c.id === 'primary'
+                  return (
+                    <button key={c.id} className={`cat-card ${isComingSoon ? 'coming-soon' : ''}`} onClick={()=> isComingSoon ? setToastMsg('Coming Soon — শীঘ্রই আসছে') : openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
+                      <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
+                      <span><b>{c.name}</b><small>{isComingSoon ? 'Coming Soon' : c.d}</small></span>
+                      <i>{isComingSoon ? '◷' : '›'}</i>
+                      {isComingSoon && <span className="coming-soon-badge">Soon</span>}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* Features quick access - all app features in one section */}
+            {/* Features - bento unique, live bigger, heading ফিচারস */}
             <div className="ai-section features-home">
-              <div className="ai-section-head compact"><h3>শর্টকাট</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>স্লাইড করুন →</span></div>
-              <div className="features-grid">
-                <button className="feat-card" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>পরীক্ষা</b><small>লাইভ</small></button>
+              <div className="ai-section-head compact"><h3>ফিচারস</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>এক ক্লিকে সব</span></div>
+              <div className="features-grid bento-grid">
+                <button className="feat-card feat-live" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>লাইভ পরীক্ষা</b><small>প্রতিদিন ১১:৩০ PM</small><span className="feat-live-badge">Live</span></button>
                 <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
                 <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
                 <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
                 <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
                 <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
                 <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
-                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>র‍্যাংকিং</b><small>লিডারবোর্ড</small></button>
+                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>লিডারবোর্ড</b><small>র‍্যাংকিং</small></button>
                 <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
                 <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
               </div>
@@ -1628,10 +1636,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             </div>
 
-            {/* Leaderboard */}
+            {/* Leaderboard - tag leaderboard */}
             <div className="ai-section">
               <div className="ai-section-head">
-                <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
+                <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                  <span className="leaderboard-eyebrow">leaderboard • লিডারবোর্ড</span>
+                  <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
+                </div>
                 <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
               </div>
               {homeLbData === null
