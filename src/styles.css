@@ -2396,3 +2396,56 @@ header .npanel.header-npanel{position:fixed!important;right:12px!important;top:1
   .features-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important}
   .features-grid .feat-card{padding:10px 4px!important}
 }
+
+/* ===== Greeting: chobi click profile, search+noti+menu right, side bar right stylish choto ===== */
+.ai-greet-left button{flex:none;line-height:0}
+.ai-greet-left button .ai-greet-avatar{transition:transform .18s, box-shadow .18s}
+.ai-greet-left button:hover .ai-greet-avatar{transform:scale(1.03);box-shadow:0 6px 18px -8px rgb(0 0 0 / .18)}
+.ai-greet-actions{gap:7px!important}
+.ai-greet-actions .ai-bell{width:40px!important;height:40px!important;border-radius:14px!important;border:1px solid var(--line)!important;background:var(--card)!important;box-shadow:0 4px 14px -8px rgb(0 0 0 / .08)!important}
+.ai-greet-actions .ai-bell:hover{border-color:var(--accent)!important;color:var(--accent)!important;transform:translateY(-1px)!important}
+@media(max-width:560px){.ai-greet-actions{gap:6px!important}.ai-greet-actions .ai-bell{width:38px!important;height:38px!important;border-radius:12px!important}}
+
+/* Side nav right — stylish choto */
+.side-nav{
+  width:min(320px,84vw)!important;
+  top:10px!important;
+  bottom:10px!important;
+  height:auto!important;
+  max-height:calc(100dvh - 20px)!important;
+  border-radius:20px!important;
+  border:1px solid var(--line)!important;
+  background:color-mix(in srgb, var(--card) 96%, var(--paper))!important;
+  backdrop-filter:blur(16px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(160%)!important;
+  box-shadow:-16px 0 44px -18px rgb(0 0 0 / .22), 0 8px 32px -12px rgb(0 0 0 / .08)!important;
+  overflow:hidden!important;
+}
+.side-nav-head{
+  height:56px!important;
+  flex:0 0 56px!important;
+  padding:0 14px!important;
+  border-bottom:1px solid var(--line)!important;
+  background:color-mix(in srgb, var(--card) 92%, transparent)!important;
+  border-radius:20px 20px 0 0!important;
+}
+.side-nav-scroll{padding:14px 12px calc(14px + env(safe-area-inset-bottom))!important}
+.side-nav-group{padding:14px 0!important;gap:4px!important}
+.side-nav-group>button{padding:10px 11px!important;border-radius:12px!important;font-size:.82rem!important}
+.side-nav-bg{background:rgb(0 0 0 / .32)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important}
+@media(max-width:560px){
+  .side-nav{width:min(300px,86vw)!important;top:8px!important;bottom:8px!important;max-height:calc(100dvh - 16px)!important;border-radius:18px!important}
+  .side-nav-head{height:52px!important;flex-basis:52px!important}
+}
+/* Ensure search panel appears near greeting when header hidden */
+.header-search-panel{
+  position:fixed!important;
+  right:12px!important;
+  top:62px!important;
+  left:auto!important;
+  width:min(380px, calc(100vw - 24px))!important;
+  z-index:84!important;
+  border-radius:16px!important;
+  box-shadow:0 18px 44px -16px rgb(0 0 0 / .18)!important;
+}
+@media(max-width:560px){.header-search-panel{right:8px!important;left:8px!important;top:58px!important;width:auto!important}}
