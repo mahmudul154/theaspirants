@@ -2134,3 +2134,128 @@ header{background:color-mix(in srgb, var(--card) 94%, var(--paper));backdrop-fil
   .feat-card{border-radius:16px;padding:12px 6px}
   .ai-pop-card{border-radius:18px}
 }
+
+/* ===== Home polish per latest request: header right menu, hero 1/3 mobile, sliding stylish, no popular, smart leaderboard ===== */
+/* Header: upper nav already removed (hdr-center hidden), menu now on right — tighten */
+.hdr-in{height:60px}
+.hdr-left .wordmark{font-size:1.28rem}
+.hdr-right{gap:8px}
+.hdr-right .menu-toggle{width:40px;height:40px;border-radius:12px}
+@media(max-width:560px){.hdr-in{height:56px;padding:0 12px}.hdr-right{gap:6px}.hdr-right .menu-toggle{width:38px;height:38px}}
+
+/* Hero: title Ajker choloman, CTA, 1/3 mobile screen */
+.live-arena-hero{padding:28px 30px;gap:20px}
+.lah-content h3{font-size:clamp(1.55rem,2.8vw,2.15rem);line-height:1.12}
+.lah-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ink2);font-size:.76rem;font-weight:600;margin-top:2px}
+.lah-meta span{white-space:nowrap}
+.lah-countdown{color:var(--accent);font-weight:800}
+.lah-countdown{font-variant-numeric:tabular-nums}
+@media(max-width:560px){
+  .live-arena-hero{
+    grid-template-columns:1fr;
+    gap:12px;
+    padding:16px 16px;
+    border-radius:22px;
+    min-height:33dvh;
+    height:auto;
+    max-height:38dvh;
+    align-content:center;
+  }
+  .lah-visual{order:-1;min-height:0;justify-content:start}
+  .lah-robot{width:120px}
+  .lah-content{gap:8px}
+  .lah-content h3{font-size:1.35rem;line-height:1.15}
+  .lah-content p{font-size:.80rem;line-height:1.5;max-width:100%}
+  .lah-meta{font-size:.68rem;gap:6px}
+  .lah-btn{padding:10px 16px;font-size:.82rem;margin-top:2px}
+  .lah-pill{padding:5px 10px;font-size:.64rem}
+}
+
+/* Sliding stylish: circular, category, druto menu */
+.circular-home-grid,
+.cats-home-grid,
+.features-grid{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  scroll-snap-type:x mandatory!important;
+  scroll-padding:4px!important;
+  gap:10px!important;
+  padding:4px 2px 10px!important;
+  grid-template-columns:none!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+.circular-home-grid::-webkit-scrollbar,
+.cats-home-grid::-webkit-scrollbar,
+.features-grid::-webkit-scrollbar{display:none!important}
+.circular-home-grid > *,
+.cats-home-grid > *,
+.features-grid > *{
+  flex:0 0 auto!important;
+  scroll-snap-align:start!important;
+}
+/* Card sizes for sliding */
+.circular-card.compact{flex:0 0 148px!important;min-width:148px!important;padding:12px!important;border-radius:16px!important}
+.cats-home-grid .cat-card{flex:0 0 132px!important;min-width:132px!important;padding:12px!important;flex-direction:column!important;align-items:center!important;text-align:center!important;gap:8px!important}
+.cats-home-grid .cat-card img{width:44px!important;height:44px!important;border-radius:12px!important}
+.cats-home-grid .cat-card span{align-items:center!important}
+.cats-home-grid .cat-card b{font-size:.78rem!important;text-align:center!important}
+.cats-home-grid .cat-card small{font-size:.62rem!important;text-align:center!important}
+.cats-home-grid .cat-card i{display:none!important}
+.features-grid .feat-card{flex:0 0 86px!important;min-width:86px!important;padding:12px 6px!important;border-radius:16px!important;gap:6px!important}
+.feat-icon{width:38px!important;height:38px!important;border-radius:12px!important;font-size:15px!important}
+/* Stylish smart icons: gradient + shadow like web */
+.circular-icon{border:none!important;color:#fff!important;box-shadow:0 8px 18px -10px rgb(0 0 0 / .18)!important}
+.circular-icon-building{background:linear-gradient(135deg,#ff7e5f,#feb47b)!important}
+.circular-icon-bank{background:linear-gradient(135deg,#4facfe,#00f2fe)!important}
+.circular-icon-book{background:linear-gradient(135deg,#a18cd1,#fbc2eb)!important}
+.circular-icon-school{background:linear-gradient(135deg,#43cea2,#185a9d)!important}
+.cat-card:nth-child(1) img{box-shadow:0 6px 16px -8px #c8452d!important}
+.cat-card:nth-child(2) img{box-shadow:0 6px 16px -8px #2b6db5!important}
+.cat-card:nth-child(3) img{box-shadow:0 6px 16px -8px #7654b8!important}
+.cat-card:nth-child(4) img{box-shadow:0 6px 16px -8px #1a8a78!important}
+.feat-card{border:1px solid color-mix(in srgb,var(--line) 88%, transparent)!important;box-shadow:0 6px 18px -12px rgb(0 0 0 / .08)!important}
+.feat-card:hover{transform:translateY(-3px) scale(1.02)!important}
+.feat-card .feat-icon{border:none!important;color:#fff!important;box-shadow:0 6px 14px -8px rgb(0 0 0 / .18)!important}
+.feat-card:nth-child(1) .feat-icon{background:linear-gradient(135deg,#c8452d,#ff7e5f)!important}
+.feat-card:nth-child(2) .feat-icon{background:linear-gradient(135deg,#2b6db5,#4facfe)!important}
+.feat-card:nth-child(3) .feat-icon{background:linear-gradient(135deg,#b7791a,#fbc531)!important}
+.feat-card:nth-child(4) .feat-icon{background:linear-gradient(135deg,#7654b8,#a18cd1)!important}
+.feat-card:nth-child(5) .feat-icon{background:linear-gradient(135deg,#188a7a,#43cea2)!important}
+.feat-card:nth-child(6) .feat-icon{background:linear-gradient(135deg,#d69a0a,#ffecd2)!important}
+.feat-card:nth-child(7) .feat-icon{background:linear-gradient(135deg,#237ea5,#4facfe)!important}
+.feat-card:nth-child(8) .feat-icon{background:linear-gradient(135deg,#b04f80,#fbc2eb)!important}
+.feat-card:nth-child(9) .feat-icon{background:linear-gradient(135deg,#5f62ad,#a18cd1)!important}
+.feat-card:nth-child(10) .feat-icon{background:linear-gradient(135deg,#2d3748,#4a5568)!important}
+html.dark .circular-icon, html.dark .feat-card .feat-icon{box-shadow:0 8px 18px -10px rgb(0 0 0 / .4)!important}
+
+/* Remove popular handled in JSX; ensure no leftover */
+.ai-popular-grid{display:none!important}
+
+/* Leaderboard smart — compact, short headings */
+.ai-section .ai-section-head h3{font-size:1.02rem!important;letter-spacing:-.015em}
+.leaderboard-list{border-radius:20px!important;overflow:hidden!important;box-shadow:0 12px 32px -18px rgb(0 0 0 / .10)!important}
+.leaderboard-list .lb-row{grid-template-columns:40px minmax(0,1fr) auto!important;gap:10px!important;padding:11px 14px!important}
+.leaderboard-list .lb-row .rk{font-size:1.05rem!important}
+.leaderboard-list .lb-row .nm{font-size:.84rem!important;font-weight:700!important}
+.leaderboard-list .lb-row .nm span{font-size:.66rem!important;font-weight:500!important}
+.leaderboard-list .lb-row .sc{font-size:1.08rem!important}
+@media(max-width:560px){
+  .circular-card.compact{flex:0 0 132px!important;min-width:132px!important}
+  .cats-home-grid .cat-card{flex:0 0 118px!important;min-width:118px!important;padding:10px!important}
+  .features-grid .feat-card{flex:0 0 78px!important;min-width:78px!important;padding:10px 4px!important}
+  .feat-card b{font-size:.70rem!important}
+  .feat-card small{font-size:.58rem!important}
+  .leaderboard-list .lb-row{grid-template-columns:36px minmax(0,1fr) auto!important;padding:10px 12px!important}
+  .leaderboard-list .lb-row .nm{font-size:.80rem!important}
+}
+
+/* Headings short smart */
+.ai-section-head.compact h3{font-size:.95rem!important;font-weight:800!important;letter-spacing:-.01em!important}
+.ai-section-head h3{font-size:1.02rem!important}
+.home-stat-strip{display:none!important} /* hide extra strip for cleaner hero-first look */
+.quick-grid{display:none!important} /* hide quick 4-tiles since sliding menus cover */
+.ai-tutor-actions{display:none!important} /* hide tutor actions for smart minimal */

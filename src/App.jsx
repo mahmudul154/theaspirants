@@ -1390,42 +1390,17 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       {page !== 'quiz' && <header>
         <div className="hdr-in">
           <div className="hdr-left">
-            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
-              <SheetIco id="menu" />
-            </button>
             <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
               <span className="wordmark">অভ্যাস</span>
             </button>
-          </div>
-          <div className="hdr-center">
-            <div className="hdr-search" role="search">
-              <SheetIco id="search" />
-              <input
-                value={q}
-                onChange={e=>setQ(e.target.value)}
-                placeholder="বিষয়, টপিক বা প্রশ্ন খুঁজুন..."
-                onKeyDown={e=>{
-                  if(e.key==='Enter' && searchRes.length){
-                    const r=searchRes[0];
-                    setQ('');
-                    openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(r.sb) ? 'bcs' : 'bank', subjects:[r.sb], topics:[r.t] });
-                  }
-                }}
-              />
-              {q && <button className="hdr-search-clear" aria-label="clear" onClick={()=>setQ('')}>×</button>}
-            </div>
-            <nav className="hdr-nav" aria-label="Primary">
-              <button className={page==='home'?'on':''} onClick={()=>go('home')}>হোম</button>
-              <button className={page==='exams'?'on':''} onClick={()=>go('exams')}>পরীক্ষা</button>
-              <button className={page==='questionBank'?'on':''} onClick={()=>go('questionBank')}>প্রশ্নব্যাংক</button>
-              <button className={page==='potrika'?'on':''} onClick={()=>go('potrika')}>পত্রিকা</button>
-            </nav>
           </div>
           <div className="hdr-right">
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
             </button>
-            <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
+            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
+              <SheetIco id="menu" />
+            </button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
             {user
@@ -1479,12 +1454,23 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             </div>
 
             {/* Live Arena Hero — pic er moto box, app color */}
-            <div className="live-arena-hero" role="button" tabIndex={0} onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')} onKeyDown={event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams') }}}>
+            <div className="live-arena-hero" role="button" tabIndex={0} onClick={() => featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams')} onKeyDown={event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}}>
               <div className="lah-content">
-                <span className="lah-pill"><span className="lah-pill-dot" aria-hidden="true" /> Live Learning Assistant</span>
-                <h3>Your personal<br/>Live Arena is here</h3>
-                <p>Get instant help, personalized explanations and study plans. প্রতিদিন ১১:৩০ PM লাইভ পরীক্ষা।</p>
-                <button className="lah-btn" onClick={event => { event.stopPropagation(); liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams') }}>Chat with Live <span>›</span></button>
+                <span className="lah-pill"><span className="lah-pill-dot" aria-hidden="true" /> {featuredExam?.status==='live' ? '● লাইভ চলছে' : featuredExam ? '● আজকের লাইভ' : '● প্রতিদিন ১১:৩০ PM'}</span>
+                <h3>আজকের চলমান<br/>লাইভ পরীক্ষা</h3>
+                {featuredExam ? (
+                  <>
+                    <p>{featuredExam.topic}</p>
+                    <div className="lah-meta">
+                      <span>{formatLiveExamTime(featuredExam.startsAt)}</span>
+                      <span>•</span>
+                      <span>{BN(featuredExam.questions)} প্রশ্ন</span>
+                      <span>•</span>
+                      <span className="lah-countdown">{featuredExam.status==='live' ? `শেষ ${formatExamCountdown(featuredExam.endsAt, clock)}` : `শুরু ${formatExamCountdown(featuredExam.startsAt, clock)}`}</span>
+                    </div>
+                  </>
+                ) : <p>প্রতিদিন রাত ১১:৩০ — BCS • Bank প্রস্তুতি</p>}
+                <button className="lah-btn" onClick={event => { event.stopPropagation(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}>{featuredExam?.status==='live' ? 'পরীক্ষা দিন' : featuredExam ? 'রুটিন দেখুন' : 'শুরু করুন'} <span>›</span></button>
               </div>
               <div className="lah-visual" aria-hidden="true">
                 <img src="/live-robot.png" alt="" className="lah-robot" loading="lazy" />
@@ -1533,7 +1519,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             {/* Category - BCS Bank NTRCA Primary (kept) */}
             <div className="ai-section cats-home">
-              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব ক্যাটাগরি →</button></div>
+              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব →</button></div>
               <div className="cats-home-grid">
                 {APP_CATS.map(c=>(
                   <button key={c.id} className="cat-card" onClick={()=> openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
@@ -1547,7 +1533,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             {/* Features quick access - all app features in one section */}
             <div className="ai-section features-home">
-              <div className="ai-section-head compact"><h3>দ্রুত মেনু</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>সব ফিচার এক ক্লিকে</span></div>
+              <div className="ai-section-head compact"><h3>শর্টকাট</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>স্লাইড করুন →</span></div>
               <div className="features-grid">
                 <button className="feat-card" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>পরীক্ষা</b><small>লাইভ</small></button>
                 <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
@@ -1585,71 +1571,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
 
             </div>
 
-            {/* Popular Courses - like screenshot 1 bottom */}
-            <div className="ai-section">
-              <div className="ai-section-head">
-                <h3>Popular Courses</h3>
-                <button onClick={() => go('questionBank')}>See All ›</button>
-              </div>
-              <div className="ai-popular-grid">
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['English'] })}>
-                  <span className="ai-pop-icon">🐍</span>
-                  <b>Python</b>
-                  <span>BCS • 120 Qs</span>
-                </button>
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bank', subjects:['গাণিতিক যুক্তি'] })}>
-                  <span className="ai-pop-icon">⚛️</span>
-                  <b>React Native</b>
-                  <span>Bank • 80 Qs</span>
-                </button>
-
-                <button className="ai-pop-card" onClick={() => openCustomQuiz({ category:'bcs', subjects:['বাংলা'] })}>
-                  <span className="ai-pop-icon">📖</span>
-                  <b>Bangla</b>
-                  <span>সাহিত্য</span>
-                </button>
-
-                <button className="ai-pop-card" onClick={() => go('questionBank')}>
-                  <span className="ai-pop-icon">🏛️</span>
-                  <b>BCS Bank</b>
-                  <span>প্রশ্নব্যাংক</span>
-                </button>
-              </div>
-            </div>
-
-
-            {/* Live Arena */}
-            <div className="ai-section">
-              <div className="ai-section-head">
-                <h3>লাইভ এরিনা</h3>
-                <button onClick={() => go('exams')}>সব দেখুন ›</button>
-              </div>
-              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'12px'}}>
-                {homeLiveExams.map(exam => {
-                  const isToday = exam.dateKey === todayLeaderboardDateKey
-                  const isLive = exam.status === 'live'
-                  const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
-                  const planDay = examPlanDay(exam)
-                  const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
-                  return (
-                    <div key={exam.id} className="ai-continue-card" style={{flexDirection:'column', alignItems:'flex-start', padding:'14px', gap:'8px'}} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
-                      <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`} style={{fontSize:'.62rem'}}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
-                      <b style={{fontSize:'.9rem'}}>{heading}</b>
-                      <small style={{color:'var(--ink3)', fontSize:'.72rem'}}>{exam.topic}</small>
-                      <div style={{display:'flex', gap:'8px', color:'var(--ink3)', fontSize:'.66rem'}}>
-                        <span>{formatLiveExamDate(exam.startsAt)}</span><span>•</span><span>{formatLiveExamTime(exam.startsAt)}</span>
-                      </div>
-                      <small style={{color:'#6366f1', fontWeight:700}}>{isLive ? 'শেষ হতে ' : 'শুরু হতে '} {countdown}</small>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
             {/* Leaderboard */}
             <div className="ai-section">
               <div className="ai-section-head">
-                <h3>{liveLeaderboardActive ? 'আজকের লিডারবোর্ড' : 'গতকালের লিডারবোর্ড'}</h3>
+                <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
                 <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
               </div>
               {homeLbData === null
