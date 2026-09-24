@@ -2501,30 +2501,29 @@ header .npanel.header-npanel{position:fixed!important;right:12px!important;top:1
 html.dark .bnav button:nth-child(3){border-color:var(--card)!important}
 html.dark .ai-greet-login-arrow{background:var(--card);border-color:var(--line)}
 
-/* ===== 2026-09-23 fresh batch: circular recent with logos + slide arrows, cats coming-soon, features bento, leaderboard tag ===== */
+/* ===== 2026-09-23 fresh batch: circular recent with logos (2x2 grid), cats coming-soon, features bento, leaderboard tag ===== */
 
-/* Circular scroll wrapper + arrows */
-.circular-scroll-wrap{position:relative;display:flex;align-items:center;gap:0}
-.circular-home-grid.circular-scroll{
-  display:flex!important;
-  flex-wrap:nowrap!important;
-  overflow-x:auto!important;
-  overflow-y:hidden!important;
-  -webkit-overflow-scrolling:touch!important;
-  scroll-snap-type:x mandatory!important;
-  scroll-padding:10px!important;
+/* Circular — fixed 2x2 grid on every screen size (slider removed) */
+.circular-home-grid.circular-home-2x2{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:10px!important;
-  padding:4px 42px 6px!important;
-  grid-template-columns:none!important;
-  scrollbar-width:none!important;
-  -ms-overflow-style:none!important;
-  scroll-behavior:smooth;
+  padding:0!important;
+  overflow:visible!important;
+  scroll-snap-type:none!important;
 }
-.circular-home-grid.circular-scroll::-webkit-scrollbar{display:none!important}
-.circular-home-grid.circular-scroll .circular-card.compact{
-  flex:0 0 170px!important;
-  min-width:170px!important;
-  scroll-snap-align:start!important;
+.circular-home-grid.circular-home-2x2 .circular-card.compact{
+  flex:none!important;
+  min-width:0!important;
+  width:auto!important;
+  grid-template-columns:36px minmax(0,1fr)!important;
+  align-items:center!important;
+}
+.circular-home-grid.circular-home-2x2 .circular-card-copy b{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;
+}
+.circular-home-grid.circular-home-2x2 .circular-card-copy small{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;
 }
 .circular-logo{
   width:36px;height:36px;flex:none;
@@ -2532,30 +2531,12 @@ html.dark .ai-greet-login-arrow{background:var(--card);border-color:var(--line)}
   background:#fff;border:1px solid var(--line);padding:4px;
   box-shadow:0 4px 12px -8px rgb(0 0 0 / .12);
 }
-.circular-arrow{
-  position:absolute;top:50%;transform:translateY(-50%);
-  width:32px;height:32px;border-radius:50%;
-  border:1px solid var(--line);background:var(--card);
-  color:var(--ink);display:grid;place-items:center;
-  font-size:18px;font-weight:700;line-height:1;
-  cursor:pointer;z-index:2;
-  box-shadow:0 8px 18px -10px rgb(0 0 0 / .18);
-  transition:all .18s;
-}
-.circular-arrow:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:translateY(-50%) scale(1.06)}
-.circular-arrow:active{transform:translateY(-50%) scale(.96)}
-.circular-arrow-left{left:4px}
-.circular-arrow-right{right:4px}
 @media(max-width:560px){
-  .circular-home-grid.circular-scroll{padding:4px 34px 6px!important;gap:8px!important}
-  .circular-home-grid.circular-scroll .circular-card.compact{flex:0 0 150px!important;min-width:150px!important}
-  .circular-logo{width:32px;height:32px;border-radius:8px;padding:3px}
-  .circular-arrow{width:28px;height:28px;font-size:15px}
-  .circular-arrow-left{left:2px}
-  .circular-arrow-right{right:2px}
+  .circular-home-grid.circular-home-2x2{gap:8px!important}
+  .circular-home-grid.circular-home-2x2 .circular-card.compact{grid-template-columns:30px minmax(0,1fr)!important;padding:10px 20px 10px 10px!important;gap:8px!important}
+  .circular-logo{width:30px;height:30px;border-radius:8px;padding:3px}
 }
 html.dark .circular-logo{background:var(--card);border-color:var(--line2)}
-html.dark .circular-arrow{background:var(--card);border-color:var(--line)}
 
 /* Category coming soon */
 .cat-card.coming-soon{
@@ -2639,3 +2620,14 @@ html.dark .coming-soon-badge{background:var(--line2);color:var(--ink)}
   background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent);
 }
 html.dark .leaderboard-eyebrow{background:color-mix(in srgb,var(--accent) 14%,var(--card));border-color:color-mix(in srgb,var(--accent) 22%,var(--line))}
+
+/* ===== Mobile: page must never be wider than the screen ===== */
+/* The home wrapper is a flex item with auto margins, so without an explicit
+   width it grows to its widest child's min-content. Pin it to the container. */
+.ai-landing{width:100%!important;min-width:0!important;max-width:1120px!important;overflow-x:hidden!important}
+.ai-landing>*{min-width:0!important;max-width:100%!important}
+@supports (overflow:clip){
+  /* clip (unlike hidden) doesn't create a scroll container, so the sticky greeting keeps working */
+  .ai-landing{overflow-x:clip!important}
+  html,body{overflow-x:clip}
+}

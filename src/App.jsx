@@ -32,6 +32,13 @@ const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
+// Homepage circular hub: exactly four cards shown as a fixed 2x2 grid.
+const HOME_CIRCULARS = [
+  { tag: 'BPSC • ৪৭তম', title: '৪৭তম বিসিএস প্রিলি', desc: 'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo: '/assets/institutions/bpsc.png', icon: 'building', page: 'questionBank' },
+  { tag: 'বাংলাদেশ ব্যাংক', title: 'সিনিয়র অফিসার ২০২৬', desc: '৯২ পদ • সম্মিলিত ব্যাংক', logo: '/assets/institutions/bb.svg', icon: 'bank', page: 'setup' },
+  { tag: 'NTRCA', title: '১৯তম নিবন্ধন', desc: 'স্কুল-কলেজ • শীঘ্রই', logo: '/assets/institutions/other.png', icon: 'book', page: 'circular' },
+  { tag: 'প্রাথমিক', title: 'সহকারী শিক্ষক', desc: 'ডিপিই • নতুন সার্কুলার', logo: '/assets/institutions/primary.png', icon: 'school', page: 'exams' }
+]
 const OFFLINE_CACHE_KEY = 'asp_offline_question_cache_v1'
 const OFFLINE_CACHE_LIMIT = 600
 const OFFLINE_CACHE_TTL_MS = 30 * 864e5
@@ -1541,21 +1548,17 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               <span>•</span><span className="hss-live">লাইভ</span>
             </div>
 
-            {/* Circular - recent with logos + slide arrows */}
+            {/* Circular - fixed 2x2 grid (no slider) */}
             <div className="ai-section circular-home">
               <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
-              <div className="circular-scroll-wrap">
-                <button className="circular-arrow circular-arrow-left" aria-label="পূর্ববর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:-280,behavior:'smooth'})}>‹</button>
-                <div id="circularScroll" className="circular-home-grid circular-scroll">
-                  {[...CIRCULARS, {tag:'BPSC • ৪৭তম', title:'৪৭তম বিসিএস প্রিলি', desc:'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo:'/assets/institutions/bpsc.png', icon:'building', page:'questionBank'}, {tag:'বাংলাদেশ ব্যাংক', title:'সিনিয়র অফিসার ২০২৬', desc:'৯২ পদ • সম্মিলিত ব্যাংক', logo:'/assets/institutions/bb.svg', icon:'bank', page:'setup'}, {tag:'NTRCA', title:'১৯তম নিবন্ধন', desc:'স্কুল-কলেজ • শীঘ্রই', logo:'/assets/institutions/other.png', icon:'book', page:'circular'}, {tag:'প্রাথমিক', title:'সহকারী শিক্ষক', desc:'ডিপিই • নতুন সার্কুলার', logo:'/assets/institutions/primary.png', icon:'school', page:'exams'}].map(c=>(
-                    <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
-                      {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
-                      <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title.replace(' সার্কুলার','').replace(' নিয়োগ','')}</b><small>{c.desc || c.tag}</small></span>
-                      <i>›</i>
-                    </button>
-                  ))}
-                </div>
-                <button className="circular-arrow circular-arrow-right" aria-label="পরবর্তী" onClick={()=>document.getElementById('circularScroll')?.scrollBy({left:280,behavior:'smooth'})}>›</button>
+              <div className="circular-home-grid circular-home-2x2">
+                {HOME_CIRCULARS.map(c=>(
+                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                    {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
+                    <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title}</b><small>{c.desc}</small></span>
+                    <i>›</i>
+                  </button>
+                ))}
               </div>
             </div>
 
