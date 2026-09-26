@@ -1,6 +1,8 @@
 // Forty consecutive 23:30 Asia/Dhaka model exams. Each daily paper is loaded
 // from the question bank according to its published subject counts and shared
 // preliminary-preparation topics.
+import { SEPTEMBER_26_GENERATED_BANGLADESH_QUESTIONS, SEPTEMBER_26_GENERATED_INTERNATIONAL_QUESTIONS } from './september-26-generated-questions.js'
+
 const part = (subject, label, topics, questions, extra) => ({ subject, label, topics, questions, ...(extra || {}) })
 
 const SEPTEMBER_2026_PLAN = [
@@ -292,13 +294,13 @@ const DAY12_PLAN = [
 ]
 
 const DAY13_PLAN = [
-  // All buckets are fixed: the DB selector uses a stable topic round-robin and
-  // preserves the same paper/order for every candidate instead of randomizing.
+  // DB-backed questions are selected in stable topic order; generatedRows fill
+  // only the syllabus subtopics absent from the question bank.
   part('বাংলা', 'বাংলা ব্যাকরণ: বিপরীত শব্দ', ['বিপরীত শব্দ', 'বিপরীতার্থক শব্দ'], 20, { fixed: true }),
-  part('বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ ও আইন বিভাগ', ['পাকিস্তান আমলে বাংলাদেশ (১৯৪৭-১৯৭১)', 'সামরিক প্রশাসন', 'রাজনৈতিক ব্যবস্থা', 'সরকার ও প্রশাসন', 'সরকার ব্যবস্থা', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'], 20, { fixed: true }),
-  part('English', 'ইংরেজি ব্যাকরণ: Transformations of Sentences', ['Sentence', 'Grammar', 'Correction'], 20, { fixed: true }),
+  part('বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ ও আইন বিভাগ', ['পাকিস্তান আমলে বাংলাদেশ (১৯৪৭-১৯৭১)', 'রাজনৈতিক ব্যবস্থা', 'সরকার ও প্রশাসন', 'সরকার ব্যবস্থা', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'], 20, { fixed: true, databaseQuestions: 13, generatedRows: SEPTEMBER_26_GENERATED_BANGLADESH_QUESTIONS, questionTerms: ['জিয়াউর রহমান', 'জিয়াউর রহমান', 'জিয়া', 'জিয়া', 'BNP', 'জাতীয়তাবাদী দল', 'জাতীয়তাবাদী দল', 'রাজনৈতিক দল', 'political party', 'আওয়ামী মুসলিম লীগ', 'আইন বিভাগের প্রধান', 'আইন বিভাগ', 'সুপ্রিম কোর্ট', 'রাষ্ট্রপতি', 'সামরিক আইন প্রশাসক'] }),
+  part('English', 'ইংরেজি ব্যাকরণ: Transformation of Sentence', ['Transformation of Sentence'], 20, { fixed: true, databaseTopics: ['Transformation'] }),
   part('গাণিতিক যুক্তি', 'গণিত: সূচক ও লগারিদম', ['Indices', 'লগারিদম', 'Logarithm'], 15, { fixed: true }),
-  part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: তথ্য–ব্যতিক্রম রাষ্ট্র, রাজধানী–মুদ্রা–ভাষা–পার্লামেন্ট', ['রাজধানী', 'মুদ্রা ও দেশ', 'আইনসভা ও সংসদ', 'বিশ্বের ভূগোল'], 25, { fixed: true })
+  part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: তথ্য–ব্যতিক্রম রাষ্ট্র, রাজধানী–মুদ্রা–ভাষা–পার্লামেন্ট', ['রাজধানী', 'মুদ্রা ও দেশ', 'আইনসভা ও সংসদ', 'বিশ্বের ভূগোল'], 25, { fixed: true, databaseQuestions: 20, generatedRows: SEPTEMBER_26_GENERATED_INTERNATIONAL_QUESTIONS })
 ]
 
 const DAY14_PLAN = [
@@ -403,7 +405,7 @@ export const SEPTEMBER_2026_ROUTINE = {
   '2026-09-24': { day: 12, title: 'ইংরেজি ব্যাকরণ: Articles ও Determiners • গাণিতিক যুক্তি: কোড ও সময় • আন্তর্জাতিক: চীন, ভারত, মিয়ানমার • বাংলা ব্যাকরণ: বাগধারা ও প্রবাদ–প্রবচন • বাংলাদেশ: ফসলের উচ্চফলনশীল জাত, কৃষিভিত্তিক প্রতিষ্ঠান, মৎস্য সম্পদ, জনসংখ্যা, আদমশুমারি, জনসংখ্যা বিষয়ক প্রতিষ্ঠান ও উপজাতির তালিকা', questionPlan: DAY12_PLAN },
   // ২৫ সেপ্টেম্বর = রেস্ট ডে
   '2026-09-25': { rest: true },
-  '2026-09-26': { day: 13, title: 'বাংলা ব্যাকরণ: বিপরীত শব্দ • বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ, আইন বিভাগ • ইংরেজি: Transformations of Sentences • গণিত: সূচক ও লগারিদম (১৫ প্রশ্ন) • আন্তর্জাতিক: তথ্য–ব্যতিক্রম রাষ্ট্র, রাজধানী–মুদ্রা–ভাষা–পার্লামেন্ট (২৫ প্রশ্ন)', questionPlan: DAY13_PLAN },
+  '2026-09-26': { day: 13, title: 'বাংলা ব্যাকরণ: বিপরীত শব্দ • বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ, আইন বিভাগ • ইংরেজি: Transformation of Sentence • গণিত: সূচক ও লগারিদম (১৫ প্রশ্ন) • আন্তর্জাতিক: তথ্য–ব্যতিক্রম রাষ্ট্র, রাজধানী–মুদ্রা–ভাষা–পার্লামেন্ট (২৫ প্রশ্ন)', questionPlan: DAY13_PLAN },
   // ২৭ সেপ্টেম্বর = রেস্ট ডে
   '2026-09-27': { rest: true },
   '2026-09-28': { day: 14, title: 'বাংলা ব্যাকরণ: পদ ও পদ প্রকরণ • বাংলাদেশ: বিভিন্ন উপজাতি, উপজাতি সংক্রান্ত প্রতিষ্ঠান, ক্ষুদ্র নৃগোষ্ঠীর উল্লেখযোগ্য ব্যক্তি, পার্বত্য চট্টগ্রাম মন্ত্রণালয়, শিক্ষা, ঢাকা বিশ্ববিদ্যালয়, প্রতিষ্ঠানিক সংখ্যা তথ্য ও স্বাস্থ্যসেবা • ইংরেজি: Correct Spelling ও Sentence Connection • গণিত: ল.সা.গু ও গ.সা.গু • আন্তর্জাতিক: আন্তর্জাতিক সমুদ্র আইন, বিরোধপূর্ণ দ্বীপ/ভূখণ্ডসমূহ, অঞ্চলভিত্তিক আলোচনা ও উপনিবেশ', questionPlan: DAY14_PLAN },

@@ -11,6 +11,8 @@ export const DB_TOPIC_ALIASES = {
   'Right Form of Verb': ['Right Form of Verb', 'Verb and Right form of verb'],
   'Voice': ['Voice Change', 'Voice, Narration and One Word'],
   'Parts of Speech': ['Parts of Speech', 'Noun identification / Parts of Speech'],
+  'Sentence': ['Sentence', 'Transformation'], // DB's Transformation topic covers sentence transformation questions
+  'Transformation of Sentence': ['Transformation of Sentence', 'Transformation'], // historical bank label is shortened to Transformation
   'শব্দ এবং শব্দের প্রকারভেদ': ['শব্দ গঠন / শব্দার্থ', 'শব্দতত্ত্ব', 'শব্দ'],
   'কারক বিভক্তি': ['কারক ও বিভক্তি', 'কারক'],
   'বাক্য শুদ্ধি / ভাষার প্রয়োগ অপপ্রয়োগ': ['বাক্য শুদ্ধিকরণ', 'ভাষার প্রয়োগ অপপ্রয়োগ', 'অপপ্রয়োগ'],

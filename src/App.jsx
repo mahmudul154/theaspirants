@@ -1007,8 +1007,15 @@ export function App() {
         // distribution remains exact, while still preferring named past-exam rows.
         const plannedQuestionKeys = new Set()
         const fetchPlanBucket = async bucket => {
-          const sampleSize = Math.max(120, Number(bucket.questions || 0) * 12)
-          const makeQuery = (topics = bucket.topics) => {
+          const databaseTarget = Math.min(Number(bucket.questions || 0), Math.max(0, Number(bucket.databaseQuestions ?? bucket.questions ?? 0)))
+          const generatedRows = Array.isArray(bucket.generatedRows) ? bucket.generatedRows : []
+          const generatedTarget = Math.max(0, Number(bucket.questions || 0) - databaseTarget)
+          if (generatedRows.length !== generatedTarget) {
+            throw new Error(`${bucket.label}: expected ${generatedTarget} generated rows, got ${generatedRows.length}`)
+          }
+          const sampleSize = Math.max(120, databaseTarget * 12)
+          const databaseTopics = bucket.databaseTopics || bucket.topics
+          const makeQuery = (topics = databaseTopics) => {
             let query = supabase.from('mcq_questions_job').select('*')
               .eq('is_active', true)
               .in('subject', dbSubjectsFor([bucket.subject]))
@@ -1021,9 +1028,9 @@ export function App() {
           // For locked papers, query each exact topic separately: a large topic
           // must not fill the database page and crowd every other syllabus topic out.
           const fetchPool = async applyFilter => {
-            const topicGroups = bucket.fixed && bucket.topics?.length > 1
-              ? bucket.topics.map(topic => [topic])
-              : [bucket.topics]
+            const topicGroups = bucket.fixed && databaseTopics?.length > 1
+              ? databaseTopics.map(topic => [topic])
+              : [databaseTopics]
             const results = await Promise.all(topicGroups.map(topics => applyFilter(makeQuery(topics))))
             const failed = results.find(result => result.error)
             if (failed?.error) throw failed.error
@@ -1040,8 +1047,8 @@ export function App() {
           // topic and preserve stored option order, so no topic is silently
           // crowded out by the first database rows.
           const selectFixedRows = (sourceRows, limit) => {
-            if (!bucket.topics?.length) return sourceRows.slice(0, limit)
-            const byTopic = new Map(bucket.topics.map(topic => [topic, []]))
+            if (!databaseTopics?.length) return sourceRows.slice(0, limit)
+            const byTopic = new Map(databaseTopics.map(topic => [topic, []]))
             sourceRows.forEach(question => {
               const list = byTopic.get(question.topic)
               if (list) list.push(question)
@@ -1049,7 +1056,7 @@ export function App() {
             const selected = []
             while (selected.length < limit) {
               let added = false
-              for (const topic of bucket.topics) {
+              for (const topic of databaseTopics) {
                 const list = byTopic.get(topic) || []
                 if (list.length && selected.length < limit) {
                   selected.push(list.shift())
@@ -1060,19 +1067,19 @@ export function App() {
             }
             return selected
           }
-          const copyFixedRows = rows => selectFixedRows(rows, Math.min(bucket.questions, rows.length))
+          const copyFixedRows = rows => selectFixedRows(rows, Math.min(databaseTarget, rows.length))
             .map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
           // A bucket may cap the previous-exam share (namedRatio, e.g. 0.3) so the rest
           // of the paper comes from the random pool. The ratio is soft: a thin
           // named pool never blocks the paper, the remainder simply stays named.
           const namedTarget = bucket.namedRatio != null
-            ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
-            : bucket.questions
+            ? Math.max(0, Math.round(databaseTarget * Number(bucket.namedRatio)))
+            : databaseTarget
           const isLiveLocked = !!cfg.scheduleId
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
             : (isLiveLocked ? mixQuestionsLocked(namedRows, Math.min(namedTarget, namedRows.length)) : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length)))
-          const remaining = Math.max(0, bucket.questions - selectedNamed.length)
+          const remaining = Math.max(0, databaseTarget - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
             // A planned bucket can already contain an OR of syllabus keywords;
@@ -1085,7 +1092,7 @@ export function App() {
               : (isLiveLocked ? mixQuestionsLocked(genericRows, remaining) : mixQuestions(genericRows, remaining))
           }
           let selectedTopUp = []
-          const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
+          const topUpNeed = Math.max(0, databaseTarget - selectedNamed.length - selectedGeneric.length)
           if (topUpNeed && !bucket.fixed) {
             const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
             selectedTopUp = (isLiveLocked ? mixQuestionsLocked : mixQuestions)(
@@ -1094,10 +1101,10 @@ export function App() {
             )
           }
           const selected = [...selectedNamed, ...selectedGeneric, ...selectedTopUp]
-          if (selected.length < bucket.questions) {
-            throw new Error(`${bucket.label}: ${selected.length}/${bucket.questions}`)
+          if (selected.length < databaseTarget) {
+            throw new Error(`${bucket.label}: database supplied ${selected.length}/${databaseTarget} required rows`)
           }
-          return selected
+          return [...selected.slice(0, databaseTarget), ...generatedRows]
         }
 
         const plannedBuckets = []
@@ -2073,7 +2080,7 @@ export function App() {
                             const allSelected = selectedInDay === day.topics.length
                             return (
                               <details
-                                className={`routine-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
+                                className={`routine-syllabus-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
                                 key={day.dateKey}
                                 open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
                                 onToggle={event => {
