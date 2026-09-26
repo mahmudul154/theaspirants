@@ -294,6 +294,39 @@ html.dark .leaderboard-list .lb-row:first-child{background:color-mix(in srgb,var
 .topic-check-group-title small{color:var(--ink3);font-size:.62rem;font-weight:500;white-space:nowrap}
 .topic-check-group-title.selected b{color:var(--accent)}
 .topic-check-group .topic-check-option{padding:8px 5px}
+/* ---------- custom exam: routine date serial ---------- */
+.routine-serial{margin:2px 0 4px}
+.routine-serial-head{padding:8px 9px 9px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.routine-serial-head b{display:block;color:var(--ink);font-size:.8rem;font-weight:700}
+.routine-serial-head small{display:block;color:var(--ink3);font-size:.68rem;margin-top:2px;line-height:1.45}
+.routine-day{margin:0 0 7px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--paper) 42%,var(--card));overflow:hidden}
+.routine-day.today{border-color:color-mix(in srgb,var(--accent) 45%,var(--line2))}
+.routine-day>summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:9px;padding:9px 10px;cursor:pointer;list-style:none}
+.routine-day>summary::-webkit-details-marker{display:none}
+.routine-day>summary:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.routine-day[open]>summary{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.routine-day-badge{flex:none;padding:3px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:.66rem;font-weight:700;white-space:nowrap}
+.routine-day.today .routine-day-badge{background:var(--accent);color:#fff}
+.routine-day-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.routine-day-meta b{color:var(--ink);font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.routine-day-meta small{color:var(--ink3);font-size:.67rem;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.routine-day-revision,.routine-day-today{font-style:normal;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:99px;border:1px solid var(--line2);color:var(--ink3);white-space:nowrap}
+.routine-day-today{border-color:color-mix(in srgb,var(--green) 45%,var(--line2));color:var(--green)}
+.routine-day-count{flex:none;font-size:.66rem;font-weight:700;color:var(--accent);white-space:nowrap}
+.routine-day-count.all{color:var(--green)}
+.routine-day>summary>i{font-style:normal;color:var(--ink3);font-size:1rem;transition:transform .18s}
+.routine-day[open]>summary>i{transform:rotate(180deg)}
+.routine-day-body{padding:6px 6px 7px}
+.routine-day-body .all-option{margin-bottom:6px}
+.routine-day-subject{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.routine-day-subject:first-of-type{margin-top:0}
+.routine-day-subject-head{display:flex;align-items:center;gap:6px;padding:3px 6px 5px;color:var(--ink3);font-size:.68rem;font-weight:700;letter-spacing:.01em}
+.routine-day-subject-head svg{flex:none;color:var(--ink3)}
+.routine-day-subject .topic-check-option{padding:7px 5px}
+.routine-serial-divider{display:flex;align-items:center;gap:10px;margin:12px 4px 8px;color:var(--ink3);font-size:.67rem;font-weight:600}
+.routine-serial-divider:before,.routine-serial-divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.routine-serial-divider span{white-space:nowrap}
+@media(max-width:700px){.routine-day>summary{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:10px}.routine-day>summary>i{display:none}.routine-day-meta b{font-size:.84rem}.routine-day-meta small{white-space:normal}.routine-day-count{grid-column:2}}
 .topic-check-option input{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin:0;border:1.5px solid var(--line2);border-radius:4px;background:var(--paper);display:grid;place-items:center;cursor:pointer;transition:all .15s}
 .topic-check-option input:checked{border-color:var(--accent);background:var(--accent)}
 .topic-check-option input:checked:after{content:"✓";color:#fff;font-size:.78rem;font-weight:800;line-height:1}
@@ -2630,4 +2663,108 @@ html.dark .leaderboard-eyebrow{background:color-mix(in srgb,var(--accent) 14%,va
   /* clip (unlike hidden) doesn't create a scroll container, so the sticky greeting keeps working */
   .ai-landing{overflow-x:clip!important}
   html,body{overflow-x:clip}
+}
+/* ---------- job circular hub: live apply countdowns ---------- */
+.job-circular-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.job-circular-card{min-width:0;display:flex;flex-direction:column;gap:11px;border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:14px;background:var(--card);padding:15px;transition:border-color .18s,background .18s,transform .18s}
+.job-circular-card:hover{border-color:color-mix(in srgb,var(--accent) 34%,var(--line));transform:translateY(-1px)}
+.job-circular-card.compact{gap:9px;padding:13px}
+/* Urgency is carried by the left rule so the list scans top-to-bottom. */
+.job-circular-card.is-today{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 40%,var(--card))}
+.job-circular-card.is-urgent{border-left-color:#d9741f}
+.job-circular-card.is-soon{border-left-color:var(--amber)}
+.job-circular-card.is-normal{border-left-color:var(--green)}
+.job-circular-card.is-closed{border-left-color:var(--line2);opacity:.72}
+.job-circular-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px}
+.job-circular-top .circular-icon{width:36px;height:36px}
+.job-circular-org{min-width:0;display:flex;flex-direction:column;gap:4px}
+.job-circular-org b{font-size:.88rem;line-height:1.35;overflow-wrap:anywhere}
+.job-status{width:max-content;border-radius:99px;padding:3px 8px;font-size:.56rem;font-weight:700;white-space:nowrap;border:1px solid currentColor}
+.job-status-open{color:var(--green);background:color-mix(in srgb,var(--green) 9%,transparent)}
+.job-status-upcoming{color:#2b6db5;background:color-mix(in srgb,#2b6db5 9%,transparent)}
+.job-status-closed{color:var(--ink3);background:transparent}
+.job-circular-summary{color:var(--ink2);font-size:.72rem;line-height:1.65}
+.job-circular-card.compact .job-circular-summary{font-size:.66rem;min-height:0}
+.job-circular-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0}
+.job-circular-meta span,.job-circular-facts span{display:grid;gap:2px;min-width:0}
+.job-circular-meta small,.job-circular-facts small,.job-circular-highlights dt{color:var(--ink3);font-size:.58rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.job-circular-meta strong,.job-circular-facts strong{font-size:.72rem;line-height:1.45;font-weight:600;overflow-wrap:anywhere}
+.job-countdown{display:grid;gap:3px;border-radius:11px;padding:10px 12px;background:color-mix(in srgb,var(--ink) 4%,transparent);border:1px solid var(--line)}
+.job-countdown>span{color:var(--ink3);font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.job-countdown>b{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:1.32rem;font-weight:700;line-height:1.2;color:var(--accent);letter-spacing:-.01em}
+.job-countdown>small{color:var(--ink2);font-size:.64rem;line-height:1.5}
+.job-countdown.closed>b{color:var(--ink3);font-size:.9rem}
+.is-today .job-countdown{background:color-mix(in srgb,var(--accent) 9%,transparent);border-color:color-mix(in srgb,var(--accent) 26%,var(--line))}
+.job-circular-actions{display:flex;gap:8px;margin-top:auto}
+.job-circular-actions .btn{flex:1;justify-content:center;padding:9px 12px;font-size:.72rem}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.job-circular-filters{display:flex;flex-wrap:wrap;gap:7px}
+.job-circular-filters button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:99px;background:var(--card);padding:7px 13px;font-size:.72rem;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .18s}
+.job-circular-filters button:hover{border-color:var(--ink);color:var(--ink)}
+.job-circular-filters button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.job-circular-filters .num{font-variant-numeric:tabular-nums;font-size:.64rem;opacity:.72}
+.circular-page>.job-circular-grid{margin:14px 0}
+.circular-page>.head+.job-circular-filters{margin-bottom:2px}
+
+/* ---------- circular detail modal ---------- */
+.job-circular-modal{width:min(620px,100%)}
+.job-circular-modal .ai-modal-head>div>span{color:var(--accent)}
+.job-circular-modal-body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.job-countdown.modal>b{font-size:1.7rem}
+.job-circular-modal-summary{color:var(--ink2);font-size:.86rem;line-height:1.75}
+.job-circular-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;border:1px solid var(--line);border-radius:12px;padding:13px}
+.job-circular-highlights h4{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.job-circular-highlights dl{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.job-circular-highlights dl>div{display:grid;grid-template-columns:minmax(110px,.42fr) minmax(0,1fr);gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+.job-circular-highlights dl>div:last-child{border-bottom:none}
+.job-circular-highlights dl>div:nth-child(odd){background:color-mix(in srgb,var(--ink) 2.5%,transparent)}
+.job-circular-highlights dd{font-size:.78rem;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.job-circular-note{display:flex;gap:9px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--amber) 34%,var(--line));border-radius:11px;background:color-mix(in srgb,var(--amber) 9%,transparent);padding:11px 13px;color:var(--ink2);font-size:.72rem;line-height:1.6}
+.job-circular-note svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--amber)}
+.job-circular-verify{display:grid;gap:4px;border-left:2px solid var(--line2);padding-left:12px}
+.job-circular-verify b{font-size:.74rem}
+.job-circular-verify small{color:var(--ink3);font-size:.66rem;line-height:1.6}
+.job-circular-modal-actions{display:flex;gap:9px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.job-circular-modal-actions .btn{flex:1;min-width:150px;justify-content:center}
+.job-circular-modal-actions svg{width:15px;height:15px}
+/* Icon tints reused by the modal head, which would otherwise be violet. */
+.circular-icon-layers{color:#2b6db5;background:#edf4ff;border-color:#b9cef0}
+.circular-icon-news{color:#c45b39;background:#fff1eb;border-color:#efb8a5}
+.circular-icon-exam{color:#7654b8;background:#f3efff;border-color:#d2c4f0}
+.circular-icon-lock{color:#1a5f8a;background:#e9f4fb;border-color:#a8cfe4}
+html.dark .circular-icon-layers{color:#9bc5ff;background:#202f45;border-color:#456287}
+html.dark .circular-icon-news{color:#ffab91;background:#38221d;border-color:#75483c}
+html.dark .circular-icon-exam{color:#ccb1ff;background:#2c2341;border-color:#604c88}
+html.dark .circular-icon-lock{color:#8fd0f2;background:#17303d;border-color:#3d6a83}
+/* No override needed for .ai-modal-icon here: the tint classes above are
+   declared later in the file than .ai-modal-icon, so at equal specificity the
+   tint already wins over the modal's default violet. */
+
+@media(max-width:900px){
+  .job-circular-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .job-circular-card{padding:12px;border-radius:12px}
+  .job-countdown>b{font-size:1.14rem}
+}
+@media(max-width:680px){
+  .job-circular-grid{grid-template-columns:minmax(0,1fr)}
+  .job-circular-top{grid-template-columns:auto minmax(0,1fr);gap:9px}
+  .job-status{grid-column:2;justify-self:start;margin-top:-2px}
+  .job-circular-org b{font-size:.84rem}
+  .job-circular-modal{padding:18px}
+  .job-circular-modal-body{gap:12px}
+  .job-countdown.modal>b{font-size:1.4rem}
+  .job-circular-highlights dl>div{grid-template-columns:minmax(0,1fr);gap:3px}
+  .job-circular-modal-actions .btn{min-width:0;width:100%}
+}
+@media(max-width:560px){
+  .job-circular-card{gap:9px;padding:11px;border-radius:11px}
+  .job-circular-card.compact{padding:10px}
+  .job-circular-top .circular-icon{width:31px;height:31px;border-radius:9px}
+  .job-circular-summary{font-size:.68rem;line-height:1.6}
+  .job-circular-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 0}
+  .job-circular-meta strong{font-size:.66rem}
+  .job-countdown{padding:9px 11px}
+  .job-countdown>b{font-size:1.16rem}
+  .job-circular-actions .btn{padding:8px 8px;font-size:.66rem}
+  .job-circular-filters button{padding:6px 11px;font-size:.67rem}
 }

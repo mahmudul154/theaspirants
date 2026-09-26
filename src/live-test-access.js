@@ -9,11 +9,12 @@ export const LIVE_TEST_ADDITIONAL_EXAM_IDS = [
   'bcs-40-day-model-2026-09-14',
   'bcs-40-day-model-2026-09-15',
   'bcs-40-day-model-2026-09-18',
-  'bcs-40-day-model-2026-09-22'
+  'bcs-40-day-model-2026-09-22',
+  'bcs-40-day-model-2026-09-26'
 ]
 export const LIVE_TEST_ADMIN_EMAILS = ['aakashh060@gmail.com']
 export const LIVE_TEST_TODAY_EMAIL = 'aakashh060@gmail.com'
-export const LIVE_TEST_TODAY_EXAM_ID = 'bcs-40-day-model-2026-09-22'
+export const LIVE_TEST_TODAY_EXAM_ID = 'bcs-40-day-model-2026-09-26'
 // Official retake permission for a still-live paper (for example, after an
 // accidental auto-submit). Unlike test mode, the attempt is recorded and
 // enters the live leaderboard, where the best score is kept.
