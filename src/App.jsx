@@ -32,6 +32,13 @@ const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
+// Homepage circular hub: exactly four cards shown as a fixed 2x2 grid.
+const HOME_CIRCULARS = [
+  { tag: 'BPSC • ৪৭তম', title: '৪৭তম বিসিএস প্রিলি', desc: 'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo: '/assets/institutions/bpsc.png', icon: 'building', page: 'questionBank' },
+  { tag: 'বাংলাদেশ ব্যাংক', title: 'সিনিয়র অফিসার ২০২৬', desc: '৯২ পদ • সম্মিলিত ব্যাংক', logo: '/assets/institutions/bb.svg', icon: 'bank', page: 'setup' },
+  { tag: 'NTRCA', title: '১৯তম নিবন্ধন', desc: 'স্কুল-কলেজ • শীঘ্রই', logo: '/assets/institutions/other.png', icon: 'book', page: 'circular' },
+  { tag: 'প্রাথমিক', title: 'সহকারী শিক্ষক', desc: 'ডিপিই • নতুন সার্কুলার', logo: '/assets/institutions/primary.png', icon: 'school', page: 'exams' }
+]
 const OFFLINE_CACHE_KEY = 'asp_offline_question_cache_v1'
 const OFFLINE_CACHE_LIMIT = 600
 const OFFLINE_CACHE_TTL_MS = 30 * 864e5
@@ -102,19 +109,6 @@ const APP_CATS = [
   { id: 'bank', name: 'ব্যাংক জব', img: '/assets/bank1.png', d: '৬ বিষয় • শর্টকাটসহ' },
   { id: 'ntrca', name: 'শিক্ষক নিবন্ধন', img: '/assets/ntrca1.png', d: 'স্কুল ও কলেজ স্তর' },
   { id: 'primary', name: 'প্রাথমিক', img: '/assets/primary1.png', d: 'সহকারী শিক্ষক নিয়োগ' }
-]
-
-// Auto-sliding feature strip — প্রতিটি ফিচারের নিজস্ব brand color (icon8-স্টাইল)
-const HOME_FEATURES = [
-  { icon: 'exam', label: 'লাইভ পরীক্ষা', sub: 'আজকের পরীক্ষা ও রুটিন', page: 'exams', color: '#e53935', bg: 'linear-gradient(135deg,#ff7043,#d32f2f)' },
-  { icon: 'sliders', label: 'কাস্টম কুইজ', sub: 'বিষয় ও টপিক বেছে নিন', page: 'setup', color: '#1e88e5', bg: 'linear-gradient(135deg,#42a5f5,#1565c0)' },
-  { icon: 'flame', label: 'ডেইলি চ্যালেঞ্জ', sub: 'প্রতিদিন ১০টি প্রশ্ন', page: 'daily', color: '#f57c00', bg: 'linear-gradient(135deg,#ffa726,#ef6c00)' },
-  { icon: 'layers', label: 'রিভিশন', sub: 'ভুল প্রশ্ন আবার অনুশীলন', page: 'review', color: '#7e57c2', bg: 'linear-gradient(135deg,#9575cd,#5e35b1)' },
-  { icon: 'bank', label: 'প্রশ্নব্যাংক', sub: 'বিগত পরীক্ষার প্রশ্ন', page: 'questionBank', color: '#00897b', bg: 'linear-gradient(135deg,#26a69a,#00695c)' },
-  { icon: 'trophy', label: 'লিডারবোর্ড', sub: 'আজকের র‍্যাংকিং', page: 'leaderboard', color: '#f9a825', bg: 'linear-gradient(135deg,#ffca28,#f57f17)' },
-  { icon: 'news', label: 'আজকের পত্রিকা', sub: 'কারেন্ট অ্যাফেয়ার্স', page: 'potrika', color: '#0288d1', bg: 'linear-gradient(135deg,#29b6f6,#0277bd)' },
-  { icon: 'file', label: 'চাকরির সার্কুলার', sub: 'নতুন নিয়োগ আপডেট', page: 'circular', color: '#00796b', bg: 'linear-gradient(135deg,#4db6ac,#00695c)' },
-  { icon: 'image', label: 'ছবি দিয়ে শেখো', sub: 'ভিজ্যুয়াল লার্নিং', page: 'visual', color: '#d81b60', bg: 'linear-gradient(135deg,#f06292,#c2185b)' }
 ]
 
 const NOTICES = [
@@ -222,6 +216,29 @@ function questionFingerprint(q) {
   return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
 }
 
+// Deterministic hash for live exams: same scheduleId → same offset for everyone
+function liveHash(str) {
+  let h = 2166136261
+  for (let i = 0; i < String(str).length; i++) h = Math.imul(h ^ String(str).charCodeAt(i), 16777619)
+  return h >>> 0
+}
+function mixQuestionsLocked(rows, limit) {
+  const byTopic = {}
+  rows.forEach(r => { const t = r.topic || 'Others'; (byTopic[t] ||= []).push(r) })
+  Object.values(byTopic).forEach(a => a.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||''))))
+  const topics = Object.keys(byTopic).sort()
+  const out = []
+  const n = limit ? Math.min(limit, rows.length) : rows.length
+  while (out.length < n) {
+    let added = false
+    for (const topic of topics) {
+      if (out.length >= n) break
+      if (byTopic[topic].length) { out.push(byTopic[topic].shift()); added = true }
+    }
+    if (!added) break
+  }
+  return out.map(r => ({ ...r, options: r.options ? [...r.options] : [] }))
+}
 function uniqueQuestions(items) {
   const unique = new Map()
   const questions = Array.isArray(items) ? items : []
@@ -581,7 +598,7 @@ export function App() {
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { threshold: .08 })
-    document.querySelectorAll('.page.on .sec, .page.on .hero-panel').forEach(el => { el.classList.add('fade'); io.observe(el) })
+    document.querySelectorAll('.page.on .sec, .page.on .hero-panel, .page.on .home-hero').forEach(el => { el.classList.add('fade'); io.observe(el) })
     return () => io.disconnect()
   }, [page])
   useEffect(() => { if (!toastMsg) return; const t = setTimeout(() => setToastMsg(''), 2400); return () => clearTimeout(t) }, [toastMsg])
@@ -885,7 +902,7 @@ export function App() {
           }
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী')
+const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')
           if (namedResult.error) throw namedResult.error
           const namedRows = uniqueQuestions(namedResult.data || [])
             .filter(question => !plannedQuestionKeys.has(questionKey(question)))
@@ -924,9 +941,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           const namedTarget = bucket.namedRatio != null
             ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
             : bucket.questions
+          const isLiveLocked = !!cfg.scheduleId
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
-            : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length))
+            : (isLiveLocked ? mixQuestionsLocked(namedRows, Math.min(namedTarget, namedRows.length)) : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length)))
           const remaining = Math.max(0, bucket.questions - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
@@ -939,13 +957,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
               ? copyFixedRows(genericRows).slice(0, remaining)
-              : mixQuestions(genericRows, remaining)
+              : (isLiveLocked ? mixQuestionsLocked(genericRows, remaining) : mixQuestions(genericRows, remaining))
           }
           let selectedTopUp = []
           const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
           if (topUpNeed && !bucket.fixed) {
             const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
-            selectedTopUp = mixQuestions(
+            selectedTopUp = (isLiveLocked ? mixQuestionsLocked : mixQuestions)(
               namedRows.filter(question => !usedKeys.has(questionKey(question))),
               topUpNeed
             )
@@ -990,7 +1008,8 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           rows = uniqueQuestions([...interleavedRows, ...unusedRows, ...(cfg.supplementalRows || [])])
         } else {
           rows = uniqueQuestions([...plannedBuckets.flatMap(({ rows: bucketRows }) => bucketRows), ...(cfg.supplementalRows || [])])
-          rows.sort(() => Math.random() - .5)
+          if (cfg.scheduleId) rows.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||'')))
+          else rows.sort(() => Math.random() - .5)
         }
         databaseRowsArePrioritized = true
       } else {
@@ -1071,8 +1090,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         let collected = []
         const usedOffsets = new Set()
         for (let attempt = 0; attempt < attempts; attempt++) {
-          let offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-          if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          let offset
+          if (cfg.scheduleId && maxOffset) {
+            const tag = applyPoolFilter === applyAppearedQuestionFilter ? 'appeared' : 'generic'
+            offset = liveHash(String(cfg.scheduleId) + ':' + tag + ':' + attempt) % (maxOffset + 1)
+            let probe = 0
+            while (usedOffsets.has(offset) && probe < (maxOffset + 1)) { offset = (offset + 1) % (maxOffset + 1); probe++ }
+          } else {
+            offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+            if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          }
           usedOffsets.add(offset)
           const { data, error } = await applyPoolFilter(applyQuestionFilters(
             supabase.from('mcq_questions_job').select('*')
@@ -1099,7 +1126,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           appearedAvailable,
           requestedLimit
         )
-        const appearedRows = mixQuestions(appearedPool, requestedLimit)
+        const appearedRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(appearedPool, requestedLimit)
         const remaining = Math.max(0, requestedLimit - appearedRows.length)
         let genericRows = []
 
@@ -1112,7 +1139,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             genericAvailable,
             remaining
           )
-          genericRows = mixQuestions(genericPool, remaining)
+          genericRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(genericPool, remaining)
         }
 
         if (appearedRows.length || genericRows.length) {
@@ -1137,7 +1164,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     }
     rows = uniqueQuestions(rows)
-    const qs = databaseRowsArePrioritized || cfg.preserveOrder ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
+    // Lock live exam: same questions for everyone + remove Dhoni/sound question if present
+    if (cfg.scheduleId) {
+      rows = rows.filter(q => !/dhoni/i.test(q.question||'') && !/ধোনি|ধোনী|ধ্বনি/.test(q.question||''))
+      // ensure 22 Sep revision set is restored (DAY11) — already via routine
+    }
+    const qs = databaseRowsArePrioritized || cfg.preserveOrder || cfg.scheduleId ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
     setLoading(false)
     if (!qs.length) {
       setToastMsg(avoidSeen
@@ -1403,9 +1435,6 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       {page !== 'quiz' && <header>
         <div className="hdr-in">
           <div className="hdr-left">
-            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
-              <SheetIco id="menu" />
-            </button>
             <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
               <span className="wordmark">অভ্যাস</span>
             </button>
@@ -1414,7 +1443,9 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
             </button>
-            <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
+            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
+              <SheetIco id="menu" />
+            </button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
             {user
@@ -1424,167 +1455,205 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
 
-          {notifOpen && <div className="npanel header-npanel">
-            <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
-            {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
-            {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
-          </div>}
-
-          {searchOpen && <div className="header-search-panel">
-            <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
-            <div className="sres">
-              {q.trim().length <= 1 ? <>
-                <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
-                {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
-              </> : searchRes.length ? searchRes.map((result, index) => (
-                <button key={index} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
-                  <span>{result.t}</span><span>{result.sb}</span>
-                </button>
-              )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
-            </div>
-          </div>}
         </div>
       </header>}
+      {page !== 'quiz' && notifOpen && <div className="npanel header-npanel">
+        <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
+        {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
+        {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
+      </div>}
+      {page !== 'quiz' && searchOpen && <div className="header-search-panel">
+        <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
+        <div className="sres">
+          {q.trim().length <= 1 ? <>
+            <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
+            {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
+          </> : searchRes.length ? searchRes.map((result, index) => (
+            <button key={index} onClick={() => { setQ(''); setSearchOpen(false); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
+              <span>{result.t}</span><span>{result.sb}</span>
+            </button>
+          )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
+        </div>
+      </div>}
 
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
-          <section className="hero-panel">
-            <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
-            <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>১ লাখ+</b> প্রশ্ন আছে</span>
-              <span className="hchip"><b>কাস্টম</b> কুইজ</span>
-              <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
-              <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
+          <div className="ai-landing">
+            {/* Greeting - like screenshot top bar */}
+            <div className="ai-greet">
+              <div className="ai-greet-left">
+                <button onClick={() => go(user ? 'profile' : 'login')} aria-label={user ? 'প্রোফাইল খুলুন' : 'লগইন করুন'} style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
+                  <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" style={{display:'block'}} />
+                </button>
+                <div className={`ai-greet-text ${!user ? 'ai-greet-login' : ''}`} onClick={() => !user && go('login')} style={!user ? {cursor:'pointer'} : undefined}>
+                  {user ? (
+                    <>
+                      <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
+                      <p>Keep learning, keep growing <span>✨</span></p>
+                    </>
+                  ) : (
+                    <>
+                      <h2>স্বাগতম 👋</h2>
+                      <p>লগইন করে শুরু করুন</p>
+                    </>
+                  )}
+                </div>
+                {!user && (
+                  <button className="ai-greet-login-arrow" aria-label="লগইন করুন" onClick={() => go('login')}>
+                    <span>›</span>
+                  </button>
+                )}
+              </div>
+              <div className="ai-greet-actions">
+                <button className="ai-bell" aria-label="সার্চ খুলুন" onClick={() => { setSearchOpen(v=>!v); setNotifOpen(false) }}>
+                  <SheetIco id="search" />
+                </button>
+                <button className="ai-bell" onClick={() => setNotifOpen(v=>!v)} aria-label="notification">
+                  <SheetIco id="bell" />
+                  <span className="ai-bell-dot" />
+                </button>
+                <button className="ai-bell" aria-label="মেনু খুলুন" onClick={() => setSheetOpen(true)}>
+                  <SheetIco id="menu" />
+                </button>
+              </div>
             </div>
-            <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
-            </div>
-          </section>
 
-          <section className="sec home-features-section">
-            <div className="head"><div className="eyebrow">দ্রুত ফিচার</div><h2>সবকিছু <i>এক জায়গায়</i></h2></div>
-            <div className="feature-marquee" aria-label="ফিচার ক্যারোসেল">
-              <div className="feature-track">
-                {[...HOME_FEATURES, ...HOME_FEATURES].map((feature, index) => (
-                  <button className="feature-chip" key={`${feature.page}-${index}`} onClick={() => go(feature.page)} style={{ '--fc': feature.color, '--fbg': feature.bg }} title={feature.label}>
-                    <span className="feature-chip-icon"><SheetIco id={feature.icon} /></span>
-                    <span className="feature-chip-text"><b>{feature.label}</b><small>{feature.sub}</small></span>
+            {/* Live Arena Hero — pic er moto box, app color */}
+            <div className="live-arena-hero" role="button" tabIndex={0} onClick={() => featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams')} onKeyDown={event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}}>
+              <div className="lah-content">
+                <span className="lah-pill"><span className="lah-pill-dot" aria-hidden="true" /> {featuredExam?.status==='live' ? '● লাইভ চলছে' : featuredExam ? '● আজকের লাইভ' : '● প্রতিদিন ১১:৩০ PM'}</span>
+                <h3>আজকের চলমান<br/>লাইভ পরীক্ষা</h3>
+                {featuredExam ? (
+                  <>
+                    <p>{featuredExam.topic}</p>
+                    <div className="lah-meta">
+                      <span>{formatLiveExamTime(featuredExam.startsAt)}</span>
+                      <span>•</span>
+                      <span>{BN(featuredExam.questions)} প্রশ্ন</span>
+                      <span>•</span>
+                      <span className="lah-countdown">{featuredExam.status==='live' ? `শেষ ${formatExamCountdown(featuredExam.endsAt, clock)}` : `শুরু ${formatExamCountdown(featuredExam.startsAt, clock)}`}</span>
+                    </div>
+                  </>
+                ) : <p>প্রতিদিন রাত ১১:৩০ — BCS • Bank প্রস্তুতি</p>}
+                <button className="lah-btn" onClick={event => { event.stopPropagation(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}>{featuredExam?.status==='live' ? 'পরীক্ষা দিন' : featuredExam ? 'রুটিন দেখুন' : 'শুরু করুন'} <span>›</span></button>
+              </div>
+
+            </div>
+
+            <div className="home-stat-strip">
+              <span className="hss-dot" aria-hidden="true" />
+              <b>১,৫০,০০০+ প্রশ্ন</b>
+              <span>•</span><span>প্রতিদিন ১১:৩০ PM</span>
+              <span>•</span><span className="hss-live">লাইভ</span>
+            </div>
+
+            {/* Circular - fixed 2x2 grid (no slider) */}
+            <div className="ai-section circular-home">
+              <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
+              <div className="circular-home-grid circular-home-2x2">
+                {HOME_CIRCULARS.map(c=>(
+                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                    {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
+                    <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title}</b><small>{c.desc}</small></span>
+                    <i>›</i>
                   </button>
                 ))}
               </div>
             </div>
-          </section>
 
-          <section className="sec home-smart-panel" style={{ paddingTop: 28 }}>
-            <div className="panel" style={{ gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                <h3 style={{ margin: 0 }}>{greet()}, {(user?.user_metadata?.full_name || user?.name || 'শিক্ষার্থী').split(' ')[0]} 👋</h3>
-                <div className="hero-chips">
-                  {goalDays != null && <span className="hchip">⏳ {goal.name}: আর <b>{BN(goalDays)}</b> দিন</span>}
-                  {trend != null && trend !== 0 && <span className="hchip">{trend > 0 ? '📈' : '📉'} <b>{BN(Math.abs(trend))}%</b> ট্রেন্ড</span>}
-                  <span className="hchip">🔥 <b>{BN(streak)}</b> স্ট্রিক</span>
+            {/* Quick start - 4 tiles, fresh & minimal */}
+            <div className="ai-section quick-home">
+              <div className="quick-grid">
+                <button className="quick-card quick-live" onClick={()=> liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>
+                  <span className="qk-icon"><SheetIco id="timer" /></span><b>লাইভ</b><small>{liveExam ? formatLiveExamTime(liveExam.startsAt) : '১১:৩০ PM'}</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('setup')}>
+                  <span className="qk-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('questionBank')}>
+                  <span className="qk-icon"><SheetIco id="bank" /></span><b>ব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('review')}>
+                  <span className="qk-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)} টি</small>
+                </button>
+              </div>
+            </div>
+
+            {/* Category - BCS/Bank active, NTRCA/Primary coming soon */}
+            <div className="ai-section cats-home">
+              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব →</button></div>
+              <div className="cats-home-grid">
+                {APP_CATS.map(c=>{
+                  const isComingSoon = c.id === 'ntrca' || c.id === 'primary'
+                  return (
+                    <button key={c.id} className={`cat-card ${isComingSoon ? 'coming-soon' : ''}`} onClick={()=> isComingSoon ? setToastMsg('Coming Soon — শীঘ্রই আসছে') : openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
+                      <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
+                      <span><b>{c.name}</b><small>{isComingSoon ? 'Coming Soon' : c.d}</small></span>
+                      <i>{isComingSoon ? '◷' : '›'}</i>
+                      {isComingSoon && <span className="coming-soon-badge">Soon</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Features - bento unique, live bigger, heading ফিচারস */}
+            <div className="ai-section features-home">
+              <div className="ai-section-head compact"><h3>ফিচারস</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>এক ক্লিকে সব</span></div>
+              <div className="features-grid bento-grid">
+                <button className="feat-card feat-live" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>লাইভ পরীক্ষা</b><small>প্রতিদিন ১১:৩০ PM</small><span className="feat-live-badge">Live</span></button>
+                <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
+                <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
+                <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
+                <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
+                <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
+                <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
+                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>লিডারবোর্ড</b><small>র‍্যাংকিং</small></button>
+                <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
+                <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
+              </div>
+            </div>
+
+            {/* AI Tutor Quick Actions - like screenshot middle screen */}
+            <div className="ai-section">
+              <div className="ai-tutor-actions">
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">💡</span>
+                  <span><b>বুঝে নিন</b><small>যেকোনো টপিক</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📘</span>
+                  <span><b>প্র্যাকটিস</b><small>প্রশ্ন করুন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('review')}>
+                  <span className="ai-action-icon">📄</span>
+                  <span><b>ভুল খাতা</b><small>রিভিশন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📅</span>
+                  <span><b>স্টাডি প্ল্যান</b><small>৪০ দিন</small></span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Leaderboard - tag leaderboard */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                  <span className="leaderboard-eyebrow">leaderboard • লিডারবোর্ড</span>
+                  <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
                 </div>
+                <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
               </div>
-              <span className="lbl" style={{ margin: 0 }}>চাকরির পরীক্ষায় এগিয়ে থাকতে আজকের প্রস্তুতি গুছিয়ে নিন</span>
-              <div className="chips">
-                {dueList.length > 0 && <button className="chip on" onClick={() => beginQuiz({ title: 'স্মার্ট রিভিশন', rows: dueList, limit: Math.min(10, dueList.length), minutes: 10 })}>🔁 {BN(dueList.length)}টি রিভিশন due</button>}
-                {subjBars.length > 0 && subjBars[subjBars.length - 1].avg < 80 && <button className="chip" onClick={() => beginQuiz({ title: 'দুর্বল বিষয় • ' + subjBars[subjBars.length - 1].s, tag: 'bcs', subjects: [subjBars[subjBars.length - 1].s], limit: 10, minutes: 10, fallback: [subjBars[subjBars.length - 1].s] })}>🎯 {subjBars[subjBars.length - 1].s} দুর্বল — ১০ প্রশ্ন</button>}
-                {localStorage.getItem('asp_daily') !== new Date().toDateString() && <button className="chip" onClick={() => go('daily')}>🔥 ডেইলি চ্যালেঞ্জ</button>}
-                <button className="chip" onClick={() => go('potrika')}>📰 আজকের পত্রিকা</button>
-                <button className="chip" onClick={() => go('visual')}>🖼 ছবি দিয়ে শেখো</button>
-                <button className="chip" onClick={() => go('exams')}>📘 নতুন টপিক ধরো</button>
-                <button className="chip" onClick={() => go('questionBank')}>🏛 প্রশ্নব্যাংক</button>
-              </div>
+              {homeLbData === null
+                ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
+                : homeLbData.length
+                  ? <div className="leaderboard-list">{homeLbData.slice(0,4).map(LBRow)}</div>
+                  : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
             </div>
-          </section>
-
-          <section className="sec home-live-attraction">
-            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
-            <div className="slider" aria-label="লাইভ পরীক্ষার সংক্ষিপ্ত তালিকা">
-              {homeLiveExams.map(exam => {
-                const isToday = exam.dateKey === todayLeaderboardDateKey
-                const isLive = exam.status === 'live'
-                const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
-                const planDay = examPlanDay(exam)
-                const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
-                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
-                  {exam.planned && <span className="live-plan-mini-tag">৪০ দিনে প্রিলি</span>}
-                  <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
-                  <h3 title={exam.subject}>{heading}</h3>
-                  <div className="top">{exam.topic}</div>
-                  <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
-                  {isLive
-                    ? <span className="today-card-countdown"><small>লাইভ শেষ হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                    : isToday
-                      ? <span className="today-card-countdown"><small>শুরু হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                      : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
-                </button>
-              })}
-            </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
-          </section>
-
-          <section className="sec home-circular-section">
-            <div className="head circular-section-head">
-              <div><div className="eyebrow">চাকরির আপডেট</div><h2>সাম্প্রতিক <i>সার্কুলার</i></h2></div>
-              <button className="btn sm ghost" onClick={() => go('circular')}>সব সার্কুলার →</button>
-            </div>
-            <div className="circular-card-grid">
-              {CIRCULARS.map(item => <button className="circular-card" key={item.title} onClick={() => go(item.page)}>
-                <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
-                <span className="circular-card-copy"><span className="circular-tag">{item.tag}</span><b>{item.title}</b><small>{item.desc}</small></span>
-                <i aria-hidden="true">→</i>
-              </button>)}
-            </div>
-          </section>
-
-          <section className="sec home-target-section">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">টার্গেট বাছো</div><h2 style={{ marginTop: 10 }}>কোন <i>পরীক্ষা</i> দিবে?</h2></div>
-            </div>
-            <div className="cat-scroll">
-              {APP_CATS.map(c => (
-                <button className="cat-card" key={c.id} onClick={() => {
-                  if (c.id === 'bcs' || c.id === 'bank') openCustomQuiz({ category: c.id })
-                  else setToastMsg('শীঘ্রই আসছে: ' + c.name)
-                }}>
-                  <div className="im">{c.img ? <img src={c.img} alt="" /> : c.e}</div>
-                  <div className="bd"><b>{c.name}</b><span>{c.d}</span></div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="sec">
-            <div className="head"><div className="eyebrow">অনুশীলন</div><h2>বিষয়সমূহ</h2></div>
-            <div className="subj-tiles">
-              {SUBJECTS.map(s => (
-                <button className="tile" key={s} onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(s) ? 'bcs' : 'bank', subjects: [s] })}>
-                  <span className="e"><Ico id={s} size={26} /></span><b>{s}</b>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="sec leaderboard-section">
-            <div className="head leaderboard-head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div>
-                <div className="eyebrow">লাইভ ফলাফল</div>
-                <h2 style={{ marginTop: 10 }}>{liveLeaderboardActive ? <>আজকের <i>লিডারবোর্ড</i></> : <>গতকালের <i>লিডারবোর্ড</i></>}</h2>
-                <p className="muted leaderboard-copy">{liveLeaderboardActive ? 'ফল জমা হলে প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} • লাইভ ফলাফল`}</p>
-              </div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
-            </div>
-            {homeLbData === null
-              ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
-              : homeLbData.length
-                ? <div className="lb">{homeLbData.slice(0, 4).map(LBRow)}</div>
-                : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
-          </section>
-
+          </div>
         </>}
 
         {/* ================= LIVE EXAM CENTER ================= */}
@@ -1613,7 +1682,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                 <div className="live-feature-meta">
                   <span>📅 {formatLiveExamDate(featuredExam.startsAt)}</span>
                   <span>🕗 শুরু {formatLiveExamTime(featuredExam.startsAt)}</span>
-                  <span className="live-window-note">🕑 উত্তর: পরদিন দুপুর ২টা পর্যন্ত</span>
+                  <span className="live-window-note">🕓 উত্তর: পরদিন বিকাল ৪টা পর্যন্ত</span>
                   <span>📝 {BN(featuredExam.questions)} প্রশ্ন</span>
                   <span>⏱ {BN(featuredExam.minutes)} মিনিট</span>
                 </div>
@@ -1659,7 +1728,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                     <div className="routine-card-top"><span>{exam.planned ? 'লাইভ পরীক্ষা' : exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
                     <h3>{exam.planned ? liveExamSubjectHeading(exam) : exam.topic}</h3>
                     {exam.planned && <div className="routine-topic-detail"><b>সিলেবাস:</b> {exam.topic}</div>}
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span className="exam-window-label">পরদিন ২টা পর্যন্ত</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span className="exam-window-label">পরদিন ৪টা পর্যন্ত</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
@@ -2493,7 +2562,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন'], ['profile', 'user', 'প্রোফাইল']
+                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
