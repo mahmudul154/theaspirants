@@ -1008,21 +1008,30 @@ export function App() {
         const plannedQuestionKeys = new Set()
         const fetchPlanBucket = async bucket => {
           const sampleSize = Math.max(120, Number(bucket.questions || 0) * 12)
-          const makeQuery = () => {
+          const makeQuery = (topics = bucket.topics) => {
             let query = supabase.from('mcq_questions_job').select('*')
               .eq('is_active', true)
               .in('subject', dbSubjectsFor([bucket.subject]))
-            if (bucket.topics?.length) query = query.in('topic', [...new Set(bucket.topics)])
+            if (topics?.length) query = query.in('topic', [...new Set(topics)])
             if (bucket.questionTerms?.length) {
               query = query.or(bucket.questionTerms.map(term => `question.ilike.%${term}%`).join(','))
             }
             return query.order('id', { ascending: true }).order('created_at', { ascending: true }).limit(sampleSize)
           }
+          // For locked papers, query each exact topic separately: a large topic
+          // must not fill the database page and crowd every other syllabus topic out.
+          const fetchPool = async applyFilter => {
+            const topicGroups = bucket.fixed && bucket.topics?.length > 1
+              ? bucket.topics.map(topic => [topic])
+              : [bucket.topics]
+            const results = await Promise.all(topicGroups.map(topics => applyFilter(makeQuery(topics))))
+            const failed = results.find(result => result.error)
+            if (failed?.error) throw failed.error
+            return uniqueQuestions(results.flatMap(result => result.data || []))
+          }
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')
-          if (namedResult.error) throw namedResult.error
-          const namedRows = uniqueQuestions(namedResult.data || [])
+          const namedRows = (await fetchPool(query => query.not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')))
             .filter(question => !plannedQuestionKeys.has(questionKey(question)))
           // Keep every available named previous-exam row ahead of the generic
           // BCS fallback. Mixing the two pools together could otherwise replace
@@ -1069,9 +1078,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             // A planned bucket can already contain an OR of syllabus keywords;
             // use the actual generic `bcs` value here instead of adding a second
             // PostgREST OR filter that could broaden or replace that condition.
-            const genericResult = await makeQuery().or('post_name.ilike.bcs,post_name.eq.অনুশীলনী,post_name.is.null,post_name.eq.')
-            if (genericResult.error) throw genericResult.error
-            const genericRows = uniqueQuestions(genericResult.data || [])
+            const genericRows = (await fetchPool(query => query.or('post_name.ilike.bcs,post_name.eq.অনুশীলনী,post_name.is.null,post_name.eq.')))
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
               ? copyFixedRows(genericRows).slice(0, remaining)
