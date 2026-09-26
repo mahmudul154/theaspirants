@@ -1009,6 +1009,8 @@ export function App() {
         const fetchPlanBucket = async bucket => {
           const databaseTarget = Math.min(Number(bucket.questions || 0), Math.max(0, Number(bucket.databaseQuestions ?? bucket.questions ?? 0)))
           const generatedRows = Array.isArray(bucket.generatedRows) ? bucket.generatedRows : []
+          const preferredRows = Array.isArray(bucket.preferredRows) ? bucket.preferredRows : []
+          const fallbackRows = Array.isArray(bucket.fallbackRows) ? bucket.fallbackRows : []
           const generatedTarget = Math.max(0, Number(bucket.questions || 0) - databaseTarget)
           if (generatedRows.length !== generatedTarget) {
             throw new Error(`${bucket.label}: expected ${generatedTarget} generated rows, got ${generatedRows.length}`)
@@ -1036,10 +1038,28 @@ export function App() {
             if (failed?.error) throw failed.error
             return uniqueQuestions(results.flatMap(result => result.data || []))
           }
+          const preferredDbRows = preferredRows.length
+            ? await supabase.from('mcq_questions_job').select('*')
+                .eq('is_active', true)
+                .in('subject', dbSubjectsFor([bucket.subject]))
+                .in('topic', databaseTopics || [])
+                .in('question', preferredRows.map(question => question.question))
+                .order('id', { ascending: true }).order('created_at', { ascending: true })
+                .limit(preferredRows.length)
+                .then(({ data, error }) => { if (error) throw error; return uniqueQuestions(data || []) })
+            : []
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-          const namedRows = (await fetchPool(query => query.not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')))
-            .filter(question => !plannedQuestionKeys.has(questionKey(question)))
+          const preferredQuestionTexts = new Set(preferredRows.map(question => question.question))
+          const preferredDbTexts = new Set(preferredDbRows.map(question => question.question))
+          const fallbackPreferredRows = fallbackRows.filter(question => !preferredDbTexts.has(question.question))
+          const otherNamedRows = (await fetchPool(query => query.not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')))
+            .filter(question => !preferredQuestionTexts.has(question.question))
+          const namedRows = uniqueQuestions([
+            ...preferredDbRows,
+            ...fallbackPreferredRows,
+            ...otherNamedRows
+          ]).filter(question => !plannedQuestionKeys.has(questionKey(question)))
           // Keep every available named previous-exam row ahead of the generic
           // BCS fallback. Mixing the two pools together could otherwise replace
           // named rows even when they were available for this exact bucket.
@@ -1048,12 +1068,16 @@ export function App() {
           // crowded out by the first database rows.
           const selectFixedRows = (sourceRows, limit) => {
             if (!databaseTopics?.length) return sourceRows.slice(0, limit)
+            const preferred = uniqueQuestions(sourceRows.filter(question => preferredQuestionTexts.has(question.question)))
+            if (preferred.length >= limit) return preferred.slice(0, limit)
+            const preferredKeys = new Set(preferred.map(questionKey))
+            const remainingRows = sourceRows.filter(question => !preferredKeys.has(questionKey(question)))
             const byTopic = new Map(databaseTopics.map(topic => [topic, []]))
-            sourceRows.forEach(question => {
+            remainingRows.forEach(question => {
               const list = byTopic.get(question.topic)
               if (list) list.push(question)
             })
-            const selected = []
+            const selected = [...preferred]
             while (selected.length < limit) {
               let added = false
               for (const topic of databaseTopics) {
@@ -1115,12 +1139,12 @@ export function App() {
         }
         // Keep supplied additions alongside the planned database selection; they
         // use the same canonical question shape and count toward the live limit.
-        const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
+          const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
         if (fixedPaper) {
-          // Day 5 is deliberately interleaved: English → GK → Math, repeated.
-          // Once a shorter bucket ends, the remaining buckets continue in the
-          // same stable cycle without changing the paper for another learner.
-          const cycleSubjects = ['English', 'আন্তর্জাতিক বিষয়াবলি', 'গাণিতিক যুক্তি']
+          // Interleave every fixed subject bucket in syllabus order. If a bucket
+          // runs out first, the remaining subjects continue in the same stable
+          // cycle, so every candidate receives the same mixed paper.
+          const cycleSubjects = plannedBuckets.map(({ bucket }) => bucket.subject)
           const rowsBySubject = new Map(plannedBuckets.map(({ bucket, rows: bucketRows }) => [bucket.subject, [...bucketRows]]))
           const interleavedRows = []
           let added = true
@@ -1388,16 +1412,26 @@ export function App() {
         localStorage.setItem(storageKey, JSON.stringify(next))
         return next
       })
+      const displayName = [
+        user.user_metadata?.full_name,
+        user.user_metadata?.name,
+        user.user_metadata?.display_name,
+        user.email?.split('@')[0]
+      ].map(value => String(value || '').trim()).find(Boolean) || 'শিক্ষার্থী'
       supabase.from('exam_results').insert({
         user_id: user.id,
-        user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'শিক্ষার্থী',
-        // user_avatar doubles as a small metadata slot: { u: avatarUrl, e: email }
-        // so the leaderboard can identify participants by email too.
-        user_avatar: JSON.stringify({ u: user.user_metadata?.avatar_url || null, e: user.email || '' }),
+        user_name: displayName,
+        // Keep leaderboard metadata privacy-safe; never publish the account email.
+        user_avatar: JSON.stringify({ u: user.user_metadata?.avatar_url || null }),
         score: pct,
         total_questions: qs.length,
         category: quiz.rankingEligible ? `live:${quiz.scheduleId}` : `live-archive:${quiz.scheduleId}`
-      }).then(({ error }) => { if (error) console.warn('Live attempt sync failed:', error.message) })
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('Live attempt sync failed:', error.message)
+          setToastMsg('পরীক্ষার ফল লিডারবোর্ডে সিঙ্ক হয়নি—ডেটাবেস সেটআপ SQL চালাতে হবে')
+        }
+      })
     }
     const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
       .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
@@ -1435,15 +1469,16 @@ export function App() {
       allRows.forEach(row => {
         const key = row.user_id || row.user_name
         let avatarUrl = null
-        let email = ''
         if (row.user_avatar) {
           try {
             const meta = JSON.parse(row.user_avatar)
-            if (meta && typeof meta === 'object') { avatarUrl = meta.u || meta.avatar_url || null; email = meta.e || meta.email || '' }
+            if (meta && typeof meta === 'object') avatarUrl = meta.u || meta.avatar_url || null
             else avatarUrl = row.user_avatar
           } catch { avatarUrl = row.user_avatar }
         }
-        grouped[key] ||= { user_name: row.user_name, user_avatar: avatarUrl, user_email: email, totalScore: 0, total_exams: 0 }
+        const rowName = String(row.user_name || '').trim()
+        grouped[key] ||= { user_name: rowName || 'শিক্ষার্থী', user_avatar: avatarUrl, user_email: '', totalScore: 0, total_exams: 0 }
+        if ((!grouped[key].user_name || grouped[key].user_name === 'শিক্ষার্থী') && rowName) grouped[key].user_name = rowName
         grouped[key].total_exams += 1
         grouped[key].totalScore += Number(row.score)
       })

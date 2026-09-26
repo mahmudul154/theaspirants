@@ -1,7 +1,7 @@
 // Forty consecutive 23:30 Asia/Dhaka model exams. Each daily paper is loaded
 // from the question bank according to its published subject counts and shared
 // preliminary-preparation topics.
-import { SEPTEMBER_26_GENERATED_BANGLADESH_QUESTIONS, SEPTEMBER_26_GENERATED_INTERNATIONAL_QUESTIONS } from './september-26-generated-questions.js'
+import { SEPTEMBER_26_FIXED_MATH_QUESTIONS, SEPTEMBER_26_FIXED_BANGLADESH_QUESTIONS, SEPTEMBER_26_GENERATED_INTERNATIONAL_QUESTIONS } from './september-26-user-questions.js'
 
 const part = (subject, label, topics, questions, extra) => ({ subject, label, topics, questions, ...(extra || {}) })
 
@@ -294,12 +294,12 @@ const DAY12_PLAN = [
 ]
 
 const DAY13_PLAN = [
-  // DB-backed questions are selected in stable topic order; generatedRows fill
-  // only the syllabus subtopics absent from the question bank.
+  // DB rows matching the supplied seed questions take priority; bundled copies
+  // are fallback rows until the accompanying Supabase seed is applied.
   part('বাংলা', 'বাংলা ব্যাকরণ: বিপরীত শব্দ', ['বিপরীত শব্দ', 'বিপরীতার্থক শব্দ'], 20, { fixed: true }),
-  part('বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ ও আইন বিভাগ', ['পাকিস্তান আমলে বাংলাদেশ (১৯৪৭-১৯৭১)', 'রাজনৈতিক ব্যবস্থা', 'সরকার ও প্রশাসন', 'সরকার ব্যবস্থা', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'], 20, { fixed: true, databaseQuestions: 13, generatedRows: SEPTEMBER_26_GENERATED_BANGLADESH_QUESTIONS, questionTerms: ['জিয়াউর রহমান', 'জিয়াউর রহমান', 'জিয়া', 'জিয়া', 'BNP', 'জাতীয়তাবাদী দল', 'জাতীয়তাবাদী দল', 'রাজনৈতিক দল', 'political party', 'আওয়ামী মুসলিম লীগ', 'আইন বিভাগের প্রধান', 'আইন বিভাগ', 'সুপ্রিম কোর্ট', 'রাষ্ট্রপতি', 'সামরিক আইন প্রশাসক'] }),
+  part('বাংলাদেশ বিষয়াবলি', 'বাংলাদেশ: রাজনৈতিক দলসমূহ, জিয়া শাসনামল, চাপ সৃষ্টিকারী গোষ্ঠী, সরকারের বিভাগ ও আইন বিভাগ', ['পাকিস্তান আমলে বাংলাদেশ (১৯৪৭-১৯৭১)', 'রাজনৈতিক ব্যবস্থা', 'সরকার ও প্রশাসন', 'সরকার ব্যবস্থা', 'মুক্তিযুদ্ধের পরবর্তী ইতিহাস'], 20, { fixed: true, databaseQuestions: 20, databaseTopics: ['রাজনৈতিক দলসমূহ ও জিয়া শাসনামল', 'রাজনৈতিক দলসমূহ', 'জিয়া শাসনামল', 'আইন বিভাগ', 'আইন বিভাগ ও রাজনীতি'], preferredRows: SEPTEMBER_26_FIXED_BANGLADESH_QUESTIONS, fallbackRows: SEPTEMBER_26_FIXED_BANGLADESH_QUESTIONS }),
   part('English', 'ইংরেজি ব্যাকরণ: Transformation of Sentence', ['Transformation of Sentence'], 20, { fixed: true, databaseTopics: ['Transformation'] }),
-  part('গাণিতিক যুক্তি', 'গণিত: সূচক ও লগারিদম', ['Indices', 'লগারিদম', 'Logarithm'], 15, { fixed: true }),
+  part('গাণিতিক যুক্তি', 'গণিত: সূচক ও লগারিদম', ['Indices', 'লগারিদম', 'Logarithm'], 15, { fixed: true, databaseQuestions: 15, databaseTopics: ['সূচক ও লগারিদম'], preferredRows: SEPTEMBER_26_FIXED_MATH_QUESTIONS, fallbackRows: SEPTEMBER_26_FIXED_MATH_QUESTIONS }),
   part('আন্তর্জাতিক বিষয়াবলি', 'আন্তর্জাতিক: তথ্য–ব্যতিক্রম রাষ্ট্র, রাজধানী–মুদ্রা–ভাষা–পার্লামেন্ট', ['রাজধানী', 'মুদ্রা ও দেশ', 'আইনসভা ও সংসদ', 'বিশ্বের ভূগোল'], 25, { fixed: true, databaseQuestions: 20, generatedRows: SEPTEMBER_26_GENERATED_INTERNATIONAL_QUESTIONS })
 ]
 
