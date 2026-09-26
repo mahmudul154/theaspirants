@@ -10,9 +10,14 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, ROUTINE_SYLLABUS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
+import {
+  JOB_CIRCULARS, CIRCULAR_DATA_UPDATED, CIRCULAR_STATUS_LABEL,
+  circularStatus, circularUrgency, circularDaysLeft, formatCircularCountdown,
+  formatCircularDate, formatCircularDateTime, filterJobCirculars, jobCircularCounts
+} from './job-circulars.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -30,6 +35,10 @@ const dhakaDateKey = (now = Date.now(), dayOffset = 0) => {
 }
 const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
+}).format(new Date(`${dateKey}T12:00:00+06:00`))
+// রুটিন সিরিয়ালের কম্প্যাক্ট তারিখ — বছর ছাড়া (যেমন "১০ সেপ্টেম্বর")
+const dhakaDayMonthLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
+  timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
 // Homepage circular hub: exactly four cards shown as a fixed 2x2 grid.
@@ -57,11 +66,16 @@ const ICOS = {
   mountain: <path d="M8 3l4 8 5-5 5 15H2z" />,
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
-const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain' }
 const ROUTINE_SUBJECT_LABELS = {
   English: 'ইংরেজি',
   'গাণিতিক যুক্তি': 'গণিত'
 }
+// কাস্টম এক্সামের টপিক তালিকায় রুটিনের কোন দিনটি শুরুতে খোলা থাকবে — আজকের
+// দিন থাকলে সেটি, নাহলে সিরিয়ালের প্রথম দিন।
+const ROUTINE_DEFAULT_OPEN_KEY = ROUTINE_SYLLABUS.some(day => day.dateKey === dhakaDateKey())
+  ? dhakaDateKey()
+  : (ROUTINE_SYLLABUS[0]?.dateKey ?? null)
 const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
 // "৪০ দিনে প্রিলি • দিন ৫" → "দিন ৫" (heading-এ শুধু দিন দেখাতে)
 const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] || ''
@@ -97,7 +111,6 @@ const SUBJECT_TEACHERS = {
   'কম্পিউটার ও তথ্যপ্রযুক্তি': 'কম্পিউটার ও তথ্যপ্রযুক্তি বিষয়ের শিক্ষক',
   'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'নৈতিকতা, মূল্যবোধ ও সুশাসন বিষয়ের শিক্ষক',
   'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা বিষয়ের শিক্ষক',
-  'Microcontroller': 'মাইক্রোকন্ট্রোলার বিষয়ের শিক্ষক',
   'ভিজ্যুয়াল জিকে': 'সাধারণ জ্ঞান বিষয়ের শিক্ষক'
 }
 const Ico = ({ id, size = 22 }) => (
@@ -181,6 +194,53 @@ const SHEET_ICONS = {
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
 )
+
+const CIRCULAR_FILTER_LABEL = { open: 'চলছে', upcoming: 'শুরু হবে', closed: 'শেষ', all: 'সব' }
+
+/**
+ * One government job circular with a live apply countdown.
+ *
+ * `now` is passed in (rather than read here) so the parent's single 1s ticker
+ * drives every card and the countdowns stay in step with each other.
+ */
+// Exported so it can be render-tested outside the browser (see
+// scripts/render-smoke-job-circulars.mjs); nothing else imports it.
+export function JobCircularCard({ circular, now, compact = false, onDetails, onApply }) {
+  const status = circularStatus(circular, now)
+  const urgency = circularUrgency(circular, now)
+  const daysLeft = circularDaysLeft(circular, now)
+  // Before the window opens the countdown tracks the start, not the deadline.
+  const countdownTarget = status === 'upcoming' ? circular.applyStart : circular.applyDeadline
+  const countdownLabel = status === 'upcoming' ? 'আবেদন শুরু হতে বাকি' : 'আবেদনের বাকি সময়'
+  return (
+    <article className={`job-circular-card${compact ? ' compact' : ''}${urgency ? ` is-${urgency}` : ''}${status === 'closed' ? ' is-closed' : ''}`}>
+      <div className="job-circular-top">
+        <span className={`circular-icon circular-icon-${circular.icon}`}><SheetIco id={circular.icon} /></span>
+        <span className="job-circular-org"><span className="circular-tag">{circular.category}</span><b>{circular.org}</b></span>
+        <span className={`job-status job-status-${status}`}>{CIRCULAR_STATUS_LABEL[status]}</span>
+      </div>
+      <p className="job-circular-summary">{circular.summary}</p>
+      {!compact && <div className="job-circular-meta">
+        {circular.vacancy ? <span><small>শূন্যপদ</small><strong className="num">{BN(circular.vacancy)}টি</strong></span> : null}
+        {circular.posts ? <span><small>কোন পদে</small><strong>{circular.posts}</strong></span> : null}
+        {circular.fee ? <span><small>আবেদন ফি</small><strong>{circular.fee}</strong></span> : null}
+      </div>}
+      {status === 'closed'
+        ? <div className="job-countdown closed"><span>আবেদনের সময় শেষ</span><small>{formatCircularDateTime(circular.applyDeadline)}-এ বন্ধ হয়েছে</small></div>
+        : <div className="job-countdown">
+            <span>{countdownLabel}</span>
+            <b className="num" aria-live="polite">{formatCircularCountdown(countdownTarget, now)}</b>
+            {status === 'upcoming'
+              ? <small>শুরু: {formatCircularDateTime(circular.applyStart)}</small>
+              : <small>শেষ: {formatCircularDateTime(circular.applyDeadline)}{daysLeft <= 1 ? ' — আজই শেষ!' : ` • ${BN(daysLeft)} দিন বাকি`}</small>}
+          </div>}
+      <div className="job-circular-actions">
+        <button className="btn ghost sm" onClick={() => onDetails(circular)}>মূল বিজ্ঞপ্তি</button>
+        <button className="btn primary sm" disabled={status === 'closed'} onClick={() => onApply(circular)}>{status === 'closed' ? 'আবেদন বন্ধ' : 'আবেদন করুন'}</button>
+      </div>
+    </article>
+  )
+}
 function calcStreak(days) {
   const set = new Set(days); const d = new Date()
   if (!set.has(d.toDateString())) d.setDate(d.getDate() - 1)
@@ -381,6 +441,9 @@ export function App() {
   // Gemini cannot natively accept a prompt from a URL, so reveal a compact
   // paste cue below the exact question after its prompt has been copied.
   const [geminiHintKey, setGeminiHintKey] = useState(null)
+  // Job-circular hub: which circular's full notice is open, and the list filter.
+  const [circularDetail, setCircularDetail] = useState(null)
+  const [circularFilter, setCircularFilter] = useState('open')
   const [loading, setLoading] = useState(false)
 
   const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
@@ -392,16 +455,35 @@ export function App() {
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cTopics, setCTopics] = useState([])
   const [cTopicSearch, setCTopicSearch] = useState('')
+  // রুটিন সিরিয়ালের কোন কোন দিন খোলা আছে — ব্যবহারকারীর টগল মনে রাখতে,
+  // নইলে টপিক বাছার রি-রেন্ডারে হাতে খোলা দিন আবার বন্ধ হয়ে যেত।
+  const [cOpenRoutineDays, setCOpenRoutineDays] = useState(() => (ROUTINE_DEFAULT_OPEN_KEY ? [ROUTINE_DEFAULT_OPEN_KEY] : []))
   const [cCount, setCCount] = useState(25)
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
   const cTopicNeedle = cTopicSearch.trim().toLocaleLowerCase()
   const cVisibleTopics = cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle))
+  // তারিখ অনুযায়ী রুটিন সিরিয়াল — কাস্টম এক্সামে টপিক দ্রুত খুঁজে পাওয়ার জন্য
+  // প্রকাশিত রুটিনের দিনগুলো (দিন ৩ → ২৩) সবার আগে, তারপর বাকি সব টপিক।
+  const cRoutineSearchActive = cTopicNeedle.length > 0
+  const cRoutineDays = ROUTINE_SYLLABUS
+    .map(day => {
+      const subjects = day.subjects
+        .filter(item => cSubs.includes(item.subject))
+        .map(item => ({ ...item, topics: item.topics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle)) }))
+        .filter(item => item.topics.length)
+      return { ...day, subjects, topics: [...new Set(subjects.flatMap(item => item.topics))] }
+    })
+    .filter(day => day.topics.length)
+  const cRoutineTopicSet = new Set(cRoutineDays.flatMap(day => day.topics))
+  // রুটিনে দেখানো টপিকগুলো নিচের তালিকা থেকে বাদ, যাতে একই টপিক দুবার না আসে।
+  const cRemainingTopics = cVisibleTopics.filter(topic => !cRoutineTopicSet.has(topic))
+  const cTodayDateKey = dhakaDateKey()
   const cMathTopicGroups = MATH_TOPIC_GROUPS
-    .map(group => ({ ...group, topics: group.topics.filter(topic => cVisibleTopics.includes(topic)) }))
+    .map(group => ({ ...group, topics: group.topics.filter(topic => cRemainingTopics.includes(topic)) }))
     .filter(group => group.topics.length)
-  const toggleMathTopicGroup = groupTopics => setCTopics(current => {
+  const toggleTopicGroup = groupTopics => setCTopics(current => {
     const isSelected = groupTopics.every(topic => current.includes(topic))
     return isSelected
       ? current.filter(topic => !groupTopics.includes(topic))
@@ -442,6 +524,11 @@ export function App() {
   // A running live paper switches the home card to today's, live-updating
   // ranking. Once the paper ends, it returns to the complete previous-day list.
   const scheduledExams = buildDailyLiveExams(clock)
+  // Job-circular hub state, all derived from the same 1s ticker so every
+  // countdown on screen advances together.
+  const circularCounts = jobCircularCounts(JOB_CIRCULARS, clock)
+  const visibleJobCirculars = filterJobCirculars(JOB_CIRCULARS, circularFilter, clock)
+  const urgentJobCirculars = filterJobCirculars(JOB_CIRCULARS, 'open', clock).slice(0, 4)
   const activeLiveExam = scheduledExams.find(exam => exam.status === 'live') || null
   const liveLeaderboardActive = !!activeLiveExam
   const activeLiveLeaderboardDateKey = activeLiveExam?.dateKey || null
@@ -530,7 +617,8 @@ export function App() {
     setSeenQuestions(user?.id ? load(`asp_seen_questions_v1_${user.id}`, []) : [])
   }, [user?.id])
   useEffect(() => {
-    if (!['home', 'exams', 'leaderboard'].includes(page)) return
+    // 'circular' joins the list so apply-deadline countdowns tick live too.
+    if (!['home', 'exams', 'leaderboard', 'circular'].includes(page)) return
     setClock(Date.now())
     const timer = setInterval(() => setClock(Date.now()), 1000)
     return () => clearInterval(timer)
@@ -591,6 +679,7 @@ export function App() {
       setSheetOpen(false)
       setSearchOpen(false)
       setNotifOpen(false)
+      setCircularDetail(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape) }
@@ -644,7 +733,7 @@ export function App() {
 
   function go(p, options = {}) {
     if (p === 'profile' && !user) p = 'login'
-    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
+    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false); setCircularDetail(null)
     if (p !== 'visual') setVSel(null)
     if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey, !!options.includeArchived)
     if (p === 'profile') fetchProfile()
@@ -768,6 +857,35 @@ export function App() {
       .then(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে—প্রম্পট কপি করা আছে।`))
       .catch(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পটটি কপি করা যায়নি।`))
   }
+
+  /**
+   * Open a Teletalk application portal or an official notice outside the app.
+   *
+   * Teletalk's form + SMS payment flow does not work inside the Capacitor
+   * WebView, so on native Android the URL is handed to the installed Chrome
+   * package — the same path the Gemini helper already uses. On web it opens a
+   * normal tab. Returns false when the link was missing so callers can warn.
+   */
+  function openExternalLink(url, label = 'লিংক') {
+    if (!url) {
+      setToastMsg('এই বিজ্ঞপ্তির জন্য কোনো লিংক যোগ করা হয়নি।')
+      return false
+    }
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      ChromeBrowser.open({ url })
+        .then(() => setToastMsg(`${label} Chrome-এ খোলা হয়েছে।`))
+        .catch(() => setToastMsg('Chrome খোলা যায়নি। ডিভাইসে Chrome ইনস্টল আছে কি না দেখুন।'))
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setToastMsg(`${label} নতুন ট্যাবে খোলা হয়েছে।`)
+    }
+    return true
+  }
+
+  // "আবেদন করুন" goes straight to the circular's own application server.
+  const applyToCircular = circular => openExternalLink(circular.applyUrl, `${circular.orgShort} আবেদন পোর্টাল`)
+  // "মূল বিজ্ঞপ্তি" opens the notice that was read, for verification.
+  const openCircularNotice = circular => openExternalLink(circular.circularUrl, 'মূল বিজ্ঞপ্তি')
 
   function launchScheduledExam(exam, candidate = null, testing = false) {
     // Archived papers remain available once, but only attempts started in the
@@ -1024,8 +1142,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         // are intentionally skipped here so one source can combine all its topics.
         if (selectedPostNames.length === 1) filtered = filtered.eq('post_name', selectedPostNames[0])
         else if (selectedPostNames.length > 1) filtered = filtered.in('post_name', selectedPostNames)
-        // The full BCS mix is the whole active job pool except Microcontroller.
-        // This avoids an oversized 70+ value IN filter while retaining ~93K rows.
+        // The full BCS mix is the whole active job pool except the legacy
+        // মাইক্রোকন্ট্রোলার rows. The subject is no longer offered anywhere in the
+        // app, but those rows still exist in the database, so they stay excluded.
+        // This also avoids an oversized 70+ value IN filter while retaining ~93K rows.
         else if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
         else if (dbSubjects.length) filtered = filtered.in('subject', dbSubjects)
         if (selectedTopics.length) filtered = filtered.in('topic', selectedTopics)
@@ -1654,6 +1774,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
             </div>
           </div>
+
+            {/* Live job circulars - PR #3: countdown + Teletalk apply */}
+            {urgentJobCirculars.length > 0 && (
+              <div className="ai-section home-live-circulars">
+                <div className="ai-section-head compact"><h3>চলমান সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
+                <div className="job-circular-grid">
+                  {urgentJobCirculars.map(item => <JobCircularCard key={item.id} circular={item} now={clock} compact onDetails={setCircularDetail} onApply={applyToCircular} />)}
+                </div>
+              </div>
+            )}
         </>}
 
         {/* ================= LIVE EXAM CENTER ================= */}
@@ -1925,11 +2055,73 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                           <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
                           <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
                         </label>
+
+                        {!!cRoutineDays.length && <div className="routine-serial">
+                          <div className="routine-serial-head">
+                            <b>তারিখ অনুযায়ী সিলেবাস</b>
+                            <small>রুটিনের দিন ধরে ধরে টপিক বাছুন — সিরিয়াল অনুযায়ী সাজানো</small>
+                          </div>
+                          {cRoutineDays.map(day => {
+                            const selectedInDay = day.topics.filter(topic => cTopics.includes(topic)).length
+                            const allSelected = selectedInDay === day.topics.length
+                            return (
+                              <details
+                                className={`routine-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
+                                key={day.dateKey}
+                                open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
+                                onToggle={event => {
+                                  // সার্চ চলাকালীন সব দিন জোর করে খোলা থাকে;
+                                  // সেই টগল ব্যবহারকারীর পছন্দ হিসেবে জমা রাখি না।
+                                  if (cRoutineSearchActive) return
+                                  const isOpen = event.currentTarget.open
+                                  setCOpenRoutineDays(current => isOpen
+                                    ? (current.includes(day.dateKey) ? current : [...current, day.dateKey])
+                                    : current.filter(key => key !== day.dateKey))
+                                }}>
+                                <summary>
+                                  <span className="routine-day-badge">দিন {BN(day.day)}</span>
+                                  <span className="routine-day-meta">
+                                    <b>
+                                      {dhakaDayMonthLabel(day.dateKey)}
+                                      {day.revision && <em className="routine-day-revision">রিভিশন</em>}
+                                      {day.dateKey === cTodayDateKey && <em className="routine-day-today">আজ</em>}
+                                    </b>
+                                    <small>{day.subjects.map(item => ROUTINE_SUBJECT_LABELS[item.subject] || item.subject).join(' • ')} — {BN(day.topics.length)} টপিক</small>
+                                  </span>
+                                  {!!selectedInDay && <span className={`routine-day-count ${allSelected ? 'all' : ''}`}>{BN(selectedInDay)} ✓</span>}
+                                  <i aria-hidden="true">⌄</i>
+                                </summary>
+                                <div className="routine-day-body">
+                                  <label className="topic-check-option all-option">
+                                    <input type="checkbox" checked={allSelected} onChange={() => toggleTopicGroup(day.topics)} />
+                                    <span><b>এই দিনের সব টপিক</b><small>{BN(day.topics.length)}টি টপিক একসঙ্গে নির্বাচন করুন</small></span>
+                                  </label>
+                                  {day.subjects.map(item => (
+                                    <div className="routine-day-subject" key={item.subject}>
+                                      <span className="routine-day-subject-head">
+                                        <Ico id={item.subject} size={13} />
+                                        {ROUTINE_SUBJECT_LABELS[item.subject] || item.subject}
+                                      </span>
+                                      {item.topics.map(topic => (
+                                        <label className="topic-check-option" key={topic}>
+                                          <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(entry => entry !== topic) : [...current, topic])} />
+                                          <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            )
+                          })}
+                          <div className="routine-serial-divider"><span>রুটিনের বাইরের অন্যান্য টপিক</span></div>
+                        </div>}
+
                         {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
                           ? cMathTopicGroups.map(group => (
                               <div className="topic-check-group" key={group.label}>
                                 <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
-                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleMathTopicGroup(group.topics)} />
+                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
                                   <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
                                 </label>
                                 {group.topics.map(topic => (
@@ -1940,7 +2132,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                                 ))}
                               </div>
                             ))
-                          : cVisibleTopics.map(topic => (
+                          : cRemainingTopics.map(topic => (
                               <label className="topic-check-option" key={topic}>
                                 <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
                                 <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
@@ -2039,8 +2231,22 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           <section className="sec circular-page">
             <div className="head">
               <div className="eyebrow">চাকরির আপডেট</div>
-              <h2>চাকরির <i>সার্কুলার</i></h2>
-              <p className="muted">বিভিন্ন চাকরির প্রস্তুতি, প্রশ্নব্যাংক ও মডেল পরীক্ষায় দ্রুত যেতে একটি জায়গা থেকে বেছে নিন।</p>
+              <h2>চলমান সরকারি <i>সার্কুলার</i></h2>
+              <p className="muted">আবেদনের শেষ সময় পর্যন্ত কতদিন বাকি দেখে নিন, মূল বিজ্ঞপ্তি পড়ুন এবং সরাসরি টেলিটক পোর্টালে গিয়ে আবেদন করুন।</p>
+            </div>
+            <div className="job-circular-filters" role="group" aria-label="বিজ্ঞপ্তি ফিল্টার">
+              {['open', 'upcoming', 'closed', 'all'].map(key => <button key={key} className={circularFilter === key ? 'on' : ''} aria-pressed={circularFilter === key} onClick={() => setCircularFilter(key)}>
+                {CIRCULAR_FILTER_LABEL[key]}<span className="num">{BN(circularCounts[key] || 0)}</span>
+              </button>)}
+            </div>
+            {visibleJobCirculars.length ? <div className="job-circular-grid">
+              {visibleJobCirculars.map(item => <JobCircularCard key={item.id} circular={item} now={clock} onDetails={setCircularDetail} onApply={applyToCircular} />)}
+            </div> : <div className="circular-tip"><span>📭</span><span><b>এই ফিল্টারে কোনো বিজ্ঞপ্তি নেই</b><small>অন্য একটি ফিল্টার বেছে নিন, বা পরে আবার দেখুন।</small></span></div>}
+            <div className="circular-tip"><span>⚠️</span><span><b>আবেদনের আগে অবশ্যই যাচাই করুন</b><small>তালিকাটি সর্বশেষ হালনাগাদ {formatCircularDate(CIRCULAR_DATA_UPDATED)} তারিখে। শেষ সময়, ফি ও যোগ্যতা অফিসিয়াল বিজ্ঞপ্তিতে মিলিয়ে নিন — প্রতিটি কার্ডের "মূল বিজ্ঞপ্তি" বাটনে সেটি খুলবে।</small></span></div>
+
+            <div className="head" style={{ marginTop: 8 }}>
+              <div className="eyebrow">প্রস্তুতি</div>
+              <h2 style={{ marginTop: 10 }}>বিজ্ঞপ্তি দেখে <i>প্রস্তুতি</i> নিন</h2>
             </div>
             <div className="circular-page-grid">
               {CIRCULARS.map(item => <article className="circular-page-card" key={item.title}>
@@ -2584,6 +2790,62 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           </div>
         </aside>
       </>}
+
+      {/* ================= JOB CIRCULAR — FULL NOTICE ================= */}
+      {circularDetail && <div className="ai-modal-bg" onClick={() => setCircularDetail(null)}>
+        <div className="ai-modal job-circular-modal" role="dialog" aria-modal="true" aria-labelledby="job-circular-title" onClick={event => event.stopPropagation()}>
+          <div className="ai-modal-head">
+            <span className={`ai-modal-icon circular-icon-${circularDetail.icon}`}><SheetIco id={circularDetail.icon} /></span>
+            <div><span>{circularDetail.category}</span><h3 id="job-circular-title">{circularDetail.org}</h3></div>
+            <button className="ibtn" aria-label="বিজ্ঞপ্তি বন্ধ করুন" onClick={() => setCircularDetail(null)}><SheetIco id="close" /></button>
+          </div>
+
+          <div className="job-circular-modal-body">
+            {(() => {
+              const status = circularStatus(circularDetail, clock)
+              const target = status === 'upcoming' ? circularDetail.applyStart : circularDetail.applyDeadline
+              return (
+                <div className={`job-countdown modal${status === 'closed' ? ' closed' : ''}`}>
+                  <span>{status === 'upcoming' ? 'আবেদন শুরু হতে বাকি' : status === 'closed' ? 'আবেদনের সময় শেষ' : 'আবেদনের বাকি সময়'}</span>
+                  {status === 'closed'
+                    ? <b className="num">{formatCircularDateTime(circularDetail.applyDeadline)}</b>
+                    : <><b className="num" aria-live="polite">{formatCircularCountdown(target, clock)}</b>
+                        <small>{status === 'upcoming' ? `শুরু: ${formatCircularDateTime(circularDetail.applyStart)}` : `শেষ: ${formatCircularDateTime(circularDetail.applyDeadline)}`}</small></>}
+                </div>
+              )
+            })()}
+
+            <p className="job-circular-modal-summary">{circularDetail.summary}</p>
+
+            <div className="job-circular-facts">
+              {circularDetail.vacancy ? <span><small>শূন্যপদ</small><strong className="num">{BN(circularDetail.vacancy)}টি</strong></span> : null}
+              {circularDetail.posts ? <span><small>পদ</small><strong>{circularDetail.posts}</strong></span> : null}
+              {circularDetail.fee ? <span><small>আবেদন ফি</small><strong>{circularDetail.fee}</strong></span> : null}
+              {circularDetail.ageLimit ? <span><small>বয়সসীমা</small><strong>{circularDetail.ageLimit}</strong></span> : null}
+              {circularDetail.qualification ? <span><small>যোগ্যতা</small><strong>{circularDetail.qualification}</strong></span> : null}
+            </div>
+
+            {circularDetail.highlights?.length ? <div className="job-circular-highlights">
+              <h4>গুরুত্বপূর্ণ তথ্য</h4>
+              <dl>{circularDetail.highlights.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>
+            </div> : null}
+
+            {circularDetail.note ? <div className="job-circular-note"><SheetIco id="bell" /><span>{circularDetail.note}</span></div> : null}
+
+            <div className="job-circular-verify">
+              <b>আবেদনের আগে যাচাই করুন</b>
+              <small>এই তথ্য তৃতীয় পক্ষের চাকরি পোর্টাল থেকে সংগৃহীত এবং সর্বশেষ হালনাগাদ {formatCircularDate(CIRCULAR_DATA_UPDATED)} তারিখে। চূড়ান্ত সিদ্ধান্তের আগে অফিসিয়াল বিজ্ঞপ্তি পড়ে নিন — শেষ সময় বা ফি বদলে যেতে পারে।</small>
+            </div>
+          </div>
+
+          <div className="job-circular-modal-actions">
+            <button className="btn ghost" onClick={() => openCircularNotice(circularDetail)}><SheetIco id="file" /> মূল বিজ্ঞপ্তি</button>
+            <button className="btn primary" disabled={circularStatus(circularDetail, clock) === 'closed'} onClick={() => applyToCircular(circularDetail)}>
+              {circularStatus(circularDetail, clock) === 'closed' ? 'আবেদন বন্ধ' : <>আবেদন করুন <SheetIco id="external" /></>}
+            </button>
+          </div>
+        </div>
+      </div>}
 
       {/* ================= LIVE MODEL-TEST ENTRY ================= */}
       {liveEntry && <div className="ai-modal-bg live-entry-bg" onClick={() => setLiveEntry(null)}>

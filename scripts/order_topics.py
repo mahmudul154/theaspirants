@@ -297,12 +297,6 @@ TOPICS["ভূগোল, পরিবেশ ও দুর্যোগ ব্য�
     "ঘূর্ণিঝড়, ঝড় ও বজ্রপাত", "বন্যা, সুনামি ও দুর্যোগ ব্যবস্থাপনা", " দুর্যোগ", "বিসিএস",
 ])
 
-TOPICS["Microcontroller"] = complete_order("Microcontroller", [
-    "Electronics", "Architecture", "Arduino Basics", "Arduino+port language", "Arduino Code",
-    "Digital read", "Digital write", "Port Manipulation", "Interrupts", "Timers", "Timers/Counters",
-    "Timers/Interrupts", "Performance", "Optimization",
-])
-
 # Final integrity: no label/count changes and every subject retains all topics.
 for subject, ordered in TOPICS.items():
     counted = set(COUNTS[subject]["topics"])
