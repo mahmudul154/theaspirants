@@ -1626,6 +1626,22 @@ export function App() {
     </div>
   }
 
+  // প্র্যাকটিস মোড, পরীক্ষার উত্তরপত্র ও রিভিশন খাতা—সবখানে একই রিভিউ ব্লক, তাই
+  // বক্সের আকার, স্পেসিং আর রঙ কোথাও এলোমেলো দেখায় না। প্র্যাকটিস মোডে ব্যাখ্যা
+  // খোলা আসে; বাকি জায়গায় চাইলে খুলে নেওয়া যায়।
+  const ReviewBlock = ({ question, selectedIndex, openExplanation = false }) => {
+    const answered = Number.isInteger(selectedIndex) && selectedIndex >= 0
+    const isCorrect = answered && question?.options?.[selectedIndex] === question?.answer
+    return <div className="review-block">
+      <ReviewOptions question={question} selectedIndex={answered ? selectedIndex : null} />
+      {answered && <p className={`review-verdict ${isCorrect ? 'ok' : 'bad'}`}>
+        <i aria-hidden="true" />{isCorrect ? 'সঠিক উত্তর' : 'ভুল উত্তর'}
+      </p>}
+      <Expl q={question} open={openExplanation} />
+      <GeminiHelp question={question} />
+    </div>
+  }
+
   const LBRow = (x, i) => (
     <div className="lb-row" key={i}>
       <span className="rk">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : BN(i + 1)}</span>
@@ -2257,18 +2273,13 @@ export function App() {
                   const selectedIndex = Number.isInteger(item?.revision?.selectedIndex)
                     ? item.revision.selectedIndex
                     : (item.options || []).indexOf(selectedAnswer)
-                  return <article className="rev-item bad-item" key={questionKey(item) || index}>
-                    <div className="rev-meta">
-                      <span>{item.subject || 'মিশ্র'}</span>
-                      <span>{item.topic || 'বিবিধ'}</span>
-                      <span className="source-badge" title={source.full}>{source.label}</span>
+                  return <article className="sheet-item bad" key={questionKey(item) || index}>
+                    <div className="sheet-item-head">
+                      <span className="sheet-item-meta" title={source.full}>{item.subject || 'মিশ্র'} • {item.topic || 'বিবিধ'} • {source.label}</span>
                     </div>
-                    <div className="q"><Md s={item.question} /></div>
-                    {selectedIndex >= 0
-                      ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
-                      : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
-                    <Expl q={item} />
-                    <GeminiHelp question={item} />
+                    <div className="sheet-item-q"><Md s={item.question} /></div>
+                    <ReviewBlock question={item} selectedIndex={selectedIndex} />
+                    {selectedIndex < 0 && <div className="sheet-item-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div>}
                   </article>
                 })}
               </>}
@@ -2425,16 +2436,7 @@ export function App() {
                 </div>
                 <div className="qn"><Md s={q.question} /></div>
                 {quiz.mode === 'practice' && quiz.ans[qi] != null ? (
-                  <div className="practice-review-wrap">
-                    <ReviewOptions question={q} selectedIndex={quiz.ans[qi]} />
-                    {quiz.ans[qi] != null && q.options[quiz.ans[qi]] === q.answer ? (
-                      <div className="practice-feedback correct">✓ সঠিক উত্তর</div>
-                    ) : (
-                      <div className="practice-feedback wrong">✗ ভুল উত্তর</div>
-                    )}
-                    <Expl q={q} open />
-                    <GeminiHelp question={q} />
-                  </div>
+                  <ReviewBlock question={q} selectedIndex={quiz.ans[qi]} openExplanation />
                 ) : (
                   (q.options || []).map((o, i) => (
                     <button className={`qopt ${quiz.ans[qi] === i ? 'sel' : ''}`} key={i}
@@ -2470,7 +2472,7 @@ export function App() {
             {result.candidate && <div className="live-candidate-line result-candidate-line"><span>নাম: <b>{result.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{result.candidate.institution}</b></span></div>}
             {result.testing && <div className="live-candidate-line result-candidate-line" role="status"><b>টেস্ট মোড সম্পন্ন</b><span>এই ফলটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলে সংরক্ষিত হয়নি।</span></div>}
             <div className="res-hero"><span className="big">{BN(result.ok)}<i>/</i>{BN(result.ok + result.bad + result.skip)}</span>
-              <span className="muted">{result.pct >= 80 ? '🏆 দুর্দান্ত! আপনি প্রস্তুত।' : result.pct >= 60 ? '👍 ভালো! আর একটু ধার দিন।' : '📖 আরও অনুশীলন প্রয়োজন!'}</span>
+              <span className="muted">{result.pct >= 80 ? 'দুর্দান্ত — আপনি প্রস্তুত।' : result.pct >= 60 ? 'ভালো — আরেকটু ধার দিন।' : 'আরও অনুশীলন দরকার।'}</span>
             </div>
             <div className="res-stats">
               <div className="stat"><strong>{BN(result.pct)}<i>%</i></strong><span>আপনার মোট স্কোর</span></div>
@@ -2508,25 +2510,27 @@ export function App() {
               {result.scheduleId && <button className="btn" onClick={() => go('leaderboard')}>লিডারবোর্ড →</button>}
               <button className="btn ghost" onClick={() => go('home')}>হোম →</button>
             </div>
-            {showRev && <div style={{ marginTop: 26 }}>
-              <div className="chips" style={{ marginBottom: 18 }}>
+            {showRev && <div className="answer-sheet" style={{ marginTop: 26 }}>
+              <div className="chips sheet-filters" style={{ marginBottom: 18 }}>
                 <button className={`chip ${!revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(false)}>সব প্রশ্ন ({BN(result.rev.length)})</button>
-                <button className={`chip ${revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(true)}>❌ শুধু ভুলগুলো ({BN(result.rev.filter(r => !(r.ua != null && r.options[r.ua] === r.answer)).length)})</button>
+                <button className={`chip ${revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(true)}>শুধু ভুলগুলো ({BN(result.rev.filter(r => !(r.ua != null && r.options[r.ua] === r.answer)).length)})</button>
               </div>
               {result.rev.map((r, i) => {
                 const isOk = r.ua != null && r.options[r.ua] === r.answer
                 const source = examSource(r)
                 if (revOnlyWrong && isOk) return null
-                return <div className={`rev-item ${isOk ? 'ok-item' : 'bad-item'}`} key={i}>
-                  <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span><span className="source-badge" title={source.full}>🏷 {source.label}</span></div>
-                  <div className="q">{BN(i + 1)}. <Md s={r.question} /> <span className={`rev-badge ${isOk ? 'ok' : 'bad'}`}>{isOk ? '✓ সঠিক' : r.ua == null ? '◌ বাদ' : '✗ ভুল'}</span></div>
-                  <ReviewOptions question={r} selectedIndex={r.ua} />
-                  {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
-                  <Expl q={r} />
-                  <GeminiHelp question={r} />
-                </div>
+                return <article className={`sheet-item ${isOk ? 'ok' : r.ua == null ? 'skip' : 'bad'}`} key={i}>
+                  <div className="sheet-item-head">
+                    <span className="sheet-item-no num">{BN(i + 1)}</span>
+                    <span className="sheet-item-meta" title={source.full}>{r.subject || 'সাধারণ'} • {r.topic || 'বিবিধ'} • {source.label}</span>
+                    <span className="sheet-item-state">{isOk ? 'সঠিক' : r.ua == null ? 'বাদ' : 'ভুল'}</span>
+                  </div>
+                  <div className="sheet-item-q"><Md s={r.question} /></div>
+                  <ReviewBlock question={r} selectedIndex={r.ua} />
+                  {r.ua == null && <div className="sheet-item-note">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
+                </article>
               })}
-              {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
+              {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো।</div>}
             </div>}
             {result.setup && <div className="result-return result-return-bottom saved-setup-card">
               <span className="result-return-icon saved-setup-icon"><SheetIco id="layers" /></span>
