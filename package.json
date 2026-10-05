@@ -14,7 +14,8 @@
     "validate:job-circulars": "node scripts/validate-job-circulars.mjs",
     "validate:job-circular-render": "node scripts/render-smoke-job-circulars.mjs",
     "audit:duplicate-options": "node scripts/find-duplicate-options.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "validate:game-mode": "node scripts/validate-game-mode.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
@@ -44,6 +45,7 @@
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.2.4",
-    "vite-plugin-singlefile": "2.3.0"
+    "vite-plugin-singlefile": "2.3.0",
+    "jsdom": "^30.1.2"
   }
 }

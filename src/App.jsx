@@ -13,6 +13,8 @@ import { supabase } from './lib/supabase.js'
 import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, ROUTINE_SYLLABUS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
+import { GameMode } from './components/GameMode.jsx'
+import { readGameCodeFromLocation } from './game-mode.js'
 import {
   JOB_CIRCULARS, CIRCULAR_DATA_UPDATED, CIRCULAR_STATUS_LABEL,
   circularStatus, circularUrgency, circularDaysLeft, formatCircularCountdown,
@@ -220,7 +222,8 @@ const SHEET_ICONS = {
   file: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></>,
   building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M8 8h1M12 8h1M16 8h1M8 12h1M12 12h1M16 12h1M10 21v-5h4v5" /></>,
   book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" /><path d="M4 5.5v16M8 7h8M8 11h8" /></>,
-  school: <><path d="m3 10 9-6 9 6-9 6z" /><path d="M6 12v5c3 2 9 2 12 0v-5M21 10v7" /></>
+  school: <><path d="m3 10 9-6 9 6-9 6z" /><path d="M6 12v5c3 2 9 2 12 0v-5M21 10v7" /></>,
+  users: <><circle cx="9" cy="8" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 4.6a3.2 3.2 0 0 1 0 6.6" /><path d="M17.4 20a5.6 5.6 0 0 0-1.8-3.9" /></>
 }
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
@@ -463,7 +466,8 @@ async function loadPublishedModelRows(examId, expectedCount) {
 
 export function App() {
   // The supplied testing link should open straight at the relevant test card.
-  const [page, setPage] = useState(() => LIVE_TEST_EXAM_ID ? 'exams' : 'home')
+  // A shared challenge link (#game=CODE) opens the 1v1 room straight away.
+  const [page, setPage] = useState(() => LIVE_TEST_EXAM_ID ? 'exams' : (readGameCodeFromLocation() ? 'game' : 'home'))
   const [dark, setDark] = useState(false)
   const [user, setUser] = useState(null)
   const [wrong, setWrong] = useState(() => uniqueWrongQuestions(load('asp_wrong', [])))
@@ -1823,6 +1827,7 @@ export function App() {
               <div className="ai-section-head compact"><h3>ফিচারস</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>এক ক্লিকে সব</span></div>
               <div className="features-grid bento-grid">
                 <button className="feat-card feat-live" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>লাইভ পরীক্ষা</b><small>প্রতিদিন ১১:৩০ PM</small><span className="feat-live-badge">Live</span></button>
+                <button className="feat-card feat-game" onClick={()=>go('game')}><span className="feat-icon"><SheetIco id="users" /></span><b>১v১ গেম</b><small>বন্ধুর সাথে</small></button>
                 <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
                 <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
                 <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
@@ -2087,10 +2092,24 @@ export function App() {
                 : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'ফল এখানে দেখা যাবে।' : ''}</div>}
           </section>
         </>}        {/* ================= CUSTOM QUIZ ================= */}
+        {page === 'game' && <>
+          <GameMode
+            user={user}
+            questionCounts={questionCounts}
+            setToastMsg={setToastMsg}
+            go={go}
+          />
+        </>}
+
         {page === 'setup' && <>
           <section className="sec custom-quiz-section">
             <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>বিষয় ও টপিক বেছে <i>কাস্টম কুইজ</i></h2><p className="muted">এক বা একাধিক বিষয় বাছুন, তারপর সেই বিষয়গুলোর নির্দিষ্ট টপিক নির্বাচন করুন।</p></div>
             
+            <button className="hub-custom-card game-mode-invite" onClick={() => go('game')}>
+              <span className="hub-custom-icon"><SheetIco id="users" /></span>
+              <span><b>১v১ লাইভ গেম মোড</b><small>বন্ধুর সাথে একই প্রশ্নে একসাথে খেলুন—প্রতিপক্ষের অগ্রগতি লাইভ দেখুন</small></span>
+              <i aria-hidden="true">→</i>
+            </button>
             <div className="custom-setup-bento">
               {/* Left Column: Progress & Category */}
               <div className="custom-setup-left">
@@ -2794,7 +2813,7 @@ export function App() {
         {loading && <div className="toast show">প্রশ্ন লোড হচ্ছে…</div>}
       </main>
 
-      {page !== 'quiz' && <nav className="bnav" aria-label="দ্রুত নেভিগেশন">
+      {page !== 'quiz' && page !== 'game' && <nav className="bnav" aria-label="দ্রুত নেভিগেশন">
         <button className={page === 'home' ? 'on' : ''} onClick={() => go('home')}><SheetIco id="home" />হোম</button>
         <button className={page === 'exams' ? 'on' : ''} onClick={() => go('exams')}><SheetIco id="exam" />পরীক্ষা</button>
         <button className={page === 'setup' ? 'on' : ''} onClick={() => go('setup')}><SheetIco id="sliders" />কাস্টম</button>
@@ -2834,7 +2853,7 @@ export function App() {
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন']
+                ['game', 'users', '১v১ গেম মোড'], ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
