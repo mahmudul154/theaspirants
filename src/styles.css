@@ -2855,3 +2855,18 @@ html.dark .circular-icon-lock{color:#8fd0f2;background:#17303d;border-color:#3d6
 .practice-feedback.wrong {
   color: var(--danger, #d93025);
 }
+
+/* প্র্যাকটিস মোড: ব্যাখ্যা খোলা অবস্থায় + নিচে AI দিয়ে বুঝুন বাটন */
+.practice-review-wrap .explanation-details {
+  margin-top: 12px;
+}
+
+.practice-review-wrap .gemini-help {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px dashed rgba(var(--brand-rgb), 0.16);
+}
+
+.practice-review-wrap .gemini-help .review-ai-help {
+  font-size: 0.72rem;
+}

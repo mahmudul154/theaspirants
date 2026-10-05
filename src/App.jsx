@@ -1605,9 +1605,12 @@ export function App() {
     : selectedQbGroup
       ? QUESTION_BANK_SOURCES.filter(source => source.groupId === selectedQbGroup.id)
       : []
-  const Expl = ({ q }) => {
+  // প্র্যাকটিস মোডে উত্তর দেওয়া মাত্রই ব্যাখ্যা খোলা অবস্থায় দেখানো হয়, যাতে
+  // অতিরিক্ত ক্লিক ছাড়াই সঠিক উত্তরের কারণ পড়া যায়। `open` না দিলে আগের মতোই
+  // বন্ধ থাকে (পরীক্ষার রিভিউতে চাইলে ব্যবহারকারী নিজে খুলে নেয়)।
+  const Expl = ({ q, open = false }) => {
     const explanation = q?.explanation || q?.explanation_bn || ''
-    return <details className="explanation-details">
+    return <details className="explanation-details" open={open}>
       <summary><span>ব্যাখ্যা</span></summary>
       <div className="expl explanation-content">
         {explanation ? <Md s={explanation} /> : <>সঠিক উত্তর — <b>{q?.answer}</b></>}
@@ -2424,12 +2427,13 @@ export function App() {
                 {quiz.mode === 'practice' && quiz.ans[qi] != null ? (
                   <div className="practice-review-wrap">
                     <ReviewOptions question={q} selectedIndex={quiz.ans[qi]} />
-                    <Expl q={q} />
                     {quiz.ans[qi] != null && q.options[quiz.ans[qi]] === q.answer ? (
                       <div className="practice-feedback correct">✓ সঠিক উত্তর</div>
                     ) : (
                       <div className="practice-feedback wrong">✗ ভুল উত্তর</div>
                     )}
+                    <Expl q={q} open />
+                    <GeminiHelp question={q} />
                   </div>
                 ) : (
                   (q.options || []).map((o, i) => (
