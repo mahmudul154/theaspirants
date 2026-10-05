@@ -236,9 +236,9 @@ export async function run() {
   check('চ্যালেঞ্জ লিংক (#game=CODE) সরাসরি গেম পেজ খোলে', !!containerC.querySelector('.gm-page'))
   check('লিংকের কোড জয়েন বক্সে বসে যায়', containerC.querySelector('.gm-code-input')?.value === code, containerC.querySelector('.gm-code-input')?.value)
   await C.click('← হোম')
-  check('গেম পেজ থেকে হোমে ফেরা যায়', await waitFor(() => containerC.textContent.includes('পূর্ণাঙ্গ প্রস্তুতি')))
-  const featureCard = [...containerC.querySelectorAll('button')].find(node => node.textContent.includes('১v১ গেম মোড'))
-  check('হোমের ফিচার স্ট্রিপে গেম মোড কার্ড আছে', !!featureCard)
+  check('গেম পেজ থেকে হোমে ফেরা যায়', await waitFor(() => containerC.querySelector('.ai-landing') && containerC.textContent.includes('স্বাগতম')))
+  const featureCard = containerC.querySelector('.feat-card.feat-game')
+  check('হোমের ফিচার গ্রিডে ১v১ গেম কার্ড আছে', !!featureCard && featureCard.textContent.includes('১v১ গেম'))
   if (featureCard) {
     await act(async () => { featureCard.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     check('ফিচার কার্ড থেকে গেম মোড খোলে', await waitFor(() => containerC.querySelector('.gm-page')))

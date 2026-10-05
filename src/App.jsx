@@ -10,11 +10,16 @@ import './styles.css'
 import INITIAL_QUESTION_COUNTS from './question-counts.json'
 import QUESTION_BANK from './question-bank-data.json'
 import { supabase } from './lib/supabase.js'
-import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
+import { BN, CATS, SUBJ_META, SUBJECTS, QB, TOPICS, CAT_SUBJECTS, ROUTINE_SYLLABUS, dbSubjectsFor, dbTopicsFor, localPool, mixQuestions, CIRCULARS, POTRIKA, WRITTEN_TOPICS, VISUALS } from './data.js'
 import { buildDailyLiveExams, FORTY_DAY_PRELI_PREPARATION, formatExamCountdown, formatLiveExamDate, formatLiveExamTime } from './live-exams.js'
 import { LIVE_TEST_ALLOWED_EXAM_ID, LIVE_TEST_ADDITIONAL_EXAM_IDS, canRunLiveTest, canRetakeLiveExam } from './live-test-access.js'
 import { GameMode } from './components/GameMode.jsx'
 import { readGameCodeFromLocation } from './game-mode.js'
+import {
+  JOB_CIRCULARS, CIRCULAR_DATA_UPDATED, CIRCULAR_STATUS_LABEL,
+  circularStatus, circularUrgency, circularDaysLeft, formatCircularCountdown,
+  formatCircularDate, formatCircularDateTime, filterJobCirculars, jobCircularCounts
+} from './job-circulars.js'
 
 const questionCountCache = new Map()
 const appearedQuestionCountCache = new Map()
@@ -33,7 +38,18 @@ const dhakaDateKey = (now = Date.now(), dayOffset = 0) => {
 const dhakaDateLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
   timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long', year: 'numeric'
 }).format(new Date(`${dateKey}T12:00:00+06:00`))
+// রুটিন সিরিয়ালের কম্প্যাক্ট তারিখ — বছর ছাড়া (যেমন "১০ সেপ্টেম্বর")
+const dhakaDayMonthLabel = dateKey => new Intl.DateTimeFormat('bn-BD', {
+  timeZone: 'Asia/Dhaka', day: 'numeric', month: 'long'
+}).format(new Date(`${dateKey}T12:00:00+06:00`))
 const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f } catch { return f } }
+// Homepage circular hub: exactly four cards shown as a fixed 2x2 grid.
+const HOME_CIRCULARS = [
+  { tag: 'BPSC • ৪৭তম', title: '৪৭তম বিসিএস প্রিলি', desc: 'বিজ্ঞপ্তি প্রকাশ • আবেদন চলছে', logo: '/assets/institutions/bpsc.png', icon: 'building', page: 'questionBank' },
+  { tag: 'বাংলাদেশ ব্যাংক', title: 'সিনিয়র অফিসার ২০২৬', desc: '৯২ পদ • সম্মিলিত ব্যাংক', logo: '/assets/institutions/bb.svg', icon: 'bank', page: 'setup' },
+  { tag: 'NTRCA', title: '১৯তম নিবন্ধন', desc: 'স্কুল-কলেজ • শীঘ্রই', logo: '/assets/institutions/other.png', icon: 'book', page: 'circular' },
+  { tag: 'প্রাথমিক', title: 'সহকারী শিক্ষক', desc: 'ডিপিই • নতুন সার্কুলার', logo: '/assets/institutions/primary.png', icon: 'school', page: 'exams' }
+]
 const OFFLINE_CACHE_KEY = 'asp_offline_question_cache_v1'
 const OFFLINE_CACHE_LIMIT = 600
 const OFFLINE_CACHE_TTL_MS = 30 * 864e5
@@ -52,11 +68,16 @@ const ICOS = {
   mountain: <path d="M8 3l4 8 5-5 5 15H2z" />,
   cpu: <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="10" y="10" width="4" height="4" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></>
 }
-const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain', 'Microcontroller': 'cpu' }
+const SUBJ_ICON = { 'English': 'notebook', 'বাংলা': 'pen', 'বিজ্ঞান': 'flask', 'গাণিতিক যুক্তি': 'calc', 'মানসিক দক্ষতা': 'bulb', 'বাংলাদেশ বিষয়াবলি': 'map', 'আন্তর্জাতিক বিষয়াবলি': 'globe', 'কম্পিউটার ও তথ্য প্রযুক্তি': 'monitor', 'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'scale', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'mountain' }
 const ROUTINE_SUBJECT_LABELS = {
   English: 'ইংরেজি',
   'গাণিতিক যুক্তি': 'গণিত'
 }
+// কাস্টম এক্সামের টপিক তালিকায় রুটিনের কোন দিনটি শুরুতে খোলা থাকবে — আজকের
+// দিন থাকলে সেটি, নাহলে সিরিয়ালের প্রথম দিন।
+const ROUTINE_DEFAULT_OPEN_KEY = ROUTINE_SYLLABUS.some(day => day.dateKey === dhakaDateKey())
+  ? dhakaDateKey()
+  : (ROUTINE_SYLLABUS[0]?.dateKey ?? null)
 const liveExamSubjectHeading = exam => [...new Set((exam?.questionPlan || []).map(part => ROUTINE_SUBJECT_LABELS[part.subject] || part.subject))].join(' • ') || exam?.subject || ''
 // "৪০ দিনে প্রিলি • দিন ৫" → "দিন ৫" (heading-এ শুধু দিন দেখাতে)
 const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] || ''
@@ -64,17 +85,48 @@ const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] ||
 // Keep mathematics topics readable in the custom-quiz picker instead of
 // presenting one long, unstructured list. The database topic names remain
 // unchanged; this only controls their visual grouping.
-const MATH_TOPIC_GROUPS = [
-  { label: '৪০ দিনের প্ল্যান', topics: ['গড় ও বয়স', 'গতি ও দূরত্ব', 'অনুপাত ও মিশ্রণ', 'শতকরা'] },
-  { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'গড়', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
-  { label: 'অনুপাত, শতকরা ও বাণিজ্যিক গণিত', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
-  { label: 'কাজ, সময়, গতি ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
-  { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
-  { label: 'ধারা, বিন্যাস, সম্ভাবনা ও পরিসংখ্যান', topics: ['Series', 'Sequence and Series', 'বিন্যাস', 'সমাবেশ', 'Permutation and Combination', 'সম্ভাব্যতা', 'Probability', 'পরিসংখ্যান', 'Statistics'] },
-  { label: 'জ্যামিতি, পরিমিতি ও ক্যালকুলাস', topics: ['Geometry', 'রেখা ও কোন', 'ত্রিভুজ ও ত্রিভুজ সংক্রান্ত উপপাদ্য', 'পিথাগরাসের উপপাদ্য', 'চতুর্ভুজ ও চতুর্ভুজ সঙ্ক্রান্ত উপপাদ্য', 'সুষম বহুভুজ', 'বৃত্ত ও বৃত্ত সংক্রান্ত উপপাদ্য', 'স্থানাংক ও জ্যামিতি', 'Coordinate Geometry', 'ক্ষেত্রফল ও পরিসীমা', 'পরিমিতি', 'Mensuration', 'ত্রিকোণমিতি', 'Trigonometry', 'কোণ পরিমাপ', 'মানচিত্র স্কেল', 'Calculus'] },
-  { label: 'অন্যান্য', topics: ['বিসিএস', 'বিবিধ ও মিসলেনিয়াস'] }
-]
 
+// Keep topics readable in the custom-quiz picker instead of one long list.
+const GENERAL_TOPIC_GROUPS = {
+  'বাংলা': [
+    { label: 'ভাষা, লিপি ও ব্যাকরণ', topics: ['শব্দ এবং শব্দের প্রকারভেদ', 'ভাষা ও ব্যাকরণ', 'ব্যাকরণ পরিচিতি', 'ব্যাকরণের আলোচ্য বিষয়', 'ব্যাকরণের ইতিহাস', 'বাংলা ভাষা ও লিপি', 'বাংলা ভাষা ও রীতি', 'বাংলা ভাষারীতি', 'উপভাষা', 'ধ্বনি ও বর্ণ', 'উচ্চারণ', 'উচ্চারণ স্থান', 'ধ্বনি পরিবর্তন', 'যুক্তবর্ণ', 'ণত্ব ও ষত্ব বিধান', 'ণ-ত্ব ও ষ-ত্ব বিধান'] },
+    { label: 'শব্দ, পদ ও বাক্য', topics: ['শব্দতত্ত্ব', 'শব্দ', 'শব্দ গঠন / শব্দার্থ', 'ধাতু', 'উপসর্গ', 'উপসর্গ প্রত্যয়', 'সমাস', 'পদ প্রকরণ', 'পদাশ্রিত নির্দেশক', 'দ্বিরুক্ত শব্দ', 'অনুসর্গ', 'পদ পরিবর্তন', 'অব্যয়', 'বিশেষ্য পদ', 'লিঙ্গ', 'বচন', 'পুরুষ', 'কারক', 'কারক ও বিভক্তি', 'ক্রিয়াপদ', 'ক্রিয়ার কাল', 'বাচ্য', 'সংখ্যাবাচক শব্দ', 'পুরুষ ও স্ত্রীবাচক শব্দ', 'লিঙ্গান্তর', 'কাল', 'লিঙ্গ পরিবর্তন', 'বাক্য', 'বাক্যের শ্রেণিবিভাগ'] },
+    { label: 'শুদ্ধিকরণ, পারিভাষিক ও অন্যান্য', topics: ['বাক্য শুদ্ধি / ভাষার প্রয়োগ অপপ্রয়োগ', 'ভাষার প্রয়োগ অপপ্রয়োগ', 'অপপ্রয়োগ', 'বানান শুদ্ধিকরণ', 'বাক্য শুদ্ধিকরণ', 'বিরামচিহ্ন', 'যতিচিহ্ন', 'শব্দার্থ', 'শব্দার্থ ও সমার্থক শব্দ', 'সমার্থক শব্দ', 'বিপরীত শব্দ', 'বিপরীতার্থক শব্দ', 'এক কথায় প্রকাশ', 'এককথায় প্রকাশ', 'বাগধারা ও প্রবাদ প্রবচন', 'বাগধারা ও প্রবাদ', 'পারিভাষিক শব্দ', 'সমোচ্চারিত ও ভিন্নার্থক শব্দ', 'শব্দভাণ্ডার', 'পদবি', 'অভিধান', 'ছন্দ প্রকরণ', 'পত্র লিখন'] },
+    { label: 'সাহিত্য: প্রাচীন ও মধ্যযুগ', topics: ['বাংলা সাহিত্যের অভিধা ও মতবাদ', 'বাংলা সাহিত্য ও বিভিন্ন সংগঠন', 'প্রাচীন যুগ', 'প্রাচীন যুগ (চর্যাপদ)', 'প্রাচীন ও মধ্যযুগ', 'মধ্যযুগ', 'লোকসাহিত্য', 'ডাক ও খনার বচন'] },
+    { label: 'সাহিত্য: আধুনিক যুগ (প্রখ্যাত সাহিত্যিক)', topics: ['আধুনিক যুগ', 'রাজা রামমোহন রায়', 'ঈশ্বরচন্দ্র বিদ্যাসাগর', 'মাইকেল মধুসূদন দত্ত', 'দীনবন্ধু মিত্র', 'বঙ্কিমচন্দ্র চট্টোপাধ্যায়', 'মীর মশাররফ হোসেন', 'কায়কোবাদ', 'রবীন্দ্রনাথ ঠাকুর', 'শরৎচন্দ্র চট্টোপাধ্যায়', 'বেগম রোকেয়া', 'রোকেয়া', 'কাজী নজরুল ইসলাম', 'নজরুল', 'রবীন্দ্রনাথ ও নজরুল', 'জসীমউদ্দীন', 'ফররুখ আহমদ'] },
+    { label: 'সাহিত্য: অন্যান্য ধারা', topics: ['সমসাময়িক বাংলাদেশের সাহিত্য', 'ভাষা আন্দোলন', 'মুক্তিযুদ্ধভিত্তিক সাহিত্য', 'মুক্তিযুদ্ধ', 'আধুনিক যুগের কবি ও কাব্য', 'বাংলা নাটক', 'নাটক', 'উপন্যাস ও ছোটগল্প', 'গ্রন্থ ও লেখক', 'বিখ্যাত আত্মজীবনী', 'বিখ্যাত ভ্রমণ কাহিনী', 'বিখ্যাত শিশুতোষগ্রন্থ', 'সাহিত্যিকদের ছদ্মনাম ও উপাধি', 'বিখ্যাত উক্তি', 'বাংলা গান', 'পত্রিকা ও সম্পাদক', 'পত্রিকা ও প্রকাশকাল', 'নাটক ও সাময়িকী', 'মাধ্যমিক সাহিত্য', 'উচ্চমাধ্যমিক সাহিত্য', 'বিদেশি সাহিত্য ও অনুবাদ', 'আন্তর্জাতিক পুরস্কার ও ব্যক্তিত্ব'] }
+  ],
+  'English': [
+    { label: 'Parts of Speech & Basics', topics: ['Parts of Speech', 'Noun', 'Noun identification / Parts of Speech', 'Pronoun', 'Adjective', 'Adjective Identification', 'Comparison of Adjectives / Degree', 'Verb', 'Verb forms', 'Adverb', 'Preposition', 'Conjunction', 'Articles', 'The Determiner', 'Determiners / Quantifiers', 'Number', 'Gender'] },
+    { label: 'Grammar & Mechanics', topics: ['Grammar', 'Right Form of Verb', 'Verb and Right form of verb', 'Subject-Verb Agreement', 'Tense & Subject-Verb Agreement', 'Tense', 'Voice', 'Voice Change', 'Narration', 'Clause', 'Sentence', 'Transformation of Sentence', 'Conditionals', 'Correction', 'Suffix Prefix'] },
+    { label: 'Vocabulary & Phrases', topics: ['Vocabulary', 'Words', 'Meanings', 'Synonym', 'Antonym', 'Synonym & Antonym', 'Idioms & Phrases', 'Group Verbs', 'Proverb', 'Analogy', 'পারিভাষিক শব্দ', 'প্রবাদ বাক্য', 'অনুবাদ', 'Voice, Narration and One Word', 'Composition'] },
+    { label: 'Literature', topics: ['English Literature'] }
+  ],
+  'গাণিতিক যুক্তি': [
+        { label: '৪০ দিনের প্ল্যান', topics: ['গড় ও বয়স', 'গতি ও দূরত্ব', 'অনুপাত ও মিশ্রণ', 'শতকরা'] },
+    { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'গড়', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
+    { label: 'অনুপাত, শতকরা ও লাভ-ক্ষতি', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
+    { label: 'কাজ, সময় ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
+    { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
+    { label: 'ধারা, বিন্যাস ও সম্ভাবনা', topics: ['Series', 'Sequence and Series', 'বিন্যাস', 'সমাবেশ', 'Permutation and Combination', 'সম্ভাব্যতা', 'Probability', 'পরিসংখ্যান', 'Statistics'] },
+    { label: 'জ্যামিতি, পরিমিতি ও ত্রিকোণমিতি', topics: ['Geometry', 'রেখা ও কোন', 'ত্রিভুজ ও ত্রিভুজ সংক্রান্ত উপপাদ্য', 'পিথাগরাসের উপপাদ্য', 'চতুর্ভুজ ও চতুর্ভুজ সঙ্ক্রান্ত উপপাদ্য', 'সুষম বহুভুজ', 'বৃত্ত ও বৃত্ত সংক্রান্ত উপপাদ্য', 'স্থানাংক ও জ্যামিতি', 'Coordinate Geometry', 'ক্ষেত্রফল ও পরিসীমা', 'পরিমিতি', 'Mensuration', 'ত্রিকোণমিতি', 'Trigonometry', 'কোণ পরিমাপ', 'মানচিত্র স্কেল', 'Calculus'] }
+  ]
+}
+
+const getSubjectTopicGroups = (subject, availableTopics) => {
+  const predefined = GENERAL_TOPIC_GROUPS[subject] || []
+  const groupedTopics = new Set(predefined.flatMap(g => g.topics))
+  const remaining = availableTopics.filter(t => !groupedTopics.has(t))
+  
+  const groups = predefined
+    .map(g => ({ ...g, topics: g.topics.filter(t => availableTopics.includes(t)) }))
+    .filter(g => g.topics.length > 0)
+    
+  if (remaining.length > 0) {
+    groups.push({ label: 'অন্যান্য', topics: remaining })
+  }
+  return groups
+}
 const SUBJECT_TEACHERS = {
   'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
   'English': 'ইংরেজি বিষয়ের শিক্ষক',
@@ -92,7 +144,6 @@ const SUBJECT_TEACHERS = {
   'কম্পিউটার ও তথ্যপ্রযুক্তি': 'কম্পিউটার ও তথ্যপ্রযুক্তি বিষয়ের শিক্ষক',
   'নৈতিকতা, মূল্যবোধ ও সুশাসন': 'নৈতিকতা, মূল্যবোধ ও সুশাসন বিষয়ের শিক্ষক',
   'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা বিষয়ের শিক্ষক',
-  'Microcontroller': 'মাইক্রোকন্ট্রোলার বিষয়ের শিক্ষক',
   'ভিজ্যুয়াল জিকে': 'সাধারণ জ্ঞান বিষয়ের শিক্ষক'
 }
 const Ico = ({ id, size = 22 }) => (
@@ -104,20 +155,6 @@ const APP_CATS = [
   { id: 'bank', name: 'ব্যাংক জব', img: '/assets/bank1.png', d: '৬ বিষয় • শর্টকাটসহ' },
   { id: 'ntrca', name: 'শিক্ষক নিবন্ধন', img: '/assets/ntrca1.png', d: 'স্কুল ও কলেজ স্তর' },
   { id: 'primary', name: 'প্রাথমিক', img: '/assets/primary1.png', d: 'সহকারী শিক্ষক নিয়োগ' }
-]
-
-// Auto-sliding feature strip — প্রতিটি ফিচারের নিজস্ব brand color (icon8-স্টাইল)
-const HOME_FEATURES = [
-  { icon: 'exam', label: 'লাইভ পরীক্ষা', sub: 'আজকের পরীক্ষা ও রুটিন', page: 'exams', color: '#e53935', bg: 'linear-gradient(135deg,#ff7043,#d32f2f)' },
-  { icon: 'sliders', label: 'কাস্টম কুইজ', sub: 'বিষয় ও টপিক বেছে নিন', page: 'setup', color: '#1e88e5', bg: 'linear-gradient(135deg,#42a5f5,#1565c0)' },
-  { icon: 'flame', label: 'ডেইলি চ্যালেঞ্জ', sub: 'প্রতিদিন ১০টি প্রশ্ন', page: 'daily', color: '#f57c00', bg: 'linear-gradient(135deg,#ffa726,#ef6c00)' },
-  { icon: 'layers', label: 'রিভিশন', sub: 'ভুল প্রশ্ন আবার অনুশীলন', page: 'review', color: '#7e57c2', bg: 'linear-gradient(135deg,#9575cd,#5e35b1)' },
-  { icon: 'bank', label: 'প্রশ্নব্যাংক', sub: 'বিগত পরীক্ষার প্রশ্ন', page: 'questionBank', color: '#00897b', bg: 'linear-gradient(135deg,#26a69a,#00695c)' },
-  { icon: 'trophy', label: 'লিডারবোর্ড', sub: 'আজকের র‍্যাংকিং', page: 'leaderboard', color: '#f9a825', bg: 'linear-gradient(135deg,#ffca28,#f57f17)' },
-  { icon: 'news', label: 'আজকের পত্রিকা', sub: 'কারেন্ট অ্যাফেয়ার্স', page: 'potrika', color: '#0288d1', bg: 'linear-gradient(135deg,#29b6f6,#0277bd)' },
-  { icon: 'file', label: 'চাকরির সার্কুলার', sub: 'নতুন নিয়োগ আপডেট', page: 'circular', color: '#00796b', bg: 'linear-gradient(135deg,#4db6ac,#00695c)' },
-  { icon: 'image', label: 'ছবি দিয়ে শেখো', sub: 'ভিজ্যুয়াল লার্নিং', page: 'visual', color: '#d81b60', bg: 'linear-gradient(135deg,#f06292,#c2185b)' },
-  { icon: 'users', label: '১v১ গেম মোড', sub: 'বন্ধুর সাথে একসাথে পরীক্ষা', page: 'game', color: '#6a1b9a', bg: 'linear-gradient(135deg,#ab47bc,#6a1b9a)' }
 ]
 
 const NOTICES = [
@@ -191,6 +228,53 @@ const SHEET_ICONS = {
 const SheetIco = ({ id }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SHEET_ICONS[id]}</svg>
 )
+
+const CIRCULAR_FILTER_LABEL = { open: 'চলছে', upcoming: 'শুরু হবে', closed: 'শেষ', all: 'সব' }
+
+/**
+ * One government job circular with a live apply countdown.
+ *
+ * `now` is passed in (rather than read here) so the parent's single 1s ticker
+ * drives every card and the countdowns stay in step with each other.
+ */
+// Exported so it can be render-tested outside the browser (see
+// scripts/render-smoke-job-circulars.mjs); nothing else imports it.
+export function JobCircularCard({ circular, now, compact = false, onDetails, onApply }) {
+  const status = circularStatus(circular, now)
+  const urgency = circularUrgency(circular, now)
+  const daysLeft = circularDaysLeft(circular, now)
+  // Before the window opens the countdown tracks the start, not the deadline.
+  const countdownTarget = status === 'upcoming' ? circular.applyStart : circular.applyDeadline
+  const countdownLabel = status === 'upcoming' ? 'আবেদন শুরু হতে বাকি' : 'আবেদনের বাকি সময়'
+  return (
+    <article className={`job-circular-card${compact ? ' compact' : ''}${urgency ? ` is-${urgency}` : ''}${status === 'closed' ? ' is-closed' : ''}`}>
+      <div className="job-circular-top">
+        <span className={`circular-icon circular-icon-${circular.icon}`}><SheetIco id={circular.icon} /></span>
+        <span className="job-circular-org"><span className="circular-tag">{circular.category}</span><b>{circular.org}</b></span>
+        <span className={`job-status job-status-${status}`}>{CIRCULAR_STATUS_LABEL[status]}</span>
+      </div>
+      <p className="job-circular-summary">{circular.summary}</p>
+      {!compact && <div className="job-circular-meta">
+        {circular.vacancy ? <span><small>শূন্যপদ</small><strong className="num">{BN(circular.vacancy)}টি</strong></span> : null}
+        {circular.posts ? <span><small>কোন পদে</small><strong>{circular.posts}</strong></span> : null}
+        {circular.fee ? <span><small>আবেদন ফি</small><strong>{circular.fee}</strong></span> : null}
+      </div>}
+      {status === 'closed'
+        ? <div className="job-countdown closed"><span>আবেদনের সময় শেষ</span><small>{formatCircularDateTime(circular.applyDeadline)}-এ বন্ধ হয়েছে</small></div>
+        : <div className="job-countdown">
+            <span>{countdownLabel}</span>
+            <b className="num" aria-live="polite">{formatCircularCountdown(countdownTarget, now)}</b>
+            {status === 'upcoming'
+              ? <small>শুরু: {formatCircularDateTime(circular.applyStart)}</small>
+              : <small>শেষ: {formatCircularDateTime(circular.applyDeadline)}{daysLeft <= 1 ? ' — আজই শেষ!' : ` • ${BN(daysLeft)} দিন বাকি`}</small>}
+          </div>}
+      <div className="job-circular-actions">
+        <button className="btn ghost sm" onClick={() => onDetails(circular)}>মূল বিজ্ঞপ্তি</button>
+        <button className="btn primary sm" disabled={status === 'closed'} onClick={() => onApply(circular)}>{status === 'closed' ? 'আবেদন বন্ধ' : 'আবেদন করুন'}</button>
+      </div>
+    </article>
+  )
+}
 function calcStreak(days) {
   const set = new Set(days); const d = new Date()
   if (!set.has(d.toDateString())) d.setDate(d.getDate() - 1)
@@ -226,6 +310,29 @@ function questionFingerprint(q) {
   return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`
 }
 
+// Deterministic hash for live exams: same scheduleId → same offset for everyone
+function liveHash(str) {
+  let h = 2166136261
+  for (let i = 0; i < String(str).length; i++) h = Math.imul(h ^ String(str).charCodeAt(i), 16777619)
+  return h >>> 0
+}
+function mixQuestionsLocked(rows, limit) {
+  const byTopic = {}
+  rows.forEach(r => { const t = r.topic || 'Others'; (byTopic[t] ||= []).push(r) })
+  Object.values(byTopic).forEach(a => a.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||''))))
+  const topics = Object.keys(byTopic).sort()
+  const out = []
+  const n = limit ? Math.min(limit, rows.length) : rows.length
+  while (out.length < n) {
+    let added = false
+    for (const topic of topics) {
+      if (out.length >= n) break
+      if (byTopic[topic].length) { out.push(byTopic[topic].shift()); added = true }
+    }
+    if (!added) break
+  }
+  return out.map(r => ({ ...r, options: r.options ? [...r.options] : [] }))
+}
 function uniqueQuestions(items) {
   const unique = new Map()
   const questions = Array.isArray(items) ? items : []
@@ -369,6 +476,9 @@ export function App() {
   // Gemini cannot natively accept a prompt from a URL, so reveal a compact
   // paste cue below the exact question after its prompt has been copied.
   const [geminiHintKey, setGeminiHintKey] = useState(null)
+  // Job-circular hub: which circular's full notice is open, and the list filter.
+  const [circularDetail, setCircularDetail] = useState(null)
+  const [circularFilter, setCircularFilter] = useState('open')
   const [loading, setLoading] = useState(false)
 
   const [questionCounts, setQuestionCounts] = useState(() => load('asp_question_counts', INITIAL_QUESTION_COUNTS))
@@ -380,16 +490,36 @@ export function App() {
   const [cSubs, setCSubs] = useState(['বাংলা', 'গাণিতিক যুক্তি'])
   const [cTopics, setCTopics] = useState([])
   const [cTopicSearch, setCTopicSearch] = useState('')
+  // রুটিন সিরিয়ালের কোন কোন দিন খোলা আছে — ব্যবহারকারীর টগল মনে রাখতে,
+  // নইলে টপিক বাছার রি-রেন্ডারে হাতে খোলা দিন আবার বন্ধ হয়ে যেত।
+  const [cOpenRoutineDays, setCOpenRoutineDays] = useState(() => (ROUTINE_DEFAULT_OPEN_KEY ? [ROUTINE_DEFAULT_OPEN_KEY] : []))
   const [cCount, setCCount] = useState(25)
+  const [cMode, setCMode] = useState('exam')
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
   const cTopicNeedle = cTopicSearch.trim().toLocaleLowerCase()
   const cVisibleTopics = cAvailableTopics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle))
-  const cMathTopicGroups = MATH_TOPIC_GROUPS
-    .map(group => ({ ...group, topics: group.topics.filter(topic => cVisibleTopics.includes(topic)) }))
-    .filter(group => group.topics.length)
-  const toggleMathTopicGroup = groupTopics => setCTopics(current => {
+  // তারিখ অনুযায়ী রুটিন সিরিয়াল — কাস্টম এক্সামে টপিক দ্রুত খুঁজে পাওয়ার জন্য
+  // প্রকাশিত রুটিনের দিনগুলো (দিন ৩ → ২৩) সবার আগে, তারপর বাকি সব টপিক।
+  const cRoutineSearchActive = cTopicNeedle.length > 0
+  const cRoutineDays = ROUTINE_SYLLABUS
+    .map(day => {
+      const subjects = day.subjects
+        .filter(item => cSubs.includes(item.subject))
+        .map(item => ({ ...item, topics: item.topics.filter(topic => topic.toLocaleLowerCase().includes(cTopicNeedle)) }))
+        .filter(item => item.topics.length)
+      return { ...day, subjects, topics: [...new Set(subjects.flatMap(item => item.topics))] }
+    })
+    .filter(day => day.topics.length)
+  const cRoutineTopicSet = new Set(cRoutineDays.flatMap(day => day.topics))
+  // রুটিনে দেখানো টপিকগুলো নিচের তালিকা থেকে বাদ, যাতে একই টপিক দুবার না আসে।
+  const cRemainingTopics = cVisibleTopics.filter(topic => !cRoutineTopicSet.has(topic))
+  const cTodayDateKey = dhakaDateKey()
+  const cSubjectTopicGroups = cSubs.length > 0 
+    ? cSubs.flatMap(sub => getSubjectTopicGroups(sub, cVisibleTopics.filter(t => dbTopicsFor([t]).some(dt => questionCounts?.subjects?.[sub]?.topics?.[dt]))).map(g => ({...g, label: cSubs.length > 1 ? `${sub} • ${g.label}` : g.label})))
+    : []
+  const toggleTopicGroup = groupTopics => setCTopics(current => {
     const isSelected = groupTopics.every(topic => current.includes(topic))
     return isSelected
       ? current.filter(topic => !groupTopics.includes(topic))
@@ -430,6 +560,11 @@ export function App() {
   // A running live paper switches the home card to today's, live-updating
   // ranking. Once the paper ends, it returns to the complete previous-day list.
   const scheduledExams = buildDailyLiveExams(clock)
+  // Job-circular hub state, all derived from the same 1s ticker so every
+  // countdown on screen advances together.
+  const circularCounts = jobCircularCounts(JOB_CIRCULARS, clock)
+  const visibleJobCirculars = filterJobCirculars(JOB_CIRCULARS, circularFilter, clock)
+  const urgentJobCirculars = filterJobCirculars(JOB_CIRCULARS, 'open', clock).slice(0, 4)
   const activeLiveExam = scheduledExams.find(exam => exam.status === 'live') || null
   const liveLeaderboardActive = !!activeLiveExam
   const activeLiveLeaderboardDateKey = activeLiveExam?.dateKey || null
@@ -518,7 +653,8 @@ export function App() {
     setSeenQuestions(user?.id ? load(`asp_seen_questions_v1_${user.id}`, []) : [])
   }, [user?.id])
   useEffect(() => {
-    if (!['home', 'exams', 'leaderboard'].includes(page)) return
+    // 'circular' joins the list so apply-deadline countdowns tick live too.
+    if (!['home', 'exams', 'leaderboard', 'circular'].includes(page)) return
     setClock(Date.now())
     const timer = setInterval(() => setClock(Date.now()), 1000)
     return () => clearInterval(timer)
@@ -579,6 +715,7 @@ export function App() {
       setSheetOpen(false)
       setSearchOpen(false)
       setNotifOpen(false)
+      setCircularDetail(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape) }
@@ -586,7 +723,7 @@ export function App() {
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { threshold: .08 })
-    document.querySelectorAll('.page.on .sec, .page.on .hero-panel').forEach(el => { el.classList.add('fade'); io.observe(el) })
+    document.querySelectorAll('.page.on .sec, .page.on .hero-panel, .page.on .home-hero').forEach(el => { el.classList.add('fade'); io.observe(el) })
     return () => io.disconnect()
   }, [page])
   useEffect(() => { if (!toastMsg) return; const t = setTimeout(() => setToastMsg(''), 2400); return () => clearTimeout(t) }, [toastMsg])
@@ -632,7 +769,7 @@ export function App() {
 
   function go(p, options = {}) {
     if (p === 'profile' && !user) p = 'login'
-    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false)
+    setPage(p); window.scrollTo({ top: 0 }); setArm(false); setSheetOpen(false); setSearchOpen(false); setNotifOpen(false); setCircularDetail(null)
     if (p !== 'visual') setVSel(null)
     if (p === 'leaderboard') fetchLeaderboard(options.leaderboardDateKey || homeLeaderboardDateKey, !!options.includeArchived)
     if (p === 'profile') fetchProfile()
@@ -757,6 +894,35 @@ export function App() {
       .catch(() => setToastMsg(`${browserLabel}-এ Gemini খোলা হয়েছে। প্রম্পটটি কপি করা যায়নি।`))
   }
 
+  /**
+   * Open a Teletalk application portal or an official notice outside the app.
+   *
+   * Teletalk's form + SMS payment flow does not work inside the Capacitor
+   * WebView, so on native Android the URL is handed to the installed Chrome
+   * package — the same path the Gemini helper already uses. On web it opens a
+   * normal tab. Returns false when the link was missing so callers can warn.
+   */
+  function openExternalLink(url, label = 'লিংক') {
+    if (!url) {
+      setToastMsg('এই বিজ্ঞপ্তির জন্য কোনো লিংক যোগ করা হয়নি।')
+      return false
+    }
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      ChromeBrowser.open({ url })
+        .then(() => setToastMsg(`${label} Chrome-এ খোলা হয়েছে।`))
+        .catch(() => setToastMsg('Chrome খোলা যায়নি। ডিভাইসে Chrome ইনস্টল আছে কি না দেখুন।'))
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setToastMsg(`${label} নতুন ট্যাবে খোলা হয়েছে।`)
+    }
+    return true
+  }
+
+  // "আবেদন করুন" goes straight to the circular's own application server.
+  const applyToCircular = circular => openExternalLink(circular.applyUrl, `${circular.orgShort} আবেদন পোর্টাল`)
+  // "মূল বিজ্ঞপ্তি" opens the notice that was read, for verification.
+  const openCircularNotice = circular => openExternalLink(circular.circularUrl, 'মূল বিজ্ঞপ্তি')
+
   function launchScheduledExam(exam, candidate = null, testing = false) {
     // Archived papers remain available once, but only attempts started in the
     // scheduled live window can appear on the live leaderboard.
@@ -877,23 +1043,59 @@ export function App() {
         // distribution remains exact, while still preferring named past-exam rows.
         const plannedQuestionKeys = new Set()
         const fetchPlanBucket = async bucket => {
-          const sampleSize = Math.max(120, Number(bucket.questions || 0) * 12)
-          const makeQuery = () => {
+          const databaseTarget = Math.min(Number(bucket.questions || 0), Math.max(0, Number(bucket.databaseQuestions ?? bucket.questions ?? 0)))
+          const generatedRows = Array.isArray(bucket.generatedRows) ? bucket.generatedRows : []
+          const preferredRows = Array.isArray(bucket.preferredRows) ? bucket.preferredRows : []
+          const fallbackRows = Array.isArray(bucket.fallbackRows) ? bucket.fallbackRows : []
+          const generatedTarget = Math.max(0, Number(bucket.questions || 0) - databaseTarget)
+          if (generatedRows.length !== generatedTarget) {
+            throw new Error(`${bucket.label}: expected ${generatedTarget} generated rows, got ${generatedRows.length}`)
+          }
+          const sampleSize = Math.max(120, databaseTarget * 12)
+          const databaseTopics = bucket.databaseTopics || bucket.topics
+          const makeQuery = (topics = databaseTopics) => {
             let query = supabase.from('mcq_questions_job').select('*')
               .eq('is_active', true)
               .in('subject', dbSubjectsFor([bucket.subject]))
-            if (bucket.topics?.length) query = query.in('topic', [...new Set(bucket.topics)])
+            if (topics?.length) query = query.in('topic', [...new Set(topics)])
             if (bucket.questionTerms?.length) {
               query = query.or(bucket.questionTerms.map(term => `question.ilike.%${term}%`).join(','))
             }
             return query.order('id', { ascending: true }).order('created_at', { ascending: true }).limit(sampleSize)
           }
+          // For locked papers, query each exact topic separately: a large topic
+          // must not fill the database page and crowd every other syllabus topic out.
+          const fetchPool = async applyFilter => {
+            const topicGroups = bucket.fixed && databaseTopics?.length > 1
+              ? databaseTopics.map(topic => [topic])
+              : [databaseTopics]
+            const results = await Promise.all(topicGroups.map(topics => applyFilter(makeQuery(topics))))
+            const failed = results.find(result => result.error)
+            if (failed?.error) throw failed.error
+            return uniqueQuestions(results.flatMap(result => result.data || []))
+          }
+          const preferredDbRows = preferredRows.length
+            ? await supabase.from('mcq_questions_job').select('*')
+                .eq('is_active', true)
+                .in('subject', dbSubjectsFor([bucket.subject]))
+                .in('topic', databaseTopics || [])
+                .in('question', preferredRows.map(question => question.question))
+                .order('id', { ascending: true }).order('created_at', { ascending: true })
+                .limit(preferredRows.length)
+                .then(({ data, error }) => { if (error) throw error; return uniqueQuestions(data || []) })
+            : []
           // Previous-exam rows form the named pool; practice (অনুশীলনী) rows count as
 // random questions so a bucket can blend appeared and fresh material on purpose.
-const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী')
-          if (namedResult.error) throw namedResult.error
-          const namedRows = uniqueQuestions(namedResult.data || [])
-            .filter(question => !plannedQuestionKeys.has(questionKey(question)))
+          const preferredQuestionTexts = new Set(preferredRows.map(question => question.question))
+          const preferredDbTexts = new Set(preferredDbRows.map(question => question.question))
+          const fallbackPreferredRows = fallbackRows.filter(question => !preferredDbTexts.has(question.question))
+          const otherNamedRows = (await fetchPool(query => query.not('post_name', 'ilike', 'bcs').neq('post_name', '').neq('post_name', 'অনুশীলনী').not('question', 'ilike', '%dhoni%').not('question', 'ilike', '%ধোনি%')))
+            .filter(question => !preferredQuestionTexts.has(question.question))
+          const namedRows = uniqueQuestions([
+            ...preferredDbRows,
+            ...fallbackPreferredRows,
+            ...otherNamedRows
+          ]).filter(question => !plannedQuestionKeys.has(questionKey(question)))
           // Keep every available named previous-exam row ahead of the generic
           // BCS fallback. Mixing the two pools together could otherwise replace
           // named rows even when they were available for this exact bucket.
@@ -901,16 +1103,20 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           // topic and preserve stored option order, so no topic is silently
           // crowded out by the first database rows.
           const selectFixedRows = (sourceRows, limit) => {
-            if (!bucket.topics?.length) return sourceRows.slice(0, limit)
-            const byTopic = new Map(bucket.topics.map(topic => [topic, []]))
-            sourceRows.forEach(question => {
+            if (!databaseTopics?.length) return sourceRows.slice(0, limit)
+            const preferred = uniqueQuestions(sourceRows.filter(question => preferredQuestionTexts.has(question.question)))
+            if (preferred.length >= limit) return preferred.slice(0, limit)
+            const preferredKeys = new Set(preferred.map(questionKey))
+            const remainingRows = sourceRows.filter(question => !preferredKeys.has(questionKey(question)))
+            const byTopic = new Map(databaseTopics.map(topic => [topic, []]))
+            remainingRows.forEach(question => {
               const list = byTopic.get(question.topic)
               if (list) list.push(question)
             })
-            const selected = []
+            const selected = [...preferred]
             while (selected.length < limit) {
               let added = false
-              for (const topic of bucket.topics) {
+              for (const topic of databaseTopics) {
                 const list = byTopic.get(topic) || []
                 if (list.length && selected.length < limit) {
                   selected.push(list.shift())
@@ -921,45 +1127,44 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             }
             return selected
           }
-          const copyFixedRows = rows => selectFixedRows(rows, Math.min(bucket.questions, rows.length))
+          const copyFixedRows = rows => selectFixedRows(rows, Math.min(databaseTarget, rows.length))
             .map(question => ({ ...question, options: Array.isArray(question.options) ? [...question.options] : question.options }))
           // A bucket may cap the previous-exam share (namedRatio, e.g. 0.3) so the rest
           // of the paper comes from the random pool. The ratio is soft: a thin
           // named pool never blocks the paper, the remainder simply stays named.
           const namedTarget = bucket.namedRatio != null
-            ? Math.max(0, Math.round(Number(bucket.questions || 0) * Number(bucket.namedRatio)))
-            : bucket.questions
+            ? Math.max(0, Math.round(databaseTarget * Number(bucket.namedRatio)))
+            : databaseTarget
+          const isLiveLocked = !!cfg.scheduleId
           const selectedNamed = bucket.fixed
             ? copyFixedRows(namedRows)
-            : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length))
-          const remaining = Math.max(0, bucket.questions - selectedNamed.length)
+            : (isLiveLocked ? mixQuestionsLocked(namedRows, Math.min(namedTarget, namedRows.length)) : mixQuestions(namedRows, Math.min(namedTarget, namedRows.length)))
+          const remaining = Math.max(0, databaseTarget - selectedNamed.length)
           let selectedGeneric = []
           if (remaining) {
             // A planned bucket can already contain an OR of syllabus keywords;
             // use the actual generic `bcs` value here instead of adding a second
             // PostgREST OR filter that could broaden or replace that condition.
-            const genericResult = await makeQuery().or('post_name.ilike.bcs,post_name.eq.অনুশীলনী,post_name.is.null,post_name.eq.')
-            if (genericResult.error) throw genericResult.error
-            const genericRows = uniqueQuestions(genericResult.data || [])
+            const genericRows = (await fetchPool(query => query.or('post_name.ilike.bcs,post_name.eq.অনুশীলনী,post_name.is.null,post_name.eq.')))
               .filter(question => !plannedQuestionKeys.has(questionKey(question)))
             selectedGeneric = bucket.fixed
               ? copyFixedRows(genericRows).slice(0, remaining)
-              : mixQuestions(genericRows, remaining)
+              : (isLiveLocked ? mixQuestionsLocked(genericRows, remaining) : mixQuestions(genericRows, remaining))
           }
           let selectedTopUp = []
-          const topUpNeed = Math.max(0, bucket.questions - selectedNamed.length - selectedGeneric.length)
+          const topUpNeed = Math.max(0, databaseTarget - selectedNamed.length - selectedGeneric.length)
           if (topUpNeed && !bucket.fixed) {
             const usedKeys = new Set([...selectedNamed, ...selectedGeneric].map(questionKey))
-            selectedTopUp = mixQuestions(
+            selectedTopUp = (isLiveLocked ? mixQuestionsLocked : mixQuestions)(
               namedRows.filter(question => !usedKeys.has(questionKey(question))),
               topUpNeed
             )
           }
           const selected = [...selectedNamed, ...selectedGeneric, ...selectedTopUp]
-          if (selected.length < bucket.questions) {
-            throw new Error(`${bucket.label}: ${selected.length}/${bucket.questions}`)
+          if (selected.length < databaseTarget) {
+            throw new Error(`${bucket.label}: database supplied ${selected.length}/${databaseTarget} required rows`)
           }
-          return selected
+          return [...selected.slice(0, databaseTarget), ...generatedRows]
         }
 
         const plannedBuckets = []
@@ -970,12 +1175,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         }
         // Keep supplied additions alongside the planned database selection; they
         // use the same canonical question shape and count toward the live limit.
-        const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
+          const fixedPaper = cfg.questionPlan.every(bucket => bucket.fixed === true)
         if (fixedPaper) {
-          // Day 5 is deliberately interleaved: English → GK → Math, repeated.
-          // Once a shorter bucket ends, the remaining buckets continue in the
-          // same stable cycle without changing the paper for another learner.
-          const cycleSubjects = ['English', 'আন্তর্জাতিক বিষয়াবলি', 'গাণিতিক যুক্তি']
+          // Interleave every fixed subject bucket in syllabus order. If a bucket
+          // runs out first, the remaining subjects continue in the same stable
+          // cycle, so every candidate receives the same mixed paper.
+          const cycleSubjects = plannedBuckets.map(({ bucket }) => bucket.subject)
           const rowsBySubject = new Map(plannedBuckets.map(({ bucket, rows: bucketRows }) => [bucket.subject, [...bucketRows]]))
           const interleavedRows = []
           let added = true
@@ -995,7 +1200,8 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           rows = uniqueQuestions([...interleavedRows, ...unusedRows, ...(cfg.supplementalRows || [])])
         } else {
           rows = uniqueQuestions([...plannedBuckets.flatMap(({ rows: bucketRows }) => bucketRows), ...(cfg.supplementalRows || [])])
-          rows.sort(() => Math.random() - .5)
+          if (cfg.scheduleId) rows.sort((a,b) => (a.id||0)-(b.id||0) || String(a.question||'').localeCompare(String(b.question||'')))
+          else rows.sort(() => Math.random() - .5)
         }
         databaseRowsArePrioritized = true
       } else {
@@ -1010,8 +1216,10 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         // are intentionally skipped here so one source can combine all its topics.
         if (selectedPostNames.length === 1) filtered = filtered.eq('post_name', selectedPostNames[0])
         else if (selectedPostNames.length > 1) filtered = filtered.in('post_name', selectedPostNames)
-        // The full BCS mix is the whole active job pool except Microcontroller.
-        // This avoids an oversized 70+ value IN filter while retaining ~93K rows.
+        // The full BCS mix is the whole active job pool except the legacy
+        // মাইক্রোকন্ট্রোলার rows. The subject is no longer offered anywhere in the
+        // app, but those rows still exist in the database, so they stay excluded.
+        // This also avoids an oversized 70+ value IN filter while retaining ~93K rows.
         else if (isAllBcs) filtered = filtered.neq('subject', 'মাইক্রোকন্ট্রোলার')
         else if (dbSubjects.length) filtered = filtered.in('subject', dbSubjects)
         if (selectedTopics.length) filtered = filtered.in('topic', selectedTopics)
@@ -1076,8 +1284,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         let collected = []
         const usedOffsets = new Set()
         for (let attempt = 0; attempt < attempts; attempt++) {
-          let offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
-          if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          let offset
+          if (cfg.scheduleId && maxOffset) {
+            const tag = applyPoolFilter === applyAppearedQuestionFilter ? 'appeared' : 'generic'
+            offset = liveHash(String(cfg.scheduleId) + ':' + tag + ':' + attempt) % (maxOffset + 1)
+            let probe = 0
+            while (usedOffsets.has(offset) && probe < (maxOffset + 1)) { offset = (offset + 1) % (maxOffset + 1); probe++ }
+          } else {
+            offset = maxOffset ? Math.floor(Math.random() * (maxOffset + 1)) : 0
+            if (usedOffsets.has(offset) && maxOffset) offset = Math.round(maxOffset * attempt / Math.max(1, attempts - 1))
+          }
           usedOffsets.add(offset)
           const { data, error } = await applyPoolFilter(applyQuestionFilters(
             supabase.from('mcq_questions_job').select('*')
@@ -1104,7 +1320,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           appearedAvailable,
           requestedLimit
         )
-        const appearedRows = mixQuestions(appearedPool, requestedLimit)
+        const appearedRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(appearedPool, requestedLimit)
         const remaining = Math.max(0, requestedLimit - appearedRows.length)
         let genericRows = []
 
@@ -1117,7 +1333,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             genericAvailable,
             remaining
           )
-          genericRows = mixQuestions(genericPool, remaining)
+          genericRows = (cfg.scheduleId ? mixQuestionsLocked : mixQuestions)(genericPool, remaining)
         }
 
         if (appearedRows.length || genericRows.length) {
@@ -1142,7 +1358,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       if (avoidSeen) rows = rows.filter(question => !seenQuestionSet.has(questionFingerprint(question)))
     }
     rows = uniqueQuestions(rows)
-    const qs = databaseRowsArePrioritized || cfg.preserveOrder ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
+    // Lock live exam: same questions for everyone + remove Dhoni/sound question if present
+    if (cfg.scheduleId) {
+      rows = rows.filter(q => !/dhoni/i.test(q.question||'') && !/ধোনি|ধোনী|ধ্বনি/.test(q.question||''))
+      // ensure 22 Sep revision set is restored (DAY11) — already via routine
+    }
+    const qs = databaseRowsArePrioritized || cfg.preserveOrder || cfg.scheduleId ? rows.slice(0, requestedLimit) : mixQuestions(rows, requestedLimit)
     setLoading(false)
     if (!qs.length) {
       setToastMsg(avoidSeen
@@ -1157,7 +1378,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily , mode: cfg.mode || 'exam' })
     go('quiz')
   }
 
@@ -1227,16 +1448,26 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         localStorage.setItem(storageKey, JSON.stringify(next))
         return next
       })
+      const displayName = [
+        user.user_metadata?.full_name,
+        user.user_metadata?.name,
+        user.user_metadata?.display_name,
+        user.email?.split('@')[0]
+      ].map(value => String(value || '').trim()).find(Boolean) || 'শিক্ষার্থী'
       supabase.from('exam_results').insert({
         user_id: user.id,
-        user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'শিক্ষার্থী',
-        // user_avatar doubles as a small metadata slot: { u: avatarUrl, e: email }
-        // so the leaderboard can identify participants by email too.
-        user_avatar: JSON.stringify({ u: user.user_metadata?.avatar_url || null, e: user.email || '' }),
+        user_name: displayName,
+        // Keep leaderboard metadata privacy-safe; never publish the account email.
+        user_avatar: JSON.stringify({ u: user.user_metadata?.avatar_url || null }),
         score: pct,
         total_questions: qs.length,
         category: quiz.rankingEligible ? `live:${quiz.scheduleId}` : `live-archive:${quiz.scheduleId}`
-      }).then(({ error }) => { if (error) console.warn('Live attempt sync failed:', error.message) })
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('Live attempt sync failed:', error.message)
+          setToastMsg('পরীক্ষার ফল লিডারবোর্ডে সিঙ্ক হয়নি—ডেটাবেস সেটআপ SQL চালাতে হবে')
+        }
+      })
     }
     const topicStats = [...topicMap.values()].map(t => ({ ...t, accuracy: Math.round(t.correct / t.total * 100) }))
       .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total || a.topic.localeCompare(b.topic))
@@ -1274,15 +1505,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       allRows.forEach(row => {
         const key = row.user_id || row.user_name
         let avatarUrl = null
-        let email = ''
         if (row.user_avatar) {
           try {
             const meta = JSON.parse(row.user_avatar)
-            if (meta && typeof meta === 'object') { avatarUrl = meta.u || meta.avatar_url || null; email = meta.e || meta.email || '' }
+            if (meta && typeof meta === 'object') avatarUrl = meta.u || meta.avatar_url || null
             else avatarUrl = row.user_avatar
           } catch { avatarUrl = row.user_avatar }
         }
-        grouped[key] ||= { user_name: row.user_name, user_avatar: avatarUrl, user_email: email, totalScore: 0, total_exams: 0 }
+        const rowName = String(row.user_name || '').trim()
+        grouped[key] ||= { user_name: rowName || 'শিক্ষার্থী', user_avatar: avatarUrl, user_email: '', totalScore: 0, total_exams: 0 }
+        if ((!grouped[key].user_name || grouped[key].user_name === 'শিক্ষার্থী') && rowName) grouped[key].user_name = rowName
         grouped[key].total_exams += 1
         grouped[key].totalScore += Number(row.score)
       })
@@ -1377,9 +1609,12 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
     : selectedQbGroup
       ? QUESTION_BANK_SOURCES.filter(source => source.groupId === selectedQbGroup.id)
       : []
-  const Expl = ({ q }) => {
+  // প্র্যাকটিস মোডে উত্তর দেওয়া মাত্রই ব্যাখ্যা খোলা অবস্থায় দেখানো হয়, যাতে
+  // অতিরিক্ত ক্লিক ছাড়াই সঠিক উত্তরের কারণ পড়া যায়। `open` না দিলে আগের মতোই
+  // বন্ধ থাকে (পরীক্ষার রিভিউতে চাইলে ব্যবহারকারী নিজে খুলে নেয়)।
+  const Expl = ({ q, open = false }) => {
     const explanation = q?.explanation || q?.explanation_bn || ''
-    return <details className="explanation-details">
+    return <details className="explanation-details" open={open}>
       <summary><span>ব্যাখ্যা</span></summary>
       <div className="expl explanation-content">
         {explanation ? <Md s={explanation} /> : <>সঠিক উত্তর — <b>{q?.answer}</b></>}
@@ -1392,6 +1627,22 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
     return <div className="gemini-help">
       <button className="ai-help-btn review-ai-help" title="AI দিয়ে বুঝুন" onClick={() => openGeminiExplanation(question)}><SheetIco id="sparkles" /> AI দিয়ে বুঝুন <span className="ai-help-arrow" aria-hidden="true">→</span></button>
       {visible && <small className="gemini-paste-hint" role="status">প্রম্পট কপি করা আছে—Gemini-তে Paste করলেই ব্যাখ্যা আসবে।</small>}
+    </div>
+  }
+
+  // প্র্যাকটিস মোড, পরীক্ষার উত্তরপত্র ও রিভিশন খাতা—সবখানে একই রিভিউ ব্লক, তাই
+  // বক্সের আকার, স্পেসিং আর রঙ কোথাও এলোমেলো দেখায় না। প্র্যাকটিস মোডে ব্যাখ্যা
+  // খোলা আসে; বাকি জায়গায় চাইলে খুলে নেওয়া যায়।
+  const ReviewBlock = ({ question, selectedIndex, openExplanation = false }) => {
+    const answered = Number.isInteger(selectedIndex) && selectedIndex >= 0
+    const isCorrect = answered && question?.options?.[selectedIndex] === question?.answer
+    return <div className="review-block">
+      <ReviewOptions question={question} selectedIndex={answered ? selectedIndex : null} />
+      {answered && <p className={`review-verdict ${isCorrect ? 'ok' : 'bad'}`}>
+        <i aria-hidden="true" />{isCorrect ? 'সঠিক উত্তর' : 'ভুল উত্তর'}
+      </p>}
+      <Expl q={question} open={openExplanation} />
+      <GeminiHelp question={question} />
     </div>
   }
 
@@ -1408,9 +1659,6 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
       {page !== 'quiz' && <header>
         <div className="hdr-in">
           <div className="hdr-left">
-            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
-              <SheetIco id="menu" />
-            </button>
             <button className="logo hdr-logo" onClick={() => go('home')} title="অভ্যাস">
               <span className="wordmark">অভ্যাস</span>
             </button>
@@ -1419,7 +1667,9 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <button className="ibtn notif header-notif-btn" aria-label="নোটিফিকেশন দেখুন" aria-expanded={notifOpen} title="নোটিফিকেশন" onClick={() => { setNotifOpen(value => !value); setSearchOpen(false) }}>
               <SheetIco id="bell" /><span className="ndot" />
             </button>
-            <button className="ibtn wide" onClick={() => go('setup')}><SheetIco id="sliders" /> কাস্টম কুইজ</button>
+            <button className="ibtn menu-toggle" aria-label="সাইড নেভিগেশন খুলুন" aria-expanded={sheetOpen} onClick={() => { setSheetOpen(true); setSearchOpen(false); setNotifOpen(false) }}>
+              <SheetIco id="menu" />
+            </button>
             <button className="ibtn header-search-btn" aria-label="সার্চ খুলুন" aria-expanded={searchOpen} title="সার্চ" onClick={() => { setSearchOpen(value => !value); setNotifOpen(false) }}><SheetIco id="search" /></button>
             <button className="ibtn" aria-label={dark ? 'লাইট মোড' : 'ডার্ক মোড'} onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /></button>
             {user
@@ -1429,167 +1679,216 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               : <button className="ibtn wide auth-login" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
           </div>
 
-          {notifOpen && <div className="npanel header-npanel">
-            <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
-            {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
-            {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
-          </div>}
-
-          {searchOpen && <div className="header-search-panel">
-            <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
-            <div className="sres">
-              {q.trim().length <= 1 ? <>
-                <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
-                {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
-              </> : searchRes.length ? searchRes.map((result, index) => (
-                <button key={index} onClick={() => { setQ(''); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
-                  <span>{result.t}</span><span>{result.sb}</span>
-                </button>
-              )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
-            </div>
-          </div>}
         </div>
       </header>}
+      {page !== 'quiz' && notifOpen && <div className="npanel header-npanel">
+        <div className="nh"><span>🔔 নোটিফিকেশন</span><button aria-label="বন্ধ করুন" onClick={() => setNotifOpen(false)}>×</button></div>
+        {dueList.length > 0 && <button className="ni revision-notice" onClick={() => go('review')}><b>↻ আজ {BN(dueList.length)}টি প্রশ্ন রিভিশন বাকি</b><small>এখন রিভিশন শুরু করতে ট্যাপ করুন</small></button>}
+        {NOTICES.map((notice, index) => <button className="ni" key={index} onClick={() => setNotifOpen(false)}><b>{notice.t}</b><small>{notice.d}</small></button>)}
+      </div>}
+      {page !== 'quiz' && searchOpen && <div className="header-search-panel">
+        <div className="search"><SheetIco id="search" /><input autoFocus aria-label="বিষয় বা টপিক সার্চ" placeholder="বিষয় বা টপিক খুঁজুন…" value={q} onChange={event => setQ(event.target.value)} /></div>
+        <div className="sres">
+          {q.trim().length <= 1 ? <>
+            <div className="sres-h">🔥 জনপ্রিয় সার্চ</div>
+            {POP_SEARCH.map(topic => <button key={topic} onClick={() => setQ(topic)}><span>{topic}</span><span>খুঁজুন →</span></button>)}
+          </> : searchRes.length ? searchRes.map((result, index) => (
+            <button key={index} onClick={() => { setQ(''); setSearchOpen(false); openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(result.sb) ? 'bcs' : 'bank', subjects: [result.sb], topics: [result.t] }) }}>
+              <span>{result.t}</span><span>{result.sb}</span>
+            </button>
+          )) : <div className="search-empty">কিছু পাওয়া যায়নি</div>}
+        </div>
+      </div>}
 
       <main className={`page-shell page-${page} ${page === 'home' ? 'home-main' : ''} ${page === 'quiz' ? 'quiz-main' : ''}`.trim()} style={page === 'quiz' ? { paddingBottom: 140 } : undefined}>
         {/* ================= HOME (edtech app landing) ================= */}
         {page === 'home' && <>
-          <section className="hero-panel">
-            <h1>চাকরির পরীক্ষার <i>পূর্ণাঙ্গ প্রস্তুতি</i></h1>
-            <p className="lead muted" style={{ maxWidth: '58ch' }}>নির্ধারিত লাইভ পরীক্ষায় অংশ নিন, অথবা বিষয় ও টপিক বেছে নিজের মতো কাস্টম কুইজ দিন। প্রতিটি প্রশ্নের উত্তর ও ব্যাখ্যাসহ অনুশীলন করুন।</p>
-            <div className="hero-chips" style={{ marginTop: 10 }}>
-              <span className="hchip"><b>১ লাখ+</b> প্রশ্ন আছে</span>
-              <span className="hchip"><b>কাস্টম</b> কুইজ</span>
-              <span className="hchip"><b>লাইভ</b> পরীক্ষা</span>
-              <span className="hchip"><b>✓</b> ব্যাখ্যাসহ উত্তর</span>
+          <div className="ai-landing">
+            {/* Greeting - like screenshot top bar */}
+            <div className="ai-greet">
+              <div className="ai-greet-left">
+                <button onClick={() => go(user ? 'profile' : 'login')} aria-label={user ? 'প্রোফাইল খুলুন' : 'লগইন করুন'} style={{border:'none',padding:0,background:'none',cursor:'pointer',borderRadius:'50%'}}>
+                  <img className="ai-greet-avatar" src={avSrc(user)} alt="avatar" style={{display:'block'}} />
+                </button>
+                <div className={`ai-greet-text ${!user ? 'ai-greet-login' : ''}`} onClick={() => !user && go('login')} style={!user ? {cursor:'pointer'} : undefined}>
+                  {user ? (
+                    <>
+                      <h2>Hello, {String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Emma').trim().split(/\s+/)[0].split('.')[0].slice(0,14)} 👋</h2>
+                      <p>Keep learning, keep growing <span>✨</span></p>
+                    </>
+                  ) : (
+                    <>
+                      <h2>স্বাগতম 👋</h2>
+                      <p>লগইন করে শুরু করুন</p>
+                    </>
+                  )}
+                </div>
+                {!user && (
+                  <button className="ai-greet-login-arrow" aria-label="লগইন করুন" onClick={() => go('login')}>
+                    <span>›</span>
+                  </button>
+                )}
+              </div>
+              <div className="ai-greet-actions">
+                <button className="ai-bell" aria-label="সার্চ খুলুন" onClick={() => { setSearchOpen(v=>!v); setNotifOpen(false) }}>
+                  <SheetIco id="search" />
+                </button>
+                <button className="ai-bell" onClick={() => setNotifOpen(v=>!v)} aria-label="notification">
+                  <SheetIco id="bell" />
+                  <span className="ai-bell-dot" />
+                </button>
+                <button className="ai-bell" aria-label="মেনু খুলুন" onClick={() => setSheetOpen(true)}>
+                  <SheetIco id="menu" />
+                </button>
+              </div>
             </div>
-            <div className="cta" style={{ marginTop: 6 }}>
-              <button className="btn primary" onClick={() => liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>আজকের পরীক্ষা দেখুন →</button>
-              <button className="btn ghost hero-custom-quiz-btn" onClick={() => go('setup')}><span className="hero-custom-quiz-icon" aria-hidden="true"><SheetIco id="sliders" /></span>নিজের কুইজ তৈরি করুন</button>
-            </div>
-          </section>
 
-          <section className="sec home-features-section">
-            <div className="head"><div className="eyebrow">দ্রুত ফিচার</div><h2>সবকিছু <i>এক জায়গায়</i></h2></div>
-            <div className="feature-marquee" aria-label="ফিচার ক্যারোসেল">
-              <div className="feature-track">
-                {[...HOME_FEATURES, ...HOME_FEATURES].map((feature, index) => (
-                  <button className="feature-chip" key={`${feature.page}-${index}`} onClick={() => go(feature.page)} style={{ '--fc': feature.color, '--fbg': feature.bg }} title={feature.label}>
-                    <span className="feature-chip-icon"><SheetIco id={feature.icon} /></span>
-                    <span className="feature-chip-text"><b>{feature.label}</b><small>{feature.sub}</small></span>
+            {/* Live Arena Hero — pic er moto box, app color */}
+            <div className="live-arena-hero" role="button" tabIndex={0} onClick={() => featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams')} onKeyDown={event => { if(event.key==='Enter' || event.key===' '){ event.preventDefault(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}}>
+              <div className="lah-content">
+                <span className="lah-pill"><span className="lah-pill-dot" aria-hidden="true" /> {featuredExam?.status==='live' ? '● লাইভ চলছে' : featuredExam ? '● আজকের লাইভ' : '● প্রতিদিন ১১:৩০ PM'}</span>
+                <h3>আজকের চলমান<br/>লাইভ পরীক্ষা</h3>
+                {featuredExam ? (
+                  <>
+                    <p>{featuredExam.topic}</p>
+                    <div className="lah-meta">
+                      <span>{formatLiveExamTime(featuredExam.startsAt)}</span>
+                      <span>•</span>
+                      <span>{BN(featuredExam.questions)} প্রশ্ন</span>
+                      <span>•</span>
+                      <span className="lah-countdown">{featuredExam.status==='live' ? `শেষ ${formatExamCountdown(featuredExam.endsAt, clock)}` : `শুরু ${formatExamCountdown(featuredExam.startsAt, clock)}`}</span>
+                    </div>
+                  </>
+                ) : <p>প্রতিদিন রাত ১১:৩০ — BCS • Bank প্রস্তুতি</p>}
+                <button className="lah-btn" onClick={event => { event.stopPropagation(); featuredExam ? startScheduledExam(featuredExam, isTestExam(featuredExam)) : go('exams') }}>{featuredExam?.status==='live' ? 'পরীক্ষা দিন' : featuredExam ? 'রুটিন দেখুন' : 'শুরু করুন'} <span>›</span></button>
+              </div>
+
+            </div>
+
+            <div className="home-stat-strip">
+              <span className="hss-dot" aria-hidden="true" />
+              <b>১,৫০,০০০+ প্রশ্ন</b>
+              <span>•</span><span>প্রতিদিন ১১:৩০ PM</span>
+              <span>•</span><span className="hss-live">লাইভ</span>
+            </div>
+
+            {/* Circular - fixed 2x2 grid (no slider) */}
+            <div className="ai-section circular-home">
+              <div className="ai-section-head compact"><h3>সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
+              <div className="circular-home-grid circular-home-2x2">
+                {HOME_CIRCULARS.map(c=>(
+                  <button key={c.title} className="circular-card compact" onClick={()=>go(c.page)}>
+                    {c.logo ? <img src={c.logo} alt="" className="circular-logo" loading="lazy" onError={e=>e.currentTarget.style.display='none'} /> : <span className={`circular-icon circular-icon-${c.icon}`}><SheetIco id={c.icon} /></span>}
+                    <span className="circular-card-copy"><span className="circular-tag">{c.tag}</span><b>{c.title}</b><small>{c.desc}</small></span>
+                    <i>›</i>
                   </button>
                 ))}
               </div>
             </div>
-          </section>
 
-          <section className="sec home-smart-panel" style={{ paddingTop: 28 }}>
-            <div className="panel" style={{ gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                <h3 style={{ margin: 0 }}>{greet()}, {(user?.user_metadata?.full_name || user?.name || 'শিক্ষার্থী').split(' ')[0]} 👋</h3>
-                <div className="hero-chips">
-                  {goalDays != null && <span className="hchip">⏳ {goal.name}: আর <b>{BN(goalDays)}</b> দিন</span>}
-                  {trend != null && trend !== 0 && <span className="hchip">{trend > 0 ? '📈' : '📉'} <b>{BN(Math.abs(trend))}%</b> ট্রেন্ড</span>}
-                  <span className="hchip">🔥 <b>{BN(streak)}</b> স্ট্রিক</span>
+            {/* Quick start - 4 tiles, fresh & minimal */}
+            <div className="ai-section quick-home">
+              <div className="quick-grid">
+                <button className="quick-card quick-live" onClick={()=> liveExam ? startScheduledExam(liveExam, isTestExam(liveExam)) : go('exams')}>
+                  <span className="qk-icon"><SheetIco id="timer" /></span><b>লাইভ</b><small>{liveExam ? formatLiveExamTime(liveExam.startsAt) : '১১:৩০ PM'}</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('setup')}>
+                  <span className="qk-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('questionBank')}>
+                  <span className="qk-icon"><SheetIco id="bank" /></span><b>ব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small>
+                </button>
+                <button className="quick-card" onClick={()=>go('review')}>
+                  <span className="qk-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)} টি</small>
+                </button>
+              </div>
+            </div>
+
+            {/* Category - BCS/Bank active, NTRCA/Primary coming soon */}
+            <div className="ai-section cats-home">
+              <div className="ai-section-head compact"><h3>ক্যাটাগরি</h3><button onClick={()=>go('circular')}>সব →</button></div>
+              <div className="cats-home-grid">
+                {APP_CATS.map(c=>{
+                  const isComingSoon = c.id === 'ntrca' || c.id === 'primary'
+                  return (
+                    <button key={c.id} className={`cat-card ${isComingSoon ? 'coming-soon' : ''}`} onClick={()=> isComingSoon ? setToastMsg('Coming Soon — শীঘ্রই আসছে') : openCustomQuiz({ category: c.id, subjects: (CAT_SUBJECTS[c.id]||[]).slice(0,2) })}>
+                      <img src={c.img} alt={c.name} loading="lazy" onError={e=>e.currentTarget.style.display='none'} />
+                      <span><b>{c.name}</b><small>{isComingSoon ? 'Coming Soon' : c.d}</small></span>
+                      <i>{isComingSoon ? '◷' : '›'}</i>
+                      {isComingSoon && <span className="coming-soon-badge">Soon</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Features - bento unique, live bigger, heading ফিচারস */}
+            <div className="ai-section features-home">
+              <div className="ai-section-head compact"><h3>ফিচারস</h3><span style={{fontSize:'.68rem',color:'var(--ink3)'}}>এক ক্লিকে সব</span></div>
+              <div className="features-grid bento-grid">
+                <button className="feat-card feat-live" onClick={()=>go('exams')}><span className="feat-icon"><SheetIco id="exam" /></span><b>লাইভ পরীক্ষা</b><small>প্রতিদিন ১১:৩০ PM</small><span className="feat-live-badge">Live</span></button>
+                <button className="feat-card feat-game" onClick={()=>go('game')}><span className="feat-icon"><SheetIco id="users" /></span><b>১v১ গেম</b><small>বন্ধুর সাথে</small></button>
+                <button className="feat-card" onClick={()=>go('questionBank')}><span className="feat-icon"><SheetIco id="bank" /></span><b>প্রশ্নব্যাংক</b><small>{BN(QUESTION_BANK.totalSources)} টি</small></button>
+                <button className="feat-card" onClick={()=>go('setup')}><span className="feat-icon"><SheetIco id="sliders" /></span><b>কাস্টম</b><small>কুইজ</small></button>
+                <button className="feat-card" onClick={()=>go('review')}><span className="feat-icon"><SheetIco id="layers" /></span><b>রিভিশন</b><small>{BN(wrong.length)}</small></button>
+                <button className="feat-card" onClick={()=>go('potrika')}><span className="feat-icon"><SheetIco id="news" /></span><b>পত্রিকা</b><small>কারেন্ট</small></button>
+                <button className="feat-card" onClick={()=>go('visual')}><span className="feat-icon"><SheetIco id="image" /></span><b>ভিজ্যুয়াল</b><small>জিকে</small></button>
+                <button className="feat-card" onClick={()=>go('circular')}><span className="feat-icon"><SheetIco id="file" /></span><b>সার্কুলার</b><small>চাকরি</small></button>
+                <button className="feat-card" onClick={()=>go('leaderboard')}><span className="feat-icon"><SheetIco id="trophy" /></span><b>লিডারবোর্ড</b><small>র‍্যাংকিং</small></button>
+                <button className="feat-card" onClick={()=>go('daily')}><span className="feat-icon"><SheetIco id="flame" /></span><b>ডেইলি</b><small>চ্যালেঞ্জ</small></button>
+                <button className="feat-card" onClick={()=>go('profile')}><span className="feat-icon"><SheetIco id="user" /></span><b>প্রোফাইল</b><small>অগ্রগতি</small></button>
+              </div>
+            </div>
+
+            {/* AI Tutor Quick Actions - like screenshot middle screen */}
+            <div className="ai-section">
+              <div className="ai-tutor-actions">
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">💡</span>
+                  <span><b>বুঝে নিন</b><small>যেকোনো টপিক</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📘</span>
+                  <span><b>প্র্যাকটিস</b><small>প্রশ্ন করুন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('review')}>
+                  <span className="ai-action-icon">📄</span>
+                  <span><b>ভুল খাতা</b><small>রিভিশন</small></span>
+                </button>
+                <button className="ai-action" onClick={() => go('setup')}>
+                  <span className="ai-action-icon">📅</span>
+                  <span><b>স্টাডি প্ল্যান</b><small>৪০ দিন</small></span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Leaderboard - tag leaderboard */}
+            <div className="ai-section">
+              <div className="ai-section-head">
+                <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                  <span className="leaderboard-eyebrow">leaderboard • লিডারবোর্ড</span>
+                  <h3>{liveLeaderboardActive ? 'আজকের সেরা' : 'গতকালের সেরা'}</h3>
+                </div>
+                <button onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
+              </div>
+              {homeLbData === null
+                ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
+                : homeLbData.length
+                  ? <div className="leaderboard-list">{homeLbData.slice(0,4).map(LBRow)}</div>
+                  : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
+            </div>
+          </div>
+
+            {/* Live job circulars - PR #3: countdown + Teletalk apply */}
+            {urgentJobCirculars.length > 0 && (
+              <div className="ai-section home-live-circulars">
+                <div className="ai-section-head compact"><h3>চলমান সার্কুলার</h3><button onClick={()=>go('circular')}>সব →</button></div>
+                <div className="job-circular-grid">
+                  {urgentJobCirculars.map(item => <JobCircularCard key={item.id} circular={item} now={clock} compact onDetails={setCircularDetail} onApply={applyToCircular} />)}
                 </div>
               </div>
-              <span className="lbl" style={{ margin: 0 }}>চাকরির পরীক্ষায় এগিয়ে থাকতে আজকের প্রস্তুতি গুছিয়ে নিন</span>
-              <div className="chips">
-                {dueList.length > 0 && <button className="chip on" onClick={() => beginQuiz({ title: 'স্মার্ট রিভিশন', rows: dueList, limit: Math.min(10, dueList.length), minutes: 10 })}>🔁 {BN(dueList.length)}টি রিভিশন due</button>}
-                {subjBars.length > 0 && subjBars[subjBars.length - 1].avg < 80 && <button className="chip" onClick={() => beginQuiz({ title: 'দুর্বল বিষয় • ' + subjBars[subjBars.length - 1].s, tag: 'bcs', subjects: [subjBars[subjBars.length - 1].s], limit: 10, minutes: 10, fallback: [subjBars[subjBars.length - 1].s] })}>🎯 {subjBars[subjBars.length - 1].s} দুর্বল — ১০ প্রশ্ন</button>}
-                {localStorage.getItem('asp_daily') !== new Date().toDateString() && <button className="chip" onClick={() => go('daily')}>🔥 ডেইলি চ্যালেঞ্জ</button>}
-                <button className="chip" onClick={() => go('potrika')}>📰 আজকের পত্রিকা</button>
-                <button className="chip" onClick={() => go('visual')}>🖼 ছবি দিয়ে শেখো</button>
-                <button className="chip" onClick={() => go('exams')}>📘 নতুন টপিক ধরো</button>
-                <button className="chip" onClick={() => go('questionBank')}>🏛 প্রশ্নব্যাংক</button>
-              </div>
-            </div>
-          </section>
-
-          <section className="sec home-live-attraction">
-            <div className="head"><div className="eyebrow">লাইভ এরিনা</div><h2 style={{ marginTop: 10 }}>লাইভ পরীক্ষা ও <i>রুটিন</i></h2></div>
-            <div className="slider" aria-label="লাইভ পরীক্ষার সংক্ষিপ্ত তালিকা">
-              {homeLiveExams.map(exam => {
-                const isToday = exam.dateKey === todayLeaderboardDateKey
-                const isLive = exam.status === 'live'
-                const countdown = formatExamCountdown(isLive ? exam.endsAt : exam.startsAt, clock)
-                const planDay = examPlanDay(exam)
-                const heading = exam.planned ? (planDay || '৪০ দিনে প্রিলি') : exam.subject
-                return <button className={`live-card ${exam.status} ${isToday ? 'today-card' : 'compact-card'}`} key={exam.id} onClick={() => isLive ? startScheduledExam(exam, isTestExam(exam)) : go('exams')}>
-                  {exam.planned && <span className="live-plan-mini-tag">৪০ দিনে প্রিলি</span>}
-                  <span className={`tag ${isLive ? 'live-now' : isToday ? 'today-tag' : 'bcs'}`}>{isLive ? '● এখন লাইভ' : isToday ? 'আজকের পরীক্ষা' : 'আগামী পরীক্ষা'}</span>
-                  <h3 title={exam.subject}>{heading}</h3>
-                  <div className="top">{exam.topic}</div>
-                  <div className="meta"><span>{formatLiveExamDate(exam.startsAt)}</span><span>{formatLiveExamTime(exam.startsAt)}</span></div>
-                  {isLive
-                    ? <span className="today-card-countdown"><small>লাইভ শেষ হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                    : isToday
-                      ? <span className="today-card-countdown"><small>শুরু হতে বাকি</small><b aria-live="polite">{countdown}</b></span>
-                      : <span className="compact-countdown"><small>শুরু হতে</small><b>⏳ {countdown}</b></span>}
-                </button>
-              })}
-            </div>
-            <div className="cta"><button className="btn ghost sm" onClick={() => go('exams')}>{hasFortyDayPlan ? '৪০ দিনে প্রিলি →' : '৭ দিনের সম্পূর্ণ রুটিন →'}</button></div>
-          </section>
-
-          <section className="sec home-circular-section">
-            <div className="head circular-section-head">
-              <div><div className="eyebrow">চাকরির আপডেট</div><h2>সাম্প্রতিক <i>সার্কুলার</i></h2></div>
-              <button className="btn sm ghost" onClick={() => go('circular')}>সব সার্কুলার →</button>
-            </div>
-            <div className="circular-card-grid">
-              {CIRCULARS.map(item => <button className="circular-card" key={item.title} onClick={() => go(item.page)}>
-                <span className={`circular-icon circular-icon-${item.icon}`}><SheetIco id={item.icon} /></span>
-                <span className="circular-card-copy"><span className="circular-tag">{item.tag}</span><b>{item.title}</b><small>{item.desc}</small></span>
-                <i aria-hidden="true">→</i>
-              </button>)}
-            </div>
-          </section>
-
-          <section className="sec home-target-section">
-            <div className="head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div><div className="eyebrow">টার্গেট বাছো</div><h2 style={{ marginTop: 10 }}>কোন <i>পরীক্ষা</i> দিবে?</h2></div>
-            </div>
-            <div className="cat-scroll">
-              {APP_CATS.map(c => (
-                <button className="cat-card" key={c.id} onClick={() => {
-                  if (c.id === 'bcs' || c.id === 'bank') openCustomQuiz({ category: c.id })
-                  else setToastMsg('শীঘ্রই আসছে: ' + c.name)
-                }}>
-                  <div className="im">{c.img ? <img src={c.img} alt="" /> : c.e}</div>
-                  <div className="bd"><b>{c.name}</b><span>{c.d}</span></div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="sec">
-            <div className="head"><div className="eyebrow">অনুশীলন</div><h2>বিষয়সমূহ</h2></div>
-            <div className="subj-tiles">
-              {SUBJECTS.map(s => (
-                <button className="tile" key={s} onClick={() => openCustomQuiz({ category: CAT_SUBJECTS.bcs.includes(s) ? 'bcs' : 'bank', subjects: [s] })}>
-                  <span className="e"><Ico id={s} size={26} /></span><b>{s}</b>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="sec leaderboard-section">
-            <div className="head leaderboard-head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap' }}>
-              <div>
-                <div className="eyebrow">লাইভ ফলাফল</div>
-                <h2 style={{ marginTop: 10 }}>{liveLeaderboardActive ? <>আজকের <i>লিডারবোর্ড</i></> : <>গতকালের <i>লিডারবোর্ড</i></>}</h2>
-                <p className="muted leaderboard-copy">{liveLeaderboardActive ? 'ফল জমা হলে প্রতি মিনিটে আপডেট হবে।' : `${homeLeaderboardDate} • লাইভ ফলাফল`}</p>
-              </div>
-              <button className="btn sm ghost" onClick={() => go('leaderboard', { leaderboardDateKey: homeLeaderboardDateKey })}>সব ফল →</button>
-            </div>
-            {homeLbData === null
-              ? <div className="note">লিডারবোর্ড লোড হচ্ছে…</div>
-              : homeLbData.length
-                ? <div className="lb">{homeLbData.slice(0, 4).map(LBRow)}</div>
-                : <div className="note">{liveLeaderboardActive ? 'আজকের লাইভ পরীক্ষার ফল জমা হলে র‍্যাঙ্কিং এখানে দেখা যাবে।' : 'গতকালের লাইভ পরীক্ষার কোনো ফল পাওয়া যায়নি।'}</div>}
-          </section>
-
+            )}
         </>}
 
         {/* ================= LIVE EXAM CENTER ================= */}
@@ -1618,7 +1917,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                 <div className="live-feature-meta">
                   <span>📅 {formatLiveExamDate(featuredExam.startsAt)}</span>
                   <span>🕗 শুরু {formatLiveExamTime(featuredExam.startsAt)}</span>
-                  <span className="live-window-note">🕑 উত্তর: পরদিন দুপুর ২টা পর্যন্ত</span>
+                  <span className="live-window-note">🕓 উত্তর: পরদিন বিকাল ৪টা পর্যন্ত</span>
                   <span>📝 {BN(featuredExam.questions)} প্রশ্ন</span>
                   <span>⏱ {BN(featuredExam.minutes)} মিনিট</span>
                 </div>
@@ -1664,7 +1963,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                     <div className="routine-card-top"><span>{exam.planned ? 'লাইভ পরীক্ষা' : exam.subject}</span><time dateTime={new Date(exam.startsAt).toISOString()}>{formatLiveExamDate(exam.startsAt)}</time></div>
                     <h3>{exam.planned ? liveExamSubjectHeading(exam) : exam.topic}</h3>
                     {exam.planned && <div className="routine-topic-detail"><b>সিলেবাস:</b> {exam.topic}</div>}
-                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span className="exam-window-label">পরদিন ২টা পর্যন্ত</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
+                    <div className="routine-meta"><span>{BN(exam.questions)} প্রশ্ন</span><span>{BN(exam.minutes)} মিনিট</span><span className="exam-window-label">পরদিন ৪টা পর্যন্ত</span>{exam.special && <span>বিশেষ</span>}{exam.revision && <span>রিভিশন</span>}</div>
                     {exam.distribution && <div className="routine-meta exam-distribution">{exam.distribution.map(part => <span key={part.label}>{part.label} {BN(part.questions)}</span>)}</div>}
                   </div>
                   <div className="routine-countdown"><small>শুরু হতে</small><b aria-live={index === 0 ? 'polite' : undefined}>{formatExamCountdown(exam.startsAt, clock)}</b></div>
@@ -1792,9 +2091,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               : lbData.length ? <div className="lb leaderboard-list">{lbData.map(LBRow)}</div>
                 : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'ফল এখানে দেখা যাবে।' : ''}</div>}
           </section>
-        </>}
-
-        {/* ================= CUSTOM QUIZ ================= */}
+        </>}        {/* ================= CUSTOM QUIZ ================= */}
         {page === 'game' && <>
           <GameMode
             user={user}
@@ -1807,128 +2104,157 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
         {page === 'setup' && <>
           <section className="sec custom-quiz-section">
             <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>বিষয় ও টপিক বেছে <i>কাস্টম কুইজ</i></h2><p className="muted">এক বা একাধিক বিষয় বাছুন, তারপর সেই বিষয়গুলোর নির্দিষ্ট টপিক নির্বাচন করুন।</p></div>
+            
             <button className="hub-custom-card game-mode-invite" onClick={() => go('game')}>
               <span className="hub-custom-icon"><SheetIco id="users" /></span>
               <span><b>১v১ লাইভ গেম মোড</b><small>বন্ধুর সাথে একই প্রশ্নে একসাথে খেলুন—প্রতিপক্ষের অগ্রগতি লাইভ দেখুন</small></span>
               <i aria-hidden="true">→</i>
             </button>
-            <div className="seen-progress-card">
-              <div><b>নতুন প্রশ্নের অগ্রগতি</b><span>{user ? <>এ পর্যন্ত <strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখেছেন। সাধারণ কুইজে এগুলো আর আসবে না।</> : 'লগইন করলে দেখা প্রশ্নগুলো আলাদাভাবে সংরক্ষিত হবে।'}</span></div>
-              {user
-                ? <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
-                : <button className="btn sm ghost" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
-            </div>
-            <div className="panel custom-quiz-panel">
-              <div className="question-count-status">
-                <span className="live-dot" aria-hidden="true" />
-                <b>প্রশ্নভান্ডার</b>
-                <span>বিষয় ও টপিক বেছে অনুশীলন শুরু করুন</span>
-              </div>
-              <div><span className="lbl">ক্যাটাগরি</span>
-                <div className="chips">
-                  <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); updateCustomSubjects(['বাংলা']); setCTopics([]) }}>🎓 বিসিএস</button>
-                  <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); updateCustomSubjects(['গাণিতিক যুক্তি']); setCTopics([]) }}>🏦 ব্যাংক</button>
+            <div className="custom-setup-bento">
+              {/* Left Column: Progress & Category */}
+              <div className="custom-setup-left">
+                <div className="bento-card auth-bento">
+                  <div><b>নতুন প্রশ্নের অগ্রগতি</b><span>{user ? <>এ পর্যন্ত <strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখেছেন। সাধারণ কুইজে এগুলো আর আসবে না।</> : 'লগইন করলে দেখা প্রশ্নগুলো আলাদাভাবে সংরক্ষিত হবে।'}</span></div>
+                  {user
+                    ? <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
+                    : <button className="btn sm ghost" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
+                </div>
+                
+                <div className="bento-card cat-bento">
+                  <span className="lbl">ক্যাটাগরি</span>
+                  <div className="chips">
+                    <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); updateCustomSubjects(['বাংলা']); setCTopics([]) }}>🎓 বিসিএস</button>
+                    <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); updateCustomSubjects(['গাণিতিক যুক্তি']); setCTopics([]) }}>🏦 ব্যাংক</button>
+                  </div>
+                </div>
+                
+                <div className="bento-card mode-bento">
+                  <span className="lbl">কুইজ মোড</span>
+                  <div className="chips">
+                    <button className={`chip ${cMode === 'exam' ? 'on' : ''}`} onClick={() => setCMode('exam')}>⏱️ এক্সাম মোড</button>
+                    <button className={`chip ${cMode === 'practice' ? 'on' : ''}`} onClick={() => setCMode('practice')}>📖 প্র্যাকটিস মোড</button>
+                  </div>
+                  <small className="muted" style={{marginTop: 8, display: 'block', lineHeight: 1.4}}>
+                    {cMode === 'practice' ? 'উত্তর দেওয়ার সাথে সাথে সঠিক উত্তর ও ব্যাখ্যা দেখতে পারবেন।' : 'পুরো পরীক্ষা শেষে ফলাফল ও সঠিক উত্তর দেখতে পারবেন।'}
+                  </small>
                 </div>
               </div>
+              
+              {/* Right Column: Topics & Options */}
+              <div className="custom-setup-right">
+                <div className="bento-card topics-bento">
+                  <div className="question-count-status" style={{marginBottom: 16}}>
+                    <span className="live-dot" aria-hidden="true" />
+                    <b>প্রশ্নভান্ডার</b>
+                    <span>বিষয় ও টপিক বেছে অনুশীলন শুরু করুন</span>
+                  </div>
 
-              <div className="setup-select-grid">
-                <div className="setup-field">
-                  <span className="lbl">বিষয় নির্বাচন করুন</span>
-                  <details className="topic-check-dropdown subject-check-dropdown">
-                    <summary>
-                      <Ico id={cSubs[0] || 'বাংলা'} size={20} />
-                      <span>{cSubs.length ? `${BN(cSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    <div className="topic-check-menu subject-check-menu">
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={cSubs.length === (CAT_SUBJECTS[cCat] || []).length} onChange={() => updateCustomSubjects(cSubs.length === (CAT_SUBJECTS[cCat] || []).length ? [] : (CAT_SUBJECTS[cCat] || []))} />
-                          <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[cCat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
-                        </label>
-                        {(CAT_SUBJECTS[cCat] || []).map(subject => (
-                          <label className="topic-check-option" key={subject}>
-                            <input type="checkbox" checked={cSubs.includes(subject)} onChange={() => updateCustomSubjects(cSubs.includes(subject) ? cSubs.filter(item => item !== subject) : [...cSubs, subject])} />
-                            <span>{subject}<small>{BN(subjectQuestionCount(subject))} প্রশ্ন</small></span>
-                          </label>
-                        ))}
-                      </div>
+                  <div className="setup-select-grid">
+                    <div className="setup-field">
+                      <span className="lbl">বিষয় নির্বাচন করুন</span>
+                      <details className="topic-check-dropdown subject-check-dropdown">
+                        <summary>
+                          <Ico id={cSubs[0] || 'বাংলা'} size={20} />
+                          <span>{cSubs.length ? `${BN(cSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
+                          <i aria-hidden="true">⌄</i>
+                        </summary>
+                        <div className="topic-check-menu subject-check-menu">
+                          <div className="topic-check-list">
+                            <label className="topic-check-option all-option">
+                              <input type="checkbox" checked={cSubs.length === (CAT_SUBJECTS[cCat] || []).length} onChange={() => updateCustomSubjects(cSubs.length === (CAT_SUBJECTS[cCat] || []).length ? [] : (CAT_SUBJECTS[cCat] || []))} />
+                              <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[cCat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
+                            </label>
+                            {(CAT_SUBJECTS[cCat] || []).map(subject => (
+                              <label className="topic-check-option" key={subject}>
+                                <input type="checkbox" checked={cSubs.includes(subject)} onChange={() => updateCustomSubjects(cSubs.includes(subject) ? cSubs.filter(item => item !== subject) : [...cSubs, subject])} />
+                                <span>{subject}<small>{BN(subjectQuestionCount(subject))} প্রশ্ন</small></span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </details>
                     </div>
-                  </details>
-                </div>
 
-                <div className="setup-field">
-                  <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
-                  <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
-                    <summary aria-disabled={!cSubs.length}>
-                      <SheetIco id="layers" />
-                      <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    {!!cSubs.length && <div className="topic-check-menu">
-                      <div className="topic-check-search">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                        <input value={cTopicSearch} onChange={event => setCTopicSearch(event.target.value)} placeholder="টপিক খুঁজুন…" />
-                      </div>
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
-                          <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
-                        </label>
-                        {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
-                          ? cMathTopicGroups.map(group => (
-                              <div className="topic-check-group" key={group.label}>
-                                <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
-                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleMathTopicGroup(group.topics)} />
-                                  <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
-                                </label>
-                                {group.topics.map(topic => (
+                    <div className="setup-field">
+                      <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
+                      <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
+                        <summary aria-disabled={!cSubs.length}>
+                          <SheetIco id="layers" />
+                          <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
+                          <i aria-hidden="true">⌄</i>
+                        </summary>
+                        {!!cSubs.length && <div className="topic-check-menu">
+                          <div className="topic-check-search">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                            <input value={cTopicSearch} onChange={event => setCTopicSearch(event.target.value)} placeholder="টপিক খুঁজুন…" />
+                          </div>
+                          <div className="topic-check-list">
+                            <label className="topic-check-option all-option">
+                              <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
+                              <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
+                            </label>
+
+                            
+
+                            {cSubjectTopicGroups.length > 0 ? cSubjectTopicGroups.map(group => (
+                                  <div className="topic-check-group" key={group.label}>
+                                    <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
+                                      <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
+                                      <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
+                                    </label>
+                                    {group.topics.map(topic => (
+                                      <label className="topic-check-option" key={topic}>
+                                        <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
+                                        <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                ))
+                              : cRemainingTopics.map(topic => (
                                   <label className="topic-check-option" key={topic}>
                                     <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
                                     <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
                                   </label>
                                 ))}
-                              </div>
-                            ))
-                          : cVisibleTopics.map(topic => (
-                              <label className="topic-check-option" key={topic}>
-                                <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
-                                <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
-                              </label>
-                            ))}
-                        {!cVisibleTopics.length && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
-                      </div>
-                    </div>}
-                  </details>
+                            {!cVisibleTopics.length && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
+                          </div>
+                        </div>}
+                      </details>
+                    </div>
+                  </div>
+
+                  {!!cSubs.length && <div className="topic-selection" aria-live="polite">
+                    {!cTopics.length
+                      ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
+                      : <>
+                          <div className="selected-topic-head"><span><b>{BN(cTopics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setCTopics([])}>সব মুছুন</button></div>
+                          <div className="selected-topics">{cTopics.map(topic => <button key={topic} title="নির্বাচন বাতিল করুন" onClick={() => setCTopics(current => current.filter(item => item !== topic))}><span>{topic}</span><b aria-hidden="true">×</b></button>)}</div>
+                        </>}
+                  </div>}
+
+                  <div className="custom-quiz-options" style={{marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16}}>
+                    <div><span className="lbl">প্রশ্নসংখ্যা</span>
+                      <div className="chips custom-size-options">{[10, 25, 50, 100, 200].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
+                    </div>
+                    <div><span className="lbl">সময় (মিনিট)</span>
+                      <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="offline-quiz-note" style={{marginTop: 20}}>ইন্টারনেট না থাকলেও bundled ও সীমিত cached প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে।</div>
+                  <div className="cta" style={{marginTop: 20}}>
+                    <button className="btn primary" style={{width: '100%'}} onClick={() => {
+                      if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
+                      const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
+                      beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, mode: cMode, returnPage: 'setup' })
+                    }}>{cMode === 'practice' ? 'প্র্যাকটিস শুরু করুন →' : 'এক্সাম শুরু করুন →'}</button>
+                  </div>
                 </div>
               </div>
-
-              {!!cSubs.length && <div className="topic-selection" aria-live="polite">
-                {!cTopics.length
-                  ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
-                  : <>
-                      <div className="selected-topic-head"><span><b>{BN(cTopics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setCTopics([])}>সব মুছুন</button></div>
-                      <div className="selected-topics">{cTopics.map(topic => <button key={topic} title="নির্বাচন বাতিল করুন" onClick={() => setCTopics(current => current.filter(item => item !== topic))}><span>{topic}</span><b aria-hidden="true">×</b></button>)}</div>
-                    </>}
-              </div>}
-
-              <div className="custom-quiz-options">
-                <div><span className="lbl">প্রশ্নসংখ্যা</span>
-                  <div className="chips custom-size-options">{[10, 25, 50, 100, 200].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
-                </div>
-                <div><span className="lbl">সময় (মিনিট)</span>
-                  <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
-                </div>
-              </div>
-              <div className="offline-quiz-note">ইন্টারনেট না থাকলেও bundled ও সীমিত cached প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে। প্রশ্নের লেখা কপি করা বন্ধ থাকবে।</div>
-              <div className="cta"><button className="btn primary" onClick={() => {
-                if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
-                const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
-                beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, returnPage: 'setup' })
-              }}>কাস্টম কুইজ শুরু করুন →</button></div>
             </div>
           </section>
         </>}
+
 
         {/* ================= DAILY ================= */}
         {page === 'daily' && <>
@@ -1966,18 +2292,13 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   const selectedIndex = Number.isInteger(item?.revision?.selectedIndex)
                     ? item.revision.selectedIndex
                     : (item.options || []).indexOf(selectedAnswer)
-                  return <article className="rev-item bad-item" key={questionKey(item) || index}>
-                    <div className="rev-meta">
-                      <span>{item.subject || 'মিশ্র'}</span>
-                      <span>{item.topic || 'বিবিধ'}</span>
-                      <span className="source-badge" title={source.full}>{source.label}</span>
+                  return <article className="sheet-item bad" key={questionKey(item) || index}>
+                    <div className="sheet-item-head">
+                      <span className="sheet-item-meta" title={source.full}>{item.subject || 'মিশ্র'} • {item.topic || 'বিবিধ'} • {source.label}</span>
                     </div>
-                    <div className="q"><Md s={item.question} /></div>
-                    {selectedIndex >= 0
-                      ? <ReviewOptions question={item} selectedIndex={selectedIndex} />
-                      : <><ReviewOptions question={item} selectedIndex={null} /><div className="legacy-answer-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div></>}
-                    <Expl q={item} />
-                    <GeminiHelp question={item} />
+                    <div className="sheet-item-q"><Md s={item.question} /></div>
+                    <ReviewBlock question={item} selectedIndex={selectedIndex} />
+                    {selectedIndex < 0 && <div className="sheet-item-note">পুরোনো রেকর্ডে আপনার নির্বাচিত অপশনটি সংরক্ষিত নেই।</div>}
                   </article>
                 })}
               </>}
@@ -1989,8 +2310,22 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           <section className="sec circular-page">
             <div className="head">
               <div className="eyebrow">চাকরির আপডেট</div>
-              <h2>চাকরির <i>সার্কুলার</i></h2>
-              <p className="muted">বিভিন্ন চাকরির প্রস্তুতি, প্রশ্নব্যাংক ও মডেল পরীক্ষায় দ্রুত যেতে একটি জায়গা থেকে বেছে নিন।</p>
+              <h2>চলমান সরকারি <i>সার্কুলার</i></h2>
+              <p className="muted">আবেদনের শেষ সময় পর্যন্ত কতদিন বাকি দেখে নিন, মূল বিজ্ঞপ্তি পড়ুন এবং সরাসরি টেলিটক পোর্টালে গিয়ে আবেদন করুন।</p>
+            </div>
+            <div className="job-circular-filters" role="group" aria-label="বিজ্ঞপ্তি ফিল্টার">
+              {['open', 'upcoming', 'closed', 'all'].map(key => <button key={key} className={circularFilter === key ? 'on' : ''} aria-pressed={circularFilter === key} onClick={() => setCircularFilter(key)}>
+                {CIRCULAR_FILTER_LABEL[key]}<span className="num">{BN(circularCounts[key] || 0)}</span>
+              </button>)}
+            </div>
+            {visibleJobCirculars.length ? <div className="job-circular-grid">
+              {visibleJobCirculars.map(item => <JobCircularCard key={item.id} circular={item} now={clock} onDetails={setCircularDetail} onApply={applyToCircular} />)}
+            </div> : <div className="circular-tip"><span>📭</span><span><b>এই ফিল্টারে কোনো বিজ্ঞপ্তি নেই</b><small>অন্য একটি ফিল্টার বেছে নিন, বা পরে আবার দেখুন।</small></span></div>}
+            <div className="circular-tip"><span>⚠️</span><span><b>আবেদনের আগে অবশ্যই যাচাই করুন</b><small>তালিকাটি সর্বশেষ হালনাগাদ {formatCircularDate(CIRCULAR_DATA_UPDATED)} তারিখে। শেষ সময়, ফি ও যোগ্যতা অফিসিয়াল বিজ্ঞপ্তিতে মিলিয়ে নিন — প্রতিটি কার্ডের "মূল বিজ্ঞপ্তি" বাটনে সেটি খুলবে।</small></span></div>
+
+            <div className="head" style={{ marginTop: 8 }}>
+              <div className="eyebrow">প্রস্তুতি</div>
+              <h2 style={{ marginTop: 10 }}>বিজ্ঞপ্তি দেখে <i>প্রস্তুতি</i> নিন</h2>
             </div>
             <div className="circular-page-grid">
               {CIRCULARS.map(item => <article className="circular-page-card" key={item.title}>
@@ -2119,12 +2454,16 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
                   </div>
                 </div>
                 <div className="qn"><Md s={q.question} /></div>
-                {(q.options || []).map((o, i) => (
-                  <button className={`qopt ${quiz.ans[qi] === i ? 'sel' : ''}`} key={i}
-                    onClick={() => setQuiz(z => { const a = [...z.ans]; a[qi] = i; return { ...z, ans: a } })}>
-                    <span className="k">{'কখগঘ'[i]}</span><span>{o}</span>
-                  </button>
-                ))}
+                {quiz.mode === 'practice' && quiz.ans[qi] != null ? (
+                  <ReviewBlock question={q} selectedIndex={quiz.ans[qi]} openExplanation />
+                ) : (
+                  (q.options || []).map((o, i) => (
+                    <button className={`qopt ${quiz.ans[qi] === i ? 'sel' : ''}`} key={i}
+                      onClick={() => setQuiz(z => { const a = [...z.ans]; a[qi] = i; return { ...z, ans: a } })}>
+                      <span className="k">{'কখগঘ'[i]}</span><span>{o}</span>
+                    </button>
+                  ))
+                )}
               </div>
             ))}
           </section>
@@ -2152,7 +2491,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             {result.candidate && <div className="live-candidate-line result-candidate-line"><span>নাম: <b>{result.candidate.name}</b></span><span>ইনস্টিটিউট: <b>{result.candidate.institution}</b></span></div>}
             {result.testing && <div className="live-candidate-line result-candidate-line" role="status"><b>টেস্ট মোড সম্পন্ন</b><span>এই ফলটি আপনার অফিসিয়াল লাইভ অ্যাটেম্পট বা প্রোফাইলে সংরক্ষিত হয়নি।</span></div>}
             <div className="res-hero"><span className="big">{BN(result.ok)}<i>/</i>{BN(result.ok + result.bad + result.skip)}</span>
-              <span className="muted">{result.pct >= 80 ? '🏆 দুর্দান্ত! আপনি প্রস্তুত।' : result.pct >= 60 ? '👍 ভালো! আর একটু ধার দিন।' : '📖 আরও অনুশীলন প্রয়োজন!'}</span>
+              <span className="muted">{result.pct >= 80 ? 'দুর্দান্ত — আপনি প্রস্তুত।' : result.pct >= 60 ? 'ভালো — আরেকটু ধার দিন।' : 'আরও অনুশীলন দরকার।'}</span>
             </div>
             <div className="res-stats">
               <div className="stat"><strong>{BN(result.pct)}<i>%</i></strong><span>আপনার মোট স্কোর</span></div>
@@ -2190,25 +2529,27 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
               {result.scheduleId && <button className="btn" onClick={() => go('leaderboard')}>লিডারবোর্ড →</button>}
               <button className="btn ghost" onClick={() => go('home')}>হোম →</button>
             </div>
-            {showRev && <div style={{ marginTop: 26 }}>
-              <div className="chips" style={{ marginBottom: 18 }}>
+            {showRev && <div className="answer-sheet" style={{ marginTop: 26 }}>
+              <div className="chips sheet-filters" style={{ marginBottom: 18 }}>
                 <button className={`chip ${!revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(false)}>সব প্রশ্ন ({BN(result.rev.length)})</button>
-                <button className={`chip ${revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(true)}>❌ শুধু ভুলগুলো ({BN(result.rev.filter(r => !(r.ua != null && r.options[r.ua] === r.answer)).length)})</button>
+                <button className={`chip ${revOnlyWrong ? 'on' : ''}`} onClick={() => setRevOnlyWrong(true)}>শুধু ভুলগুলো ({BN(result.rev.filter(r => !(r.ua != null && r.options[r.ua] === r.answer)).length)})</button>
               </div>
               {result.rev.map((r, i) => {
                 const isOk = r.ua != null && r.options[r.ua] === r.answer
                 const source = examSource(r)
                 if (revOnlyWrong && isOk) return null
-                return <div className={`rev-item ${isOk ? 'ok-item' : 'bad-item'}`} key={i}>
-                  <div className="rev-meta"><span>{r.subject || 'সাধারণ'}</span><span>{r.topic || 'বিবিধ'}</span><span className="source-badge" title={source.full}>🏷 {source.label}</span></div>
-                  <div className="q">{BN(i + 1)}. <Md s={r.question} /> <span className={`rev-badge ${isOk ? 'ok' : 'bad'}`}>{isOk ? '✓ সঠিক' : r.ua == null ? '◌ বাদ' : '✗ ভুল'}</span></div>
-                  <ReviewOptions question={r} selectedIndex={r.ua} />
-                  {r.ua == null && <div className="legacy-answer-note skipped">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
-                  <Expl q={r} />
-                  <GeminiHelp question={r} />
-                </div>
+                return <article className={`sheet-item ${isOk ? 'ok' : r.ua == null ? 'skip' : 'bad'}`} key={i}>
+                  <div className="sheet-item-head">
+                    <span className="sheet-item-no num">{BN(i + 1)}</span>
+                    <span className="sheet-item-meta" title={source.full}>{r.subject || 'সাধারণ'} • {r.topic || 'বিবিধ'} • {source.label}</span>
+                    <span className="sheet-item-state">{isOk ? 'সঠিক' : r.ua == null ? 'বাদ' : 'ভুল'}</span>
+                  </div>
+                  <div className="sheet-item-q"><Md s={r.question} /></div>
+                  <ReviewBlock question={r} selectedIndex={r.ua} />
+                  {r.ua == null && <div className="sheet-item-note">এই প্রশ্নের উত্তর দেওয়া হয়নি।</div>}
+                </article>
               })}
-              {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো। 🏆</div>}
+              {revOnlyWrong && result.rev.every(r => r.ua != null && r.options[r.ua] === r.answer) && <div className="note"><b>দারুণ! কোনো ভুল নেই।</b> সব প্রশ্নে সঠিক উত্তর দিয়েছো।</div>}
             </div>}
             {result.setup && <div className="result-return result-return-bottom saved-setup-card">
               <span className="result-return-icon saved-setup-icon"><SheetIco id="layers" /></span>
@@ -2512,7 +2853,7 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
             <div className="side-nav-group">
               <span className="side-nav-label">শেখা ও টুলস</span>
               {[
-                ['game', 'users', '১v১ গেম মোড'], ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন'], ['profile', 'user', 'প্রোফাইল']
+                ['game', 'users', '১v১ গেম মোড'], ['setup', 'sliders', 'কাস্টম কুইজ'], ['review', 'layers', 'রিভিশন']
               ].map(([to, icon, label]) => <button className={page === to ? 'on' : ''} key={to} onClick={() => go(to)}><SheetIco id={icon} /><span>{label}</span></button>)}
               <button onClick={() => setDark(d => !d)}><SheetIco id={dark ? 'sun' : 'moon'} /><span>{dark ? 'লাইট মোড' : 'ডার্ক মোড'}</span></button>
               <button onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><SheetIco id="arrowUp" /><span>উপরে যান</span></button>
@@ -2534,6 +2875,62 @@ const namedResult = await makeQuery().not('post_name', 'ilike', 'bcs').neq('post
           </div>
         </aside>
       </>}
+
+      {/* ================= JOB CIRCULAR — FULL NOTICE ================= */}
+      {circularDetail && <div className="ai-modal-bg" onClick={() => setCircularDetail(null)}>
+        <div className="ai-modal job-circular-modal" role="dialog" aria-modal="true" aria-labelledby="job-circular-title" onClick={event => event.stopPropagation()}>
+          <div className="ai-modal-head">
+            <span className={`ai-modal-icon circular-icon-${circularDetail.icon}`}><SheetIco id={circularDetail.icon} /></span>
+            <div><span>{circularDetail.category}</span><h3 id="job-circular-title">{circularDetail.org}</h3></div>
+            <button className="ibtn" aria-label="বিজ্ঞপ্তি বন্ধ করুন" onClick={() => setCircularDetail(null)}><SheetIco id="close" /></button>
+          </div>
+
+          <div className="job-circular-modal-body">
+            {(() => {
+              const status = circularStatus(circularDetail, clock)
+              const target = status === 'upcoming' ? circularDetail.applyStart : circularDetail.applyDeadline
+              return (
+                <div className={`job-countdown modal${status === 'closed' ? ' closed' : ''}`}>
+                  <span>{status === 'upcoming' ? 'আবেদন শুরু হতে বাকি' : status === 'closed' ? 'আবেদনের সময় শেষ' : 'আবেদনের বাকি সময়'}</span>
+                  {status === 'closed'
+                    ? <b className="num">{formatCircularDateTime(circularDetail.applyDeadline)}</b>
+                    : <><b className="num" aria-live="polite">{formatCircularCountdown(target, clock)}</b>
+                        <small>{status === 'upcoming' ? `শুরু: ${formatCircularDateTime(circularDetail.applyStart)}` : `শেষ: ${formatCircularDateTime(circularDetail.applyDeadline)}`}</small></>}
+                </div>
+              )
+            })()}
+
+            <p className="job-circular-modal-summary">{circularDetail.summary}</p>
+
+            <div className="job-circular-facts">
+              {circularDetail.vacancy ? <span><small>শূন্যপদ</small><strong className="num">{BN(circularDetail.vacancy)}টি</strong></span> : null}
+              {circularDetail.posts ? <span><small>পদ</small><strong>{circularDetail.posts}</strong></span> : null}
+              {circularDetail.fee ? <span><small>আবেদন ফি</small><strong>{circularDetail.fee}</strong></span> : null}
+              {circularDetail.ageLimit ? <span><small>বয়সসীমা</small><strong>{circularDetail.ageLimit}</strong></span> : null}
+              {circularDetail.qualification ? <span><small>যোগ্যতা</small><strong>{circularDetail.qualification}</strong></span> : null}
+            </div>
+
+            {circularDetail.highlights?.length ? <div className="job-circular-highlights">
+              <h4>গুরুত্বপূর্ণ তথ্য</h4>
+              <dl>{circularDetail.highlights.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>
+            </div> : null}
+
+            {circularDetail.note ? <div className="job-circular-note"><SheetIco id="bell" /><span>{circularDetail.note}</span></div> : null}
+
+            <div className="job-circular-verify">
+              <b>আবেদনের আগে যাচাই করুন</b>
+              <small>এই তথ্য তৃতীয় পক্ষের চাকরি পোর্টাল থেকে সংগৃহীত এবং সর্বশেষ হালনাগাদ {formatCircularDate(CIRCULAR_DATA_UPDATED)} তারিখে। চূড়ান্ত সিদ্ধান্তের আগে অফিসিয়াল বিজ্ঞপ্তি পড়ে নিন — শেষ সময় বা ফি বদলে যেতে পারে।</small>
+            </div>
+          </div>
+
+          <div className="job-circular-modal-actions">
+            <button className="btn ghost" onClick={() => openCircularNotice(circularDetail)}><SheetIco id="file" /> মূল বিজ্ঞপ্তি</button>
+            <button className="btn primary" disabled={circularStatus(circularDetail, clock) === 'closed'} onClick={() => applyToCircular(circularDetail)}>
+              {circularStatus(circularDetail, clock) === 'closed' ? 'আবেদন বন্ধ' : <>আবেদন করুন <SheetIco id="external" /></>}
+            </button>
+          </div>
+        </div>
+      </div>}
 
       {/* ================= LIVE MODEL-TEST ENTRY ================= */}
       {liveEntry && <div className="ai-modal-bg live-entry-bg" onClick={() => setLiveEntry(null)}>

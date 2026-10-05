@@ -1,0 +1,28 @@
+name: Auto Apply Patch
+
+on:
+  push:
+    paths:
+      - '*.patch'   # রিপোজিটরিতে কোনো .patch ফাইল আপলোড হলেই এটি কাজ করবে
+permissions:
+  contents: write
+  
+
+jobs:
+  apply-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Apply the patch file
+        run: |
+          # ফোল্ডারে থাকা যেকোনো প্যাচ ফাইল অটোমেটিক অ্যাপ্লাই করবে
+          git apply *.patch 
+          rm *.patch # কাজ শেষে প্যাচ ফাইলটি ডিলিট করে দেবে
+
+      - name: Auto Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automatically applied patch features"
+          

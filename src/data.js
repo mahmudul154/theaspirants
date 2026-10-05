@@ -1,7 +1,10 @@
 import TOPICS from './topics.json'
 import { DB_SUBJECT_ALIASES } from './subjectAliases.js'
+import { DB_TOPIC_ALIASES } from './topicAliases.js'
+import { SEPTEMBER_2026_ROUTINE } from './forty-day-live-plan.js'
+import { buildRoutineSyllabus } from './routine-syllabus.js'
 
-export { TOPICS, DB_SUBJECT_ALIASES }
+export { TOPICS, DB_SUBJECT_ALIASES, DB_TOPIC_ALIASES }
 
 export const BN = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d])
 export const shuffle = a => [...a].sort(() => Math.random() - .5)
@@ -20,8 +23,7 @@ export const SUBJ_META = {
   'আন্তর্জাতিক বিষয়াবলি': { emoji: '🌍', tint: '#0284c7' },
   'কম্পিউটার ও তথ্য প্রযুক্তি': { emoji: '💻', tint: '#475569' },
   'নৈতিকতা, মূল্যবোধ ও সুশাসন': { emoji: '❄', tint: '#e11d48' },
-  'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': { emoji: '🌪', tint: '#e11d48' },
-  'Microcontroller':    { emoji: '🎛️', tint: '#334155' }
+  'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা': { emoji: '🌪', tint: '#e11d48' }
 }
 export const SUBJECTS = Object.keys(SUBJ_META)
 
@@ -41,29 +43,18 @@ export const dbSubjectsFor = subjects => {
   return expanded
 }
 
-// The selector uses learner-friendly topic names while older question records
-// retain the historical topic labels. Expand those names at query time so a
-// selected topic never leads to an empty quiz.
-const DB_TOPIC_ALIASES = {
-  'বিশ্ব সভ্যতা': ['বিশ্ব সভ্যতা', 'প্রাচীন সভ্যতা', 'বিশ্ব ইতিহাস', 'ইতিহাস'],
-  'Tense & Subject-Verb Agreement': ['Tense', 'Subject-Verb Agreement'],
-  'Right Form of Verb': ['Right Form of Verb', 'Verb and Right form of verb'],
-  'Voice': ['Voice Change', 'Voice, Narration and One Word'],
-  'Parts of Speech': ['Parts of Speech', 'Noun identification / Parts of Speech'],
-  'শব্দ এবং শব্দের প্রকারভেদ': ['শব্দ গঠন / শব্দার্থ', 'শব্দতত্ত্ব', 'শব্দ'],
-  'কারক বিভক্তি': ['কারক ও বিভক্তি', 'কারক'],
-  'বাক্য শুদ্ধি / ভাষার প্রয়োগ অপপ্রয়োগ': ['বাক্য শুদ্ধিকরণ', 'ভাষার প্রয়োগ অপপ্রয়োগ', 'অপপ্রয়োগ'],
-  'গড় ও বয়স': ['গড়', 'বয়স ভিত্তিক'],
-  'গতি ও দূরত্ব': ['গতিবেগ', 'Speed, Distance & Time', 'Boat & Stream'],
-  'অনুপাত ও মিশ্রণ': ['অনুপাত ও সমানুপাত', 'মিশ্রণ', 'Ratio and Proportion', 'Ratio & Proportion'],
-  'শতকরা': ['শতকরা', 'Percentage'],
-  '৬৯ এর গণঅভ্যুথ্যান': ['৬৯ এর গণঅভ্যথ্যান'],
-  'স্নায়ু যুদ্ধ': ['স্নায়ুযুদ্ধ'],
-  'যুক্তরাষ্ট্র-কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট': ['যুক্তরাষ্ট্র–কিউবা সম্পর্ক ও ক্ষেপণাস্ত্র সংকট']
-}
 export const dbTopicsFor = topics => [...new Set(
   (topics || []).flatMap(topic => DB_TOPIC_ALIASES[topic] || [topic])
 )]
+
+/* প্রকাশিত রুটিনের তারিখ-ভিত্তিক সিলেবাস — কাস্টম এক্সামের টপিক বাছাইয়ে
+   দিন অনুযায়ী সিরিয়ালে সাজিয়ে দেখানোর জন্য। প্রতিটি টপিক picker-এর নামে
+   রিজলভ করা, তাই বেছে নিলে প্রশ্ন আসবে। */
+export const ROUTINE_SYLLABUS = buildRoutineSyllabus({
+  routine: SEPTEMBER_2026_ROUTINE,
+  topics: TOPICS,
+  topicAliases: DB_TOPIC_ALIASES
+})
 
 /* হোমপেজের ৫টি কার্ড — আগের অ্যাপের মতো */
 export const HOME_SUBJS = [
@@ -217,13 +208,6 @@ export const QB = {
     { q: 'সাজেক ভ্যালি কোন জেলায় অবস্থিত?', o: ['খাগড়াছড়ি', 'রাঙামাটি', 'বান্দরবান', 'সিলেট'], a: 1 },
     { q: 'ভূমিকম্পের মাত্রা কোন স্কেলে মাপা হয়?', o: ['কেলভিন', 'রিখটার', 'সেলসিয়াস', 'বফোর্ট'], a: 1 },
     { q: 'ওজোন স্তর কোন স্তরে অবস্থিত?', o: ['ট্রপোস্ফিয়ার', 'স্ট্র্যাটোস্ফিয়ার', 'মেসোস্ফিয়ার', 'থার্মোস্ফিয়ার'], a: 1 }
-  ],
-  'Microcontroller': [
-    { q: 'Arduino প্রোগ্রামিংয়ে প্রধানত কোন ভাষা ব্যবহৃত হয়?', o: ['Python', 'C/C++', 'Java', 'Ruby'], a: 1 },
-    { q: 'digitalRead() ফাংশনের কাজ কী?', o: ['ডিজিটাল আউটপুট', 'ডিজিটাল ইনপুট পড়া', 'অ্যানালগ পড়া', 'PWM দেওয়া'], a: 1 },
-    { q: 'Arduino Uno-তে কয়টি টাইমার/কাউন্টার আছে?', o: ['১', '২', '৩', '৪'], a: 2 },
-    { q: 'Interrupt কী?', o: ['লুপ', 'ঘটনা-চালিত ব্যতিক্রম', 'ভ্যারিয়েবল', 'রেজিস্টার'], a: 1 },
-    { q: 'digitalWrite() ব্যবহৃত হয় কীসের জন্য?', o: ['ইনপুট', 'আউটপুট', 'সিরিয়াল', 'ডিলে'], a: 1 }
   ]
 }
 
