@@ -9,7 +9,8 @@
     "validate:today-model": "node scripts/validate-todays-model-exam.mjs",
     "validate:september-8-live": "node scripts/validate-september-8-live-exam.mjs",
     "validate:september-9-live": "node scripts/validate-september-9-live-exam.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "validate:game-mode": "node scripts/validate-game-mode.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
@@ -39,6 +40,7 @@
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.2.4",
-    "vite-plugin-singlefile": "2.3.0"
+    "vite-plugin-singlefile": "2.3.0",
+    "jsdom": "^30.1.2"
   }
 }
