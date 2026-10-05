@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - '*.patch'   # রিপোজিটরিতে কোনো .patch ফাইল আপলোড হলেই এটি কাজ করবে
+permissions:
+  contents: write
+  
 
 jobs:
   apply-patch:
