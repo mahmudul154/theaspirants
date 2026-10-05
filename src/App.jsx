@@ -512,7 +512,9 @@ export function App() {
   // রুটিনে দেখানো টপিকগুলো নিচের তালিকা থেকে বাদ, যাতে একই টপিক দুবার না আসে।
   const cRemainingTopics = cVisibleTopics.filter(topic => !cRoutineTopicSet.has(topic))
   const cTodayDateKey = dhakaDateKey()
-  const cSubjectTopicGroups = cSubs.length === 1 ? getSubjectTopicGroups(cSubs[0], cRemainingTopics) : []
+  const cSubjectTopicGroups = cSubs.length > 0 
+    ? cSubs.flatMap(sub => getSubjectTopicGroups(sub, cVisibleTopics.filter(t => dbTopicsFor([t]).some(dt => questionCounts?.subjects?.[sub]?.topics?.[dt]))).map(g => ({...g, label: cSubs.length > 1 ? `${sub} • ${g.label}` : g.label})))
+    : []
   const toggleTopicGroup = groupTopics => setCTopics(current => {
     const isSelected = groupTopics.every(topic => current.includes(topic))
     return isSelected
@@ -2154,67 +2156,9 @@ export function App() {
                               <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
                             </label>
 
-                            {!!cRoutineDays.length && <div className="routine-serial">
-                              <div className="routine-serial-head">
-                                <b>তারিখ অনুযায়ী সিলেবাস</b>
-                                <small>রুটিনের দিন ধরে ধরে টপিক বাছুন — সিরিয়াল অনুযায়ী সাজানো</small>
-                              </div>
-                              {cRoutineDays.map(day => {
-                                const selectedInDay = day.topics.filter(topic => cTopics.includes(topic)).length
-                                const allSelected = selectedInDay === day.topics.length
-                                return (
-                                  <details
-                                    className={`routine-syllabus-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
-                                    key={day.dateKey}
-                                    open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
-                                    onToggle={event => {
-                                      if (cRoutineSearchActive) return
-                                      const isOpen = event.currentTarget.open
-                                      setCOpenRoutineDays(current => isOpen
-                                        ? (current.includes(day.dateKey) ? current : [...current, day.dateKey])
-                                        : current.filter(key => key !== day.dateKey))
-                                    }}>
-                                    <summary>
-                                      <span className="routine-day-badge">দিন {BN(day.day)}</span>
-                                      <span className="routine-day-meta">
-                                        <b>
-                                          {dhakaDayMonthLabel(day.dateKey)}
-                                          {day.revision && <em className="routine-day-revision">রিভিশন</em>}
-                                          {day.dateKey === cTodayDateKey && <em className="routine-day-today">আজ</em>}
-                                        </b>
-                                        <small>{day.subjects.map(item => ROUTINE_SUBJECT_LABELS[item.subject] || item.subject).join(' • ')} — {BN(day.topics.length)} টপিক</small>
-                                      </span>
-                                      {!!selectedInDay && <span className={`routine-day-count ${allSelected ? 'all' : ''}`}>{BN(selectedInDay)} ✓</span>}
-                                      <i aria-hidden="true">⌄</i>
-                                    </summary>
-                                    <div className="routine-day-body">
-                                      <label className="topic-check-option all-option">
-                                        <input type="checkbox" checked={allSelected} onChange={() => toggleTopicGroup(day.topics)} />
-                                        <span><b>এই দিনের সব টপিক</b><small>{BN(day.topics.length)}টি টপিক একসঙ্গে নির্বাচন করুন</small></span>
-                                      </label>
-                                      {day.subjects.map(item => (
-                                        <div className="routine-day-subject" key={item.subject}>
-                                          <span className="routine-day-subject-head">
-                                            <Ico id={item.subject} size={13} />
-                                            {ROUTINE_SUBJECT_LABELS[item.subject] || item.subject}
-                                          </span>
-                                          {item.topics.map(topic => (
-                                            <label className="topic-check-option" key={topic}>
-                                              <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(entry => entry !== topic) : [...current, topic])} />
-                                              <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
-                                            </label>
-                                          ))}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </details>
-                                )
-                              })}
-                              <div className="routine-serial-divider"><span>রুটিনের বাইরের অন্যান্য টপিক</span></div>
-                            </div>}
+                            
 
-                            {cSubs.length === 1 && cSubjectTopicGroups.length > 0
-                              ? cSubjectTopicGroups.map(group => (
+                            {cSubjectTopicGroups.length > 0 ? cSubjectTopicGroups.map(group => (
                                   <div className="topic-check-group" key={group.label}>
                                     <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
                                       <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
