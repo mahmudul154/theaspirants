@@ -2768,3 +2768,90 @@ html.dark .circular-icon-lock{color:#8fd0f2;background:#17303d;border-color:#3d6
   .job-circular-actions .btn{padding:8px 8px;font-size:.66rem}
   .job-circular-filters button{padding:6px 11px;font-size:.67rem}
 }
+
+/* Custom Quiz Bento Styles */
+.custom-setup-bento {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+@media (max-width: 800px) {
+  .custom-setup-bento {
+    grid-template-columns: 1fr;
+  }
+}
+
+.custom-setup-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.custom-setup-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bento-card {
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.bento-card.auth-bento {
+  background: linear-gradient(135deg, var(--bg) 0%, rgba(var(--brand-rgb), 0.05) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bento-card.auth-bento div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bento-card.auth-bento span {
+  font-size: 14px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+.bento-card.auth-bento strong {
+  color: var(--brand);
+}
+
+.bento-card .lbl {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--fg);
+}
+
+.practice-review-wrap {
+  margin-top: 16px;
+  background: rgba(var(--brand-rgb), 0.02);
+  border: 1px solid rgba(var(--brand-rgb), 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.practice-feedback {
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 12px;
+  text-align: right;
+}
+
+.practice-feedback.correct {
+  color: var(--success, #0e7a5f);
+}
+
+.practice-feedback.wrong {
+  color: var(--danger, #d93025);
+}

@@ -83,17 +83,48 @@ const examPlanDay = exam => exam?.subject?.match(/দিন\s+[^•]+$/)?.[0] ||
 // Keep mathematics topics readable in the custom-quiz picker instead of
 // presenting one long, unstructured list. The database topic names remain
 // unchanged; this only controls their visual grouping.
-const MATH_TOPIC_GROUPS = [
-  { label: '৪০ দিনের প্ল্যান', topics: ['গড় ও বয়স', 'গতি ও দূরত্ব', 'অনুপাত ও মিশ্রণ', 'শতকরা'] },
-  { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'গড়', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
-  { label: 'অনুপাত, শতকরা ও বাণিজ্যিক গণিত', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
-  { label: 'কাজ, সময়, গতি ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
-  { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
-  { label: 'ধারা, বিন্যাস, সম্ভাবনা ও পরিসংখ্যান', topics: ['Series', 'Sequence and Series', 'বিন্যাস', 'সমাবেশ', 'Permutation and Combination', 'সম্ভাব্যতা', 'Probability', 'পরিসংখ্যান', 'Statistics'] },
-  { label: 'জ্যামিতি, পরিমিতি ও ক্যালকুলাস', topics: ['Geometry', 'রেখা ও কোন', 'ত্রিভুজ ও ত্রিভুজ সংক্রান্ত উপপাদ্য', 'পিথাগরাসের উপপাদ্য', 'চতুর্ভুজ ও চতুর্ভুজ সঙ্ক্রান্ত উপপাদ্য', 'সুষম বহুভুজ', 'বৃত্ত ও বৃত্ত সংক্রান্ত উপপাদ্য', 'স্থানাংক ও জ্যামিতি', 'Coordinate Geometry', 'ক্ষেত্রফল ও পরিসীমা', 'পরিমিতি', 'Mensuration', 'ত্রিকোণমিতি', 'Trigonometry', 'কোণ পরিমাপ', 'মানচিত্র স্কেল', 'Calculus'] },
-  { label: 'অন্যান্য', topics: ['বিসিএস', 'বিবিধ ও মিসলেনিয়াস'] }
-]
 
+// Keep topics readable in the custom-quiz picker instead of one long list.
+const GENERAL_TOPIC_GROUPS = {
+  'বাংলা': [
+    { label: 'ভাষা, লিপি ও ব্যাকরণ', topics: ['শব্দ এবং শব্দের প্রকারভেদ', 'ভাষা ও ব্যাকরণ', 'ব্যাকরণ পরিচিতি', 'ব্যাকরণের আলোচ্য বিষয়', 'ব্যাকরণের ইতিহাস', 'বাংলা ভাষা ও লিপি', 'বাংলা ভাষা ও রীতি', 'বাংলা ভাষারীতি', 'উপভাষা', 'ধ্বনি ও বর্ণ', 'উচ্চারণ', 'উচ্চারণ স্থান', 'ধ্বনি পরিবর্তন', 'যুক্তবর্ণ', 'ণত্ব ও ষত্ব বিধান', 'ণ-ত্ব ও ষ-ত্ব বিধান'] },
+    { label: 'শব্দ, পদ ও বাক্য', topics: ['শব্দতত্ত্ব', 'শব্দ', 'শব্দ গঠন / শব্দার্থ', 'ধাতু', 'উপসর্গ', 'উপসর্গ প্রত্যয়', 'সমাস', 'পদ প্রকরণ', 'পদাশ্রিত নির্দেশক', 'দ্বিরুক্ত শব্দ', 'অনুসর্গ', 'পদ পরিবর্তন', 'অব্যয়', 'বিশেষ্য পদ', 'লিঙ্গ', 'বচন', 'পুরুষ', 'কারক', 'কারক ও বিভক্তি', 'ক্রিয়াপদ', 'ক্রিয়ার কাল', 'বাচ্য', 'সংখ্যাবাচক শব্দ', 'পুরুষ ও স্ত্রীবাচক শব্দ', 'লিঙ্গান্তর', 'কাল', 'লিঙ্গ পরিবর্তন', 'বাক্য', 'বাক্যের শ্রেণিবিভাগ'] },
+    { label: 'শুদ্ধিকরণ, পারিভাষিক ও অন্যান্য', topics: ['বাক্য শুদ্ধি / ভাষার প্রয়োগ অপপ্রয়োগ', 'ভাষার প্রয়োগ অপপ্রয়োগ', 'অপপ্রয়োগ', 'বানান শুদ্ধিকরণ', 'বাক্য শুদ্ধিকরণ', 'বিরামচিহ্ন', 'যতিচিহ্ন', 'শব্দার্থ', 'শব্দার্থ ও সমার্থক শব্দ', 'সমার্থক শব্দ', 'বিপরীত শব্দ', 'বিপরীতার্থক শব্দ', 'এক কথায় প্রকাশ', 'এককথায় প্রকাশ', 'বাগধারা ও প্রবাদ প্রবচন', 'বাগধারা ও প্রবাদ', 'পারিভাষিক শব্দ', 'সমোচ্চারিত ও ভিন্নার্থক শব্দ', 'শব্দভাণ্ডার', 'পদবি', 'অভিধান', 'ছন্দ প্রকরণ', 'পত্র লিখন'] },
+    { label: 'সাহিত্য: প্রাচীন ও মধ্যযুগ', topics: ['বাংলা সাহিত্যের অভিধা ও মতবাদ', 'বাংলা সাহিত্য ও বিভিন্ন সংগঠন', 'প্রাচীন যুগ', 'প্রাচীন যুগ (চর্যাপদ)', 'প্রাচীন ও মধ্যযুগ', 'মধ্যযুগ', 'লোকসাহিত্য', 'ডাক ও খনার বচন'] },
+    { label: 'সাহিত্য: আধুনিক যুগ (প্রখ্যাত সাহিত্যিক)', topics: ['আধুনিক যুগ', 'রাজা রামমোহন রায়', 'ঈশ্বরচন্দ্র বিদ্যাসাগর', 'মাইকেল মধুসূদন দত্ত', 'দীনবন্ধু মিত্র', 'বঙ্কিমচন্দ্র চট্টোপাধ্যায়', 'মীর মশাররফ হোসেন', 'কায়কোবাদ', 'রবীন্দ্রনাথ ঠাকুর', 'শরৎচন্দ্র চট্টোপাধ্যায়', 'বেগম রোকেয়া', 'রোকেয়া', 'কাজী নজরুল ইসলাম', 'নজরুল', 'রবীন্দ্রনাথ ও নজরুল', 'জসীমউদ্দীন', 'ফররুখ আহমদ'] },
+    { label: 'সাহিত্য: অন্যান্য ধারা', topics: ['সমসাময়িক বাংলাদেশের সাহিত্য', 'ভাষা আন্দোলন', 'মুক্তিযুদ্ধভিত্তিক সাহিত্য', 'মুক্তিযুদ্ধ', 'আধুনিক যুগের কবি ও কাব্য', 'বাংলা নাটক', 'নাটক', 'উপন্যাস ও ছোটগল্প', 'গ্রন্থ ও লেখক', 'বিখ্যাত আত্মজীবনী', 'বিখ্যাত ভ্রমণ কাহিনী', 'বিখ্যাত শিশুতোষগ্রন্থ', 'সাহিত্যিকদের ছদ্মনাম ও উপাধি', 'বিখ্যাত উক্তি', 'বাংলা গান', 'পত্রিকা ও সম্পাদক', 'পত্রিকা ও প্রকাশকাল', 'নাটক ও সাময়িকী', 'মাধ্যমিক সাহিত্য', 'উচ্চমাধ্যমিক সাহিত্য', 'বিদেশি সাহিত্য ও অনুবাদ', 'আন্তর্জাতিক পুরস্কার ও ব্যক্তিত্ব'] }
+  ],
+  'English': [
+    { label: 'Parts of Speech & Basics', topics: ['Parts of Speech', 'Noun', 'Noun identification / Parts of Speech', 'Pronoun', 'Adjective', 'Adjective Identification', 'Comparison of Adjectives / Degree', 'Verb', 'Verb forms', 'Adverb', 'Preposition', 'Conjunction', 'Articles', 'The Determiner', 'Determiners / Quantifiers', 'Number', 'Gender'] },
+    { label: 'Grammar & Mechanics', topics: ['Grammar', 'Right Form of Verb', 'Verb and Right form of verb', 'Subject-Verb Agreement', 'Tense & Subject-Verb Agreement', 'Tense', 'Voice', 'Voice Change', 'Narration', 'Clause', 'Sentence', 'Transformation of Sentence', 'Conditionals', 'Correction', 'Suffix Prefix'] },
+    { label: 'Vocabulary & Phrases', topics: ['Vocabulary', 'Words', 'Meanings', 'Synonym', 'Antonym', 'Synonym & Antonym', 'Idioms & Phrases', 'Group Verbs', 'Proverb', 'Analogy', 'পারিভাষিক শব্দ', 'প্রবাদ বাক্য', 'অনুবাদ', 'Voice, Narration and One Word', 'Composition'] },
+    { label: 'Literature', topics: ['English Literature'] }
+  ],
+  'গাণিতিক যুক্তি': [
+        { label: '৪০ দিনের প্ল্যান', topics: ['গড় ও বয়স', 'গতি ও দূরত্ব', 'অনুপাত ও মিশ্রণ', 'শতকরা'] },
+    { label: 'সংখ্যা ও প্রাথমিক গণিত', topics: ['Number System', 'Number Theory', 'বাস্তব সংখ্যা', 'সংখ্যা ভিত্তিক', 'ক্রমিক সংখ্যা', 'Decimals', 'Fractions', 'Arithmetic', 'গড়', 'সাধারণ নিয়ম', 'গ.সা.গু. ও ল.সা.গু.', 'একক রূপান্তর', 'ওজন ও আয়তন'] },
+    { label: 'অনুপাত, শতকরা ও লাভ-ক্ষতি', topics: ['অনুপাত ও সমানুপাত', 'Ratio and Proportion', 'Ratio & Proportion', 'জ্যামিতিক অনুপাত', 'বয়স ভিত্তিক', 'অনুপাতের প্রকারভেদ', 'সমানুপাত', 'ধারাবাহিক অনুপাত', 'মৌলিক অনুপাত', 'অনুপাত ভিত্তিক', 'ব্যবসায়িক অনুপাত', 'অনুপাত সরলীকরণ', 'অনুপাত তুলনা', 'শতকরা', 'Percentage', 'লাভ ও ক্ষতি', 'শতকরা লাভ-ক্ষতি', 'সরল ও যৌগিক মুনাফা', 'Financial Mathematics', 'ক্রয়মূল্য নির্ণয়', 'মুদ্রা ভিত্তিক'] },
+    { label: 'কাজ, সময় ও মিশ্রণ', topics: ['মিশ্রণ', 'কাজ ও সময়', 'নল ও চৌবাচ্চা', 'Speed, Distance & Time', 'Boat & Stream', 'ক্রিকেট ও রান', 'গতিবেগ', 'খাদ্য ও সৈন্য'] },
+    { label: 'বীজগণিত ও সমীকরণ', topics: ['Algebra', 'Indices', 'উৎপাদক বিশ্লেষণ', 'মিডল টার্ম', 'Factorization', 'সরল সমীকরণ', 'দ্বিপদী সমীকরণ', 'লগারিদম', 'Logarithm', 'Inequality', 'মান নির্ণয়', 'অন্বয় ও ফাংশন', 'সেট', 'Set Theory', 'ঘনফলের সূত্র', 'বর্গের অন্তর', 'ভাগশেষ উপপাদ্য', 'বর্গের পূর্ণরূপ', 'সূত্র', 'বিশেষ উৎপাদক'] },
+    { label: 'ধারা, বিন্যাস ও সম্ভাবনা', topics: ['Series', 'Sequence and Series', 'বিন্যাস', 'সমাবেশ', 'Permutation and Combination', 'সম্ভাব্যতা', 'Probability', 'পরিসংখ্যান', 'Statistics'] },
+    { label: 'জ্যামিতি, পরিমিতি ও ত্রিকোণমিতি', topics: ['Geometry', 'রেখা ও কোন', 'ত্রিভুজ ও ত্রিভুজ সংক্রান্ত উপপাদ্য', 'পিথাগরাসের উপপাদ্য', 'চতুর্ভুজ ও চতুর্ভুজ সঙ্ক্রান্ত উপপাদ্য', 'সুষম বহুভুজ', 'বৃত্ত ও বৃত্ত সংক্রান্ত উপপাদ্য', 'স্থানাংক ও জ্যামিতি', 'Coordinate Geometry', 'ক্ষেত্রফল ও পরিসীমা', 'পরিমিতি', 'Mensuration', 'ত্রিকোণমিতি', 'Trigonometry', 'কোণ পরিমাপ', 'মানচিত্র স্কেল', 'Calculus'] }
+  ]
+}
+
+const getSubjectTopicGroups = (subject, availableTopics) => {
+  const predefined = GENERAL_TOPIC_GROUPS[subject] || []
+  const groupedTopics = new Set(predefined.flatMap(g => g.topics))
+  const remaining = availableTopics.filter(t => !groupedTopics.has(t))
+  
+  const groups = predefined
+    .map(g => ({ ...g, topics: g.topics.filter(t => availableTopics.includes(t)) }))
+    .filter(g => g.topics.length > 0)
+    
+  if (remaining.length > 0) {
+    groups.push({ label: 'অন্যান্য', topics: remaining })
+  }
+  return groups
+}
 const SUBJECT_TEACHERS = {
   'বাংলা': 'বাংলা বিষয়ের শিক্ষক',
   'English': 'ইংরেজি বিষয়ের শিক্ষক',
@@ -459,6 +490,7 @@ export function App() {
   // নইলে টপিক বাছার রি-রেন্ডারে হাতে খোলা দিন আবার বন্ধ হয়ে যেত।
   const [cOpenRoutineDays, setCOpenRoutineDays] = useState(() => (ROUTINE_DEFAULT_OPEN_KEY ? [ROUTINE_DEFAULT_OPEN_KEY] : []))
   const [cCount, setCCount] = useState(25)
+  const [cMode, setCMode] = useState('exam')
   const [cTime, setCTime] = useState(20)
   const [seenQuestions, setSeenQuestions] = useState([])
   const cAvailableTopics = [...new Set(cSubs.flatMap(subject => TOPICS[subject] || []))]
@@ -480,9 +512,7 @@ export function App() {
   // রুটিনে দেখানো টপিকগুলো নিচের তালিকা থেকে বাদ, যাতে একই টপিক দুবার না আসে।
   const cRemainingTopics = cVisibleTopics.filter(topic => !cRoutineTopicSet.has(topic))
   const cTodayDateKey = dhakaDateKey()
-  const cMathTopicGroups = MATH_TOPIC_GROUPS
-    .map(group => ({ ...group, topics: group.topics.filter(topic => cRemainingTopics.includes(topic)) }))
-    .filter(group => group.topics.length)
+  const cSubjectTopicGroups = cSubs.length === 1 ? getSubjectTopicGroups(cSubs[0], cRemainingTopics) : []
   const toggleTopicGroup = groupTopics => setCTopics(current => {
     const isSelected = groupTopics.every(topic => current.includes(topic))
     return isSelected
@@ -1342,7 +1372,7 @@ export function App() {
       setToastMsg(`এখন ${BN(qs.length)}টি নতুন প্রশ্ন পাওয়া গেছে—তাই ${BN(requestedLimit)}টির বদলে সেগুলোই দেওয়া হয়েছে`)
     }
     setResult(null); setShowRev(false); setArm(false); setQuitArm(false)
-    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily })
+    setQuiz({ title, qs, ans: Array(qs.length).fill(null), mark: Array(qs.length).fill(false), left: minutes * 60, subj: (subjects && subjects[0]) || (Array.isArray(fallback) ? fallback[0] : null) || 'মিশ্র', origin, setup: repeatSetup, scheduleId: cfg.scheduleId || null, candidate: cfg.candidate || null, testing: !!cfg.testing, rankingEligible: !!cfg.rankingEligible, daily: !!cfg.daily , mode: cfg.mode || 'exam' })
     go('quiz')
   }
 
@@ -2035,191 +2065,214 @@ export function App() {
               : lbData.length ? <div className="lb leaderboard-list">{lbData.map(LBRow)}</div>
                 : <div className="note"><b>{viewingTodayLeaderboard ? 'আজকে এখনো কেউ পরীক্ষা দেয়নি।' : 'এই দিনের কোনো ফল পাওয়া যায়নি।'}</b> {viewingTodayLeaderboard ? 'ফল এখানে দেখা যাবে।' : ''}</div>}
           </section>
-        </>}
-
-        {/* ================= CUSTOM QUIZ ================= */}
+        </>}        {/* ================= CUSTOM QUIZ ================= */}
         {page === 'setup' && <>
           <section className="sec custom-quiz-section">
             <div className="head"><div className="eyebrow">স্মার্ট লার্নিং</div><h2>বিষয় ও টপিক বেছে <i>কাস্টম কুইজ</i></h2><p className="muted">এক বা একাধিক বিষয় বাছুন, তারপর সেই বিষয়গুলোর নির্দিষ্ট টপিক নির্বাচন করুন।</p></div>
-            <div className="seen-progress-card">
-              <div><b>নতুন প্রশ্নের অগ্রগতি</b><span>{user ? <>এ পর্যন্ত <strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখেছেন। সাধারণ কুইজে এগুলো আর আসবে না।</> : 'লগইন করলে দেখা প্রশ্নগুলো আলাদাভাবে সংরক্ষিত হবে।'}</span></div>
-              {user
-                ? <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
-                : <button className="btn sm ghost" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
-            </div>
-            <div className="panel custom-quiz-panel">
-              <div className="question-count-status">
-                <span className="live-dot" aria-hidden="true" />
-                <b>প্রশ্নভান্ডার</b>
-                <span>বিষয় ও টপিক বেছে অনুশীলন শুরু করুন</span>
-              </div>
-              <div><span className="lbl">ক্যাটাগরি</span>
-                <div className="chips">
-                  <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); updateCustomSubjects(['বাংলা']); setCTopics([]) }}>🎓 বিসিএস</button>
-                  <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); updateCustomSubjects(['গাণিতিক যুক্তি']); setCTopics([]) }}>🏦 ব্যাংক</button>
+            
+            <div className="custom-setup-bento">
+              {/* Left Column: Progress & Category */}
+              <div className="custom-setup-left">
+                <div className="bento-card auth-bento">
+                  <div><b>নতুন প্রশ্নের অগ্রগতি</b><span>{user ? <>এ পর্যন্ত <strong>{BN(seenQuestions.length)}</strong>টি প্রশ্ন দেখেছেন। সাধারণ কুইজে এগুলো আর আসবে না।</> : 'লগইন করলে দেখা প্রশ্নগুলো আলাদাভাবে সংরক্ষিত হবে।'}</span></div>
+                  {user
+                    ? <button className="btn sm ghost danger-outline" onClick={() => resetSeenQuestionProgress()}>অগ্রগতি রিসেট</button>
+                    : <button className="btn sm ghost" onClick={() => go('login')}><SheetIco id="login" /> লগইন</button>}
+                </div>
+                
+                <div className="bento-card cat-bento">
+                  <span className="lbl">ক্যাটাগরি</span>
+                  <div className="chips">
+                    <button className={`chip ${cCat === 'bcs' ? 'on' : ''}`} onClick={() => { setCCat('bcs'); updateCustomSubjects(['বাংলা']); setCTopics([]) }}>🎓 বিসিএস</button>
+                    <button className={`chip ${cCat === 'bank' ? 'on' : ''}`} onClick={() => { setCCat('bank'); updateCustomSubjects(['গাণিতিক যুক্তি']); setCTopics([]) }}>🏦 ব্যাংক</button>
+                  </div>
+                </div>
+                
+                <div className="bento-card mode-bento">
+                  <span className="lbl">কুইজ মোড</span>
+                  <div className="chips">
+                    <button className={`chip ${cMode === 'exam' ? 'on' : ''}`} onClick={() => setCMode('exam')}>⏱️ এক্সাম মোড</button>
+                    <button className={`chip ${cMode === 'practice' ? 'on' : ''}`} onClick={() => setCMode('practice')}>📖 প্র্যাকটিস মোড</button>
+                  </div>
+                  <small className="muted" style={{marginTop: 8, display: 'block', lineHeight: 1.4}}>
+                    {cMode === 'practice' ? 'উত্তর দেওয়ার সাথে সাথে সঠিক উত্তর ও ব্যাখ্যা দেখতে পারবেন।' : 'পুরো পরীক্ষা শেষে ফলাফল ও সঠিক উত্তর দেখতে পারবেন।'}
+                  </small>
                 </div>
               </div>
+              
+              {/* Right Column: Topics & Options */}
+              <div className="custom-setup-right">
+                <div className="bento-card topics-bento">
+                  <div className="question-count-status" style={{marginBottom: 16}}>
+                    <span className="live-dot" aria-hidden="true" />
+                    <b>প্রশ্নভান্ডার</b>
+                    <span>বিষয় ও টপিক বেছে অনুশীলন শুরু করুন</span>
+                  </div>
 
-              <div className="setup-select-grid">
-                <div className="setup-field">
-                  <span className="lbl">বিষয় নির্বাচন করুন</span>
-                  <details className="topic-check-dropdown subject-check-dropdown">
-                    <summary>
-                      <Ico id={cSubs[0] || 'বাংলা'} size={20} />
-                      <span>{cSubs.length ? `${BN(cSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    <div className="topic-check-menu subject-check-menu">
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={cSubs.length === (CAT_SUBJECTS[cCat] || []).length} onChange={() => updateCustomSubjects(cSubs.length === (CAT_SUBJECTS[cCat] || []).length ? [] : (CAT_SUBJECTS[cCat] || []))} />
-                          <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[cCat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
-                        </label>
-                        {(CAT_SUBJECTS[cCat] || []).map(subject => (
-                          <label className="topic-check-option" key={subject}>
-                            <input type="checkbox" checked={cSubs.includes(subject)} onChange={() => updateCustomSubjects(cSubs.includes(subject) ? cSubs.filter(item => item !== subject) : [...cSubs, subject])} />
-                            <span>{subject}<small>{BN(subjectQuestionCount(subject))} প্রশ্ন</small></span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </details>
-                </div>
-
-                <div className="setup-field">
-                  <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
-                  <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
-                    <summary aria-disabled={!cSubs.length}>
-                      <SheetIco id="layers" />
-                      <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
-                      <i aria-hidden="true">⌄</i>
-                    </summary>
-                    {!!cSubs.length && <div className="topic-check-menu">
-                      <div className="topic-check-search">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                        <input value={cTopicSearch} onChange={event => setCTopicSearch(event.target.value)} placeholder="টপিক খুঁজুন…" />
-                      </div>
-                      <div className="topic-check-list">
-                        <label className="topic-check-option all-option">
-                          <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
-                          <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
-                        </label>
-
-                        {!!cRoutineDays.length && <div className="routine-serial">
-                          <div className="routine-serial-head">
-                            <b>তারিখ অনুযায়ী সিলেবাস</b>
-                            <small>রুটিনের দিন ধরে ধরে টপিক বাছুন — সিরিয়াল অনুযায়ী সাজানো</small>
+                  <div className="setup-select-grid">
+                    <div className="setup-field">
+                      <span className="lbl">বিষয় নির্বাচন করুন</span>
+                      <details className="topic-check-dropdown subject-check-dropdown">
+                        <summary>
+                          <Ico id={cSubs[0] || 'বাংলা'} size={20} />
+                          <span>{cSubs.length ? `${BN(cSubs.length)}টি বিষয় নির্বাচিত` : 'এক বা একাধিক বিষয় বাছুন'}</span>
+                          <i aria-hidden="true">⌄</i>
+                        </summary>
+                        <div className="topic-check-menu subject-check-menu">
+                          <div className="topic-check-list">
+                            <label className="topic-check-option all-option">
+                              <input type="checkbox" checked={cSubs.length === (CAT_SUBJECTS[cCat] || []).length} onChange={() => updateCustomSubjects(cSubs.length === (CAT_SUBJECTS[cCat] || []).length ? [] : (CAT_SUBJECTS[cCat] || []))} />
+                              <span><b>সব বিষয় নির্বাচন</b><small>{BN((CAT_SUBJECTS[cCat] || []).length)}টি বিষয় থেকে মিশ্র প্রশ্ন</small></span>
+                            </label>
+                            {(CAT_SUBJECTS[cCat] || []).map(subject => (
+                              <label className="topic-check-option" key={subject}>
+                                <input type="checkbox" checked={cSubs.includes(subject)} onChange={() => updateCustomSubjects(cSubs.includes(subject) ? cSubs.filter(item => item !== subject) : [...cSubs, subject])} />
+                                <span>{subject}<small>{BN(subjectQuestionCount(subject))} প্রশ্ন</small></span>
+                              </label>
+                            ))}
                           </div>
-                          {cRoutineDays.map(day => {
-                            const selectedInDay = day.topics.filter(topic => cTopics.includes(topic)).length
-                            const allSelected = selectedInDay === day.topics.length
-                            return (
-                              <details
-                                className={`routine-syllabus-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
-                                key={day.dateKey}
-                                open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
-                                onToggle={event => {
-                                  // সার্চ চলাকালীন সব দিন জোর করে খোলা থাকে;
-                                  // সেই টগল ব্যবহারকারীর পছন্দ হিসেবে জমা রাখি না।
-                                  if (cRoutineSearchActive) return
-                                  const isOpen = event.currentTarget.open
-                                  setCOpenRoutineDays(current => isOpen
-                                    ? (current.includes(day.dateKey) ? current : [...current, day.dateKey])
-                                    : current.filter(key => key !== day.dateKey))
-                                }}>
-                                <summary>
-                                  <span className="routine-day-badge">দিন {BN(day.day)}</span>
-                                  <span className="routine-day-meta">
-                                    <b>
-                                      {dhakaDayMonthLabel(day.dateKey)}
-                                      {day.revision && <em className="routine-day-revision">রিভিশন</em>}
-                                      {day.dateKey === cTodayDateKey && <em className="routine-day-today">আজ</em>}
-                                    </b>
-                                    <small>{day.subjects.map(item => ROUTINE_SUBJECT_LABELS[item.subject] || item.subject).join(' • ')} — {BN(day.topics.length)} টপিক</small>
-                                  </span>
-                                  {!!selectedInDay && <span className={`routine-day-count ${allSelected ? 'all' : ''}`}>{BN(selectedInDay)} ✓</span>}
-                                  <i aria-hidden="true">⌄</i>
-                                </summary>
-                                <div className="routine-day-body">
-                                  <label className="topic-check-option all-option">
-                                    <input type="checkbox" checked={allSelected} onChange={() => toggleTopicGroup(day.topics)} />
-                                    <span><b>এই দিনের সব টপিক</b><small>{BN(day.topics.length)}টি টপিক একসঙ্গে নির্বাচন করুন</small></span>
-                                  </label>
-                                  {day.subjects.map(item => (
-                                    <div className="routine-day-subject" key={item.subject}>
-                                      <span className="routine-day-subject-head">
-                                        <Ico id={item.subject} size={13} />
-                                        {ROUTINE_SUBJECT_LABELS[item.subject] || item.subject}
+                        </div>
+                      </details>
+                    </div>
+
+                    <div className="setup-field">
+                      <span className="lbl">টপিক নির্বাচন (ঐচ্ছিক)</span>
+                      <details className={`topic-check-dropdown ${!cSubs.length ? 'disabled' : ''}`} onClick={event => { if (!cSubs.length) event.preventDefault() }}>
+                        <summary aria-disabled={!cSubs.length}>
+                          <SheetIco id="layers" />
+                          <span>{!cSubs.length ? 'আগে বিষয় বাছুন' : cTopics.length ? `${BN(cTopics.length)}টি টপিক নির্বাচিত` : 'সকল টপিক থেকে প্রশ্ন'}</span>
+                          <i aria-hidden="true">⌄</i>
+                        </summary>
+                        {!!cSubs.length && <div className="topic-check-menu">
+                          <div className="topic-check-search">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                            <input value={cTopicSearch} onChange={event => setCTopicSearch(event.target.value)} placeholder="টপিক খুঁজুন…" />
+                          </div>
+                          <div className="topic-check-list">
+                            <label className="topic-check-option all-option">
+                              <input type="checkbox" checked={!cTopics.length} onChange={() => setCTopics([])} />
+                              <span><b>সকল টপিক</b><small>নির্বাচিত বিষয়গুলোর সব টপিক থেকে প্রশ্ন আসবে</small></span>
+                            </label>
+
+                            {!!cRoutineDays.length && <div className="routine-serial">
+                              <div className="routine-serial-head">
+                                <b>তারিখ অনুযায়ী সিলেবাস</b>
+                                <small>রুটিনের দিন ধরে ধরে টপিক বাছুন — সিরিয়াল অনুযায়ী সাজানো</small>
+                              </div>
+                              {cRoutineDays.map(day => {
+                                const selectedInDay = day.topics.filter(topic => cTopics.includes(topic)).length
+                                const allSelected = selectedInDay === day.topics.length
+                                return (
+                                  <details
+                                    className={`routine-syllabus-day ${day.dateKey === cTodayDateKey ? 'today' : ''}`}
+                                    key={day.dateKey}
+                                    open={cRoutineSearchActive || cOpenRoutineDays.includes(day.dateKey)}
+                                    onToggle={event => {
+                                      if (cRoutineSearchActive) return
+                                      const isOpen = event.currentTarget.open
+                                      setCOpenRoutineDays(current => isOpen
+                                        ? (current.includes(day.dateKey) ? current : [...current, day.dateKey])
+                                        : current.filter(key => key !== day.dateKey))
+                                    }}>
+                                    <summary>
+                                      <span className="routine-day-badge">দিন {BN(day.day)}</span>
+                                      <span className="routine-day-meta">
+                                        <b>
+                                          {dhakaDayMonthLabel(day.dateKey)}
+                                          {day.revision && <em className="routine-day-revision">রিভিশন</em>}
+                                          {day.dateKey === cTodayDateKey && <em className="routine-day-today">আজ</em>}
+                                        </b>
+                                        <small>{day.subjects.map(item => ROUTINE_SUBJECT_LABELS[item.subject] || item.subject).join(' • ')} — {BN(day.topics.length)} টপিক</small>
                                       </span>
-                                      {item.topics.map(topic => (
-                                        <label className="topic-check-option" key={topic}>
-                                          <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(entry => entry !== topic) : [...current, topic])} />
-                                          <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
-                                        </label>
+                                      {!!selectedInDay && <span className={`routine-day-count ${allSelected ? 'all' : ''}`}>{BN(selectedInDay)} ✓</span>}
+                                      <i aria-hidden="true">⌄</i>
+                                    </summary>
+                                    <div className="routine-day-body">
+                                      <label className="topic-check-option all-option">
+                                        <input type="checkbox" checked={allSelected} onChange={() => toggleTopicGroup(day.topics)} />
+                                        <span><b>এই দিনের সব টপিক</b><small>{BN(day.topics.length)}টি টপিক একসঙ্গে নির্বাচন করুন</small></span>
+                                      </label>
+                                      {day.subjects.map(item => (
+                                        <div className="routine-day-subject" key={item.subject}>
+                                          <span className="routine-day-subject-head">
+                                            <Ico id={item.subject} size={13} />
+                                            {ROUTINE_SUBJECT_LABELS[item.subject] || item.subject}
+                                          </span>
+                                          {item.topics.map(topic => (
+                                            <label className="topic-check-option" key={topic}>
+                                              <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(entry => entry !== topic) : [...current, topic])} />
+                                              <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                            </label>
+                                          ))}
+                                        </div>
                                       ))}
                                     </div>
-                                  ))}
-                                </div>
-                              </details>
-                            )
-                          })}
-                          <div className="routine-serial-divider"><span>রুটিনের বাইরের অন্যান্য টপিক</span></div>
-                        </div>}
+                                  </details>
+                                )
+                              })}
+                              <div className="routine-serial-divider"><span>রুটিনের বাইরের অন্যান্য টপিক</span></div>
+                            </div>}
 
-                        {cSubs.length === 1 && cSubs[0] === 'গাণিতিক যুক্তি'
-                          ? cMathTopicGroups.map(group => (
-                              <div className="topic-check-group" key={group.label}>
-                                <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
-                                  <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
-                                  <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
-                                </label>
-                                {group.topics.map(topic => (
+                            {cSubs.length === 1 && cSubjectTopicGroups.length > 0
+                              ? cSubjectTopicGroups.map(group => (
+                                  <div className="topic-check-group" key={group.label}>
+                                    <label className={`topic-check-group-title ${!cTopics.length || group.topics.every(topic => cTopics.includes(topic)) ? 'selected' : ''}`}>
+                                      <input type="checkbox" checked={!cTopics.length || group.topics.every(topic => cTopics.includes(topic))} onChange={() => toggleTopicGroup(group.topics)} />
+                                      <span><b>{group.label}</b><small>{BN(group.topics.length)}টি উপবিষয় • সব বাছুন</small></span>
+                                    </label>
+                                    {group.topics.map(topic => (
+                                      <label className="topic-check-option" key={topic}>
+                                        <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
+                                        <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                ))
+                              : cRemainingTopics.map(topic => (
                                   <label className="topic-check-option" key={topic}>
                                     <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
                                     <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
                                   </label>
                                 ))}
-                              </div>
-                            ))
-                          : cRemainingTopics.map(topic => (
-                              <label className="topic-check-option" key={topic}>
-                                <input type="checkbox" checked={cTopics.includes(topic)} onChange={() => setCTopics(current => current.includes(topic) ? current.filter(item => item !== topic) : [...current, topic])} />
-                                <span>{topic}<small>{BN(customTopicCount(topic))} প্রশ্ন</small></span>
-                              </label>
-                            ))}
-                        {!cVisibleTopics.length && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
-                      </div>
-                    </div>}
-                  </details>
+                            {!cVisibleTopics.length && <p className="topic-empty">কোনো টপিক পাওয়া যায়নি</p>}
+                          </div>
+                        </div>}
+                      </details>
+                    </div>
+                  </div>
+
+                  {!!cSubs.length && <div className="topic-selection" aria-live="polite">
+                    {!cTopics.length
+                      ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
+                      : <>
+                          <div className="selected-topic-head"><span><b>{BN(cTopics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setCTopics([])}>সব মুছুন</button></div>
+                          <div className="selected-topics">{cTopics.map(topic => <button key={topic} title="নির্বাচন বাতিল করুন" onClick={() => setCTopics(current => current.filter(item => item !== topic))}><span>{topic}</span><b aria-hidden="true">×</b></button>)}</div>
+                        </>}
+                  </div>}
+
+                  <div className="custom-quiz-options" style={{marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16}}>
+                    <div><span className="lbl">প্রশ্নসংখ্যা</span>
+                      <div className="chips custom-size-options">{[10, 25, 50, 100, 200].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
+                    </div>
+                    <div><span className="lbl">সময় (মিনিট)</span>
+                      <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="offline-quiz-note" style={{marginTop: 20}}>ইন্টারনেট না থাকলেও bundled ও সীমিত cached প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে।</div>
+                  <div className="cta" style={{marginTop: 20}}>
+                    <button className="btn primary" style={{width: '100%'}} onClick={() => {
+                      if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
+                      const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
+                      beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, mode: cMode, returnPage: 'setup' })
+                    }}>{cMode === 'practice' ? 'প্র্যাকটিস শুরু করুন →' : 'এক্সাম শুরু করুন →'}</button>
+                  </div>
                 </div>
               </div>
-
-              {!!cSubs.length && <div className="topic-selection" aria-live="polite">
-                {!cTopics.length
-                  ? <span className="all-topics"><b>সকল টপিক</b> থেকে প্রশ্ন আসবে</span>
-                  : <>
-                      <div className="selected-topic-head"><span><b>{BN(cTopics.length)}</b>টি টপিক নির্বাচিত</span><button onClick={() => setCTopics([])}>সব মুছুন</button></div>
-                      <div className="selected-topics">{cTopics.map(topic => <button key={topic} title="নির্বাচন বাতিল করুন" onClick={() => setCTopics(current => current.filter(item => item !== topic))}><span>{topic}</span><b aria-hidden="true">×</b></button>)}</div>
-                    </>}
-              </div>}
-
-              <div className="custom-quiz-options">
-                <div><span className="lbl">প্রশ্নসংখ্যা</span>
-                  <div className="chips custom-size-options">{[10, 25, 50, 100, 200].map(number => <button className={`chip ${cCount === number ? 'on' : ''}`} key={number} onClick={() => setCCount(number)}>{BN(number)}</button>)}</div>
-                </div>
-                <div><span className="lbl">সময় (মিনিট)</span>
-                  <div className="chips custom-time-options">{[10, 20, 30, 60, 90, 120, 180].map(number => <button className={`chip ${cTime === number ? 'on' : ''}`} key={number} onClick={() => setCTime(number)}>{BN(number)}</button>)}</div>
-                </div>
-              </div>
-              <div className="offline-quiz-note">ইন্টারনেট না থাকলেও bundled ও সীমিত cached প্রশ্ন দিয়ে কাস্টম কুইজ দেওয়া যাবে। প্রশ্নের লেখা কপি করা বন্ধ থাকবে।</div>
-              <div className="cta"><button className="btn primary" onClick={() => {
-                if (!cSubs.length) { setToastMsg('আগে অন্তত একটি বিষয় বাছুন'); return }
-                const subjectLabel = cSubs.length === 1 ? cSubs[0] : `${BN(cSubs.length)}টি বিষয়`
-                beginQuiz({ title: `কাস্টম কুইজ • ${subjectLabel}${cTopics.length ? ' • ' + cTopics[0] : ''}`, tag: cCat, subjects: cSubs, topics: cTopics, limit: cCount, minutes: cTime, fallback: cSubs, returnPage: 'setup' })
-              }}>কাস্টম কুইজ শুরু করুন →</button></div>
             </div>
           </section>
         </>}
+
 
         {/* ================= DAILY ================= */}
         {page === 'daily' && <>
@@ -2424,12 +2477,24 @@ export function App() {
                   </div>
                 </div>
                 <div className="qn"><Md s={q.question} /></div>
-                {(q.options || []).map((o, i) => (
-                  <button className={`qopt ${quiz.ans[qi] === i ? 'sel' : ''}`} key={i}
-                    onClick={() => setQuiz(z => { const a = [...z.ans]; a[qi] = i; return { ...z, ans: a } })}>
-                    <span className="k">{'কখগঘ'[i]}</span><span>{o}</span>
-                  </button>
-                ))}
+                {quiz.mode === 'practice' && quiz.ans[qi] != null ? (
+                  <div className="practice-review-wrap">
+                    <ReviewOptions question={q} selectedIndex={quiz.ans[qi]} />
+                    <Expl q={q} />
+                    {quiz.ans[qi] != null && q.options[quiz.ans[qi]] === q.answer ? (
+                      <div className="practice-feedback correct">✓ সঠিক উত্তর</div>
+                    ) : (
+                      <div className="practice-feedback wrong">✗ ভুল উত্তর</div>
+                    )}
+                  </div>
+                ) : (
+                  (q.options || []).map((o, i) => (
+                    <button className={`qopt ${quiz.ans[qi] === i ? 'sel' : ''}`} key={i}
+                      onClick={() => setQuiz(z => { const a = [...z.ans]; a[qi] = i; return { ...z, ans: a } })}>
+                      <span className="k">{'কখগঘ'[i]}</span><span>{o}</span>
+                    </button>
+                  ))
+                )}
               </div>
             ))}
           </section>
