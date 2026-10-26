@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ধনশি হাউস · ৩২'×১৬' — সম্পূর্ণ নকশা ডসিয়ার</title>
+<meta name="description" content="ধনশি গ্রাম, নবীনগর, ব্রাহ্মণবাড়িয়া — ৫১২ বর্গফুট বাসভবনের সম্পূর্ণ স্থাপত্য, কাঠামো, সার্ভিস ও খরচের নকশা ডসিয়ার।">
+<style>
+/* ==========================================================================
+   ধনশি হাউস — Design Dossier
+   Visual system: warm drawing paper, ink hairlines, roof-red accent.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --paper: #f4f1ea;
+  --paper-2: #fbf9f5;
+  --paper-3: #eeeae0;
+  --ink: #12141a;
+  --ink-80: #31353d;
+  --ink-60: #5c616b;
+  --ink-40: #8d919b;
+  --rule: #d9d2c3;
+  --rule-soft: #e7e1d4;
+  --red: #b03a2e;
+  --red-soft: #c9564a;
+  --slate: #23282f;
+  --blue: #2e4c6d;
+  --blue-soft: #6f8aa8;
+  --green: #5b7355;
+  --amber: #b8862b;
+
+  --f-display: "Fraunces", "Noto Serif Bengali", Georgia, serif;
+  --f-sans: "Inter", "Hind Siliguri", system-ui, sans-serif;
+  --f-bn: "Hind Siliguri", "Noto Sans Bengali", "Inter", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --rail: 74px;
+  --pad: clamp(20px, 4.2vw, 68px);
+  --maxw: 1220px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-bn);
+  font-size: 16.5px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* paper grain ------------------------------------------------------------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .5;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(176, 58, 46, .045), transparent 42%),
+    radial-gradient(circle at 82% 8%, rgba(46, 76, 109, .05), transparent 40%),
+    radial-gradient(circle at 60% 92%, rgba(35, 40, 47, .04), transparent 45%);
+}
+
+::selection { background: var(--red); color: #fff; }
+
+h1, h2, h3, h4 { font-family: var(--f-display); font-weight: 400; letter-spacing: -.012em; margin: 0; }
+p { margin: 0 0 1em; }
+a { color: inherit; }
+strong { font-weight: 600; }
+
+.en { font-family: var(--f-sans); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   RAIL / NAV
+   ========================================================================== */
+.rail {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--rail);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 18px;
+  border-right: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(9px);
+}
+.rail__mark {
+  width: 34px; height: 34px;
+  border: 1px solid var(--ink);
+  display: grid; place-items: center;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .04em;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 4px 0;
+}
+.rail__nav { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.rail__nav a {
+  width: 26px; height: 26px; display: grid; place-items: center;
+  text-decoration: none;
+  font-family: var(--f-mono); font-size: 8.5px; color: var(--ink-40);
+  border: 1px solid transparent; border-radius: 50%;
+  transition: .25s;
+}
+.rail__nav a:hover { color: var(--ink); border-color: var(--rule); }
+.rail__nav a.on { color: #fff; background: var(--red); border-color: var(--red); }
+.rail__foot {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .16em;
+  color: var(--ink-40); text-transform: uppercase;
+}
+
+/* ==========================================================================
+   COVER
+   ========================================================================== */
+.shell { margin-left: var(--rail); position: relative; z-index: 1; }
+
+.cover {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 0 var(--pad);
+  position: relative;
+}
+.cover__top {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 20px;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-60);
+  flex-wrap: wrap;
+}
+.cover__top b { color: var(--ink); font-weight: 500; }
+
+.cover__mid {
+  display: grid;
+  grid-template-columns: 1.02fr .98fr;
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  padding: clamp(28px, 5vh, 64px) 0;
+}
+.cover__kicker {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cover__kicker::after { content: ""; height: 1px; width: 46px; background: var(--red); opacity: .5; }
+.cover h1 {
+  font-size: clamp(38px, 5.6vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+}
+.cover h1 em { font-style: italic; color: var(--red); }
+.cover__sub {
+  font-family: var(--f-sans); font-weight: 300;
+  font-size: clamp(14px, 1.25vw, 17px); line-height: 1.7;
+  color: var(--ink-60); max-width: 46ch; margin-top: 22px;
+}
+.cover__spec {
+  margin-top: 30px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+}
+.cover__spec div { background: var(--paper); padding: 12px 14px; }
+.cover__spec dt {
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-40); margin-bottom: 3px;
+}
+.cover__spec dd { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.cover__spec dd small { display: block; font-weight: 300; font-size: 11.5px; color: var(--ink-40); font-family: var(--f-sans); }
+
+.cover__figure { position: relative; }
+.cover__figure svg { width: 100%; height: auto; display: block; }
+.cover__stamp {
+  position: absolute; right: -6px; bottom: -18px;
+  border: 1px solid var(--red); color: var(--red);
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; padding: 8px 11px; background: var(--paper);
+  transform: rotate(-2deg);
+}
+.cover__bottom {
+  display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  border-top: 1px solid var(--rule); padding: 14px 0 22px;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-40);
+}
+
+/* ==========================================================================
+   SECTION FRAME
+   ========================================================================== */
+.sec { padding: clamp(56px, 8vh, 112px) var(--pad); border-top: 1px solid var(--rule); }
+.sec--tight { padding-top: clamp(40px, 5vh, 68px); }
+.sec__head {
+  display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: clamp(16px, 3vw, 44px);
+  margin-bottom: clamp(26px, 4vw, 46px);
+  align-items: start;
+}
+.sec__no {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em;
+  color: var(--red); padding-top: 9px; border-top: 1px solid var(--red);
+}
+.sec__no span { display: block; color: var(--ink-40); letter-spacing: .1em; margin-top: 5px; font-size: 9px; }
+.sec__title h2 {
+  font-size: clamp(26px, 3.4vw, 44px); line-height: 1.1; letter-spacing: -.025em;
+}
+.sec__title .en {
+  display: block; font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-40); margin-top: 10px;
+}
+.sec__title p {
+  max-width: 62ch; color: var(--ink-60); font-size: 15px; line-height: 1.78;
+  margin-top: 16px; margin-bottom: 0;
+}
+.sec > .wrap { max-width: var(--maxw); }
+
+/* grids ------------------------------------------------------------------ */
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 34px); }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 26px); }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.g-1-2 { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.35fr); gap: clamp(18px, 2.6vw, 40px); }
+.g-2-1 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .85fr); gap: clamp(18px, 2.6vw, 40px); }
+.stack { display: flex; flex-direction: column; gap: clamp(14px, 1.8vw, 22px); }
+
+/* ==========================================================================
+   DRAWING PLATE  (title-blocked sheet)
+   ========================================================================== */
+.plate {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  position: relative;
+  overflow: hidden;
+}
+.plate__hd {
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  padding: 9px 14px; border-bottom: 1px solid var(--rule);
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-60);
+  background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(0,0,0,0));
+  flex-wrap: wrap;
+}
+.plate__hd b { color: var(--ink); font-weight: 500; }
+.plate__hd .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); display: inline-block; margin-right: 7px; vertical-align: middle; }
+.plate__bd { padding: 14px; position: relative; }
+.plate__bd--flush { padding: 0; }
+.plate__bd svg { width: 100%; height: auto; display: block; }
+.plate__tb {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  border-top: 1px solid var(--rule);
+  font-family: var(--f-mono); font-size: 8.6px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-40);
+}
+.plate__tb > div { padding: 6px 12px; border-right: 1px solid var(--rule); }
+.plate__tb > div:last-child { border-right: 0; }
+.plate__tb b { display: block; color: var(--ink-80); font-weight: 500; letter-spacing: .06em; margin-top: 1px; }
+
+.plate__legend {
+  display: flex; flex-wrap: wrap; gap: 6px 16px;
+  padding: 10px 14px; border-top: 1px dashed var(--rule);
+  font-family: var(--f-mono); font-size: 8.8px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-60);
+}
+.plate__legend i { display: inline-block; width: 14px; height: 0; vertical-align: middle; margin-right: 6px; }
+
+/* controls --------------------------------------------------------------- */
+.ctrls { display: flex; flex-wrap: wrap; gap: 7px; padding: 10px 14px; border-bottom: 1px solid var(--rule); background: var(--paper-3); }
+.ctrl {
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 9px; border: 1px solid var(--rule); background: var(--paper-2);
+  color: var(--ink-60); cursor: pointer; transition: .18s; user-select: none;
+}
+.ctrl:hover { border-color: var(--ink-40); color: var(--ink); }
+.ctrl[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.ctrl--red[aria-pressed="true"] { background: var(--red); border-color: var(--red); }
+.slider-wrap { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--rule); background: var(--paper-3); }
+.slider-wrap label { font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-60); white-space: nowrap; }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 1px; background: var(--ink-40); outline: none; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--red); border: 2px solid var(--paper-2); cursor: grab;
+  box-shadow: 0 0 0 1px var(--red);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 11px; height: 11px; border-radius: 50%; background: var(--red);
+  border: 2px solid var(--paper-2); cursor: grab;
+}
+
+/* ==========================================================================
+   TEXT BLOCKS
+   ========================================================================== */
+.note {
+  border-left: 2px solid var(--red);
+  padding: 2px 0 2px 16px;
+  font-size: 14px; line-height: 1.72; color: var(--ink-80);
+}
+.note b { color: var(--ink); }
+.note__lbl {
+  font-family: var(--f-mono); font-size: 8.6px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--red); display: block; margin-bottom: 5px;
+}
+.note--blue { border-color: var(--blue); }
+.note--blue .note__lbl { color: var(--blue); }
+
+.card {
+  background: var(--paper-2); border: 1px solid var(--rule);
+  padding: clamp(16px, 2vw, 26px);
+}
+.card h4 { font-size: 19px; margin-bottom: 4px; }
+.card__no {
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--red); display: block; margin-bottom: 10px;
+}
+.card p { font-size: 13.6px; line-height: 1.75; color: var(--ink-60); margin: 0; }
+.card p + p { margin-top: .7em; }
+.card ul { margin: 10px 0 0; padding: 0; list-style: none; }
+.card ul li { font-size: 13px; line-height: 1.62; color: var(--ink-60); padding-left: 15px; position: relative; margin-bottom: 4px; }
+.card ul li::before { content: "—"; position: absolute; left: 0; color: var(--rule); }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; }
+.kv dt { font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-40); padding-top: 4px; }
+.kv dd { margin: 0; color: var(--ink-80); }
+
+/* data strip ------------------------------------------------------------- */
+.strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--rule); background: var(--paper-2); }
+.strip > div { padding: 16px 18px; border-right: 1px solid var(--rule); }
+.strip > div:last-child { border-right: 0; }
+.strip .n { font-family: var(--f-display); font-size: clamp(24px, 2.8vw, 34px); line-height: 1; letter-spacing: -.02em; }
+.strip .n small { font-family: var(--f-sans); font-size: 11px; color: var(--ink-40); font-weight: 400; letter-spacing: .04em; }
+.strip .l { font-family: var(--f-mono); font-size: 8.6px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-40); margin-top: 7px; }
+
+/* ==========================================================================
+   TABLES
+   ========================================================================== */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--paper-2); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  font-family: var(--f-mono); font-size: 8.6px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-60); text-align: left; font-weight: 500;
+  padding: 9px 12px; border-bottom: 1px solid var(--rule); background: var(--paper-3);
+  white-space: nowrap; position: sticky; top: 0;
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.5; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: rgba(176, 58, 46, .028); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.num, th.num { text-align: right; }
+.tbl-sub td { background: var(--paper-3); font-weight: 600; }
+.tbl-tot td {
+  background: var(--ink); color: var(--paper); font-weight: 600;
+  font-family: var(--f-mono); font-size: 12px;
+}
+.tbl-tot td:first-child { font-family: var(--f-bn); font-size: 13px; }
+.tag {
+  display: inline-block; font-family: var(--f-mono); font-size: 8px; letter-spacing: .1em;
+  text-transform: uppercase; padding: 1.5px 5px; border: 1px solid currentColor;
+  color: var(--ink-40); white-space: nowrap;
+}
+.tag--red { color: var(--red); }
+.tag--green { color: var(--green); }
+.tag--blue { color: var(--blue); }
+.tag--amber { color: var(--amber); }
+
+/* ==========================================================================
+   BOQ controls
+   ========================================================================== */
+.seg { display: inline-flex; border: 1px solid var(--ink); background: var(--paper-2); flex-wrap: wrap; }
+.seg button {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 9px 14px; border: 0; background: transparent; color: var(--ink-60);
+  cursor: pointer; transition: .18s; border-right: 1px solid var(--rule);
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.bar {
+  height: 5px; background: var(--paper-3); display: flex; overflow: hidden;
+  border: 1px solid var(--rule);
+}
+.bar span { height: 100%; }
+
+/* ==========================================================================
+   FOOTER / MISC
+   ========================================================================== */
+.foot {
+  padding: clamp(40px, 6vh, 72px) var(--pad);
+  border-top: 1px solid var(--rule);
+  background: var(--ink); color: var(--paper);
+  display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: end;
+}
+.foot h3 { font-size: clamp(24px, 3vw, 36px); color: var(--paper); }
+.foot p { color: #a9a397; font-size: 13.5px; max-width: 52ch; margin-top: 12px; }
+.foot .mono { color: #6f6a61; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; line-height: 2; }
+.foot a { color: var(--paper); text-decoration: none; border-bottom: 1px solid #4a463f; }
+.foot a:hover { border-color: var(--paper); }
+
+.srcs { font-size: 11.5px; color: var(--ink-40); }
+.srcs li { margin-bottom: 3px; }
+.srcs a { text-decoration: none; border-bottom: 1px dotted var(--rule); }
+.srcs a:hover { color: var(--ink); border-color: var(--ink-40); }
+
+details.tog { border: 1px solid var(--rule); background: var(--paper-2); }
+details.tog summary {
+  cursor: pointer; padding: 11px 14px; font-family: var(--f-mono); font-size: 9.5px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-60);
+  list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+details.tog summary::-webkit-details-marker { display: none; }
+details.tog summary::after { content: "+"; color: var(--red); font-size: 14px; }
+details.tog[open] summary::after { content: "–"; }
+details.tog .tog__bd { padding: 0 14px 14px; font-size: 12.6px; line-height: 1.7; color: var(--ink-60); }
+
+/* reveal ----------------------------------------------------------------- */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .cover__mid { grid-template-columns: 1fr; gap: 30px; }
+  .cover__figure { max-width: 560px; }
+  .g-1-2, .g-2-1 { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  :root { --rail: 0px; }
+  .rail { display: none; }
+  .sec__head { grid-template-columns: 1fr; gap: 12px; }
+  .sec__no { border-top: 0; padding-top: 0; display: flex; gap: 10px; align-items: baseline; }
+  .sec__no span { margin-top: 0; }
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .strip { grid-template-columns: repeat(2, 1fr); }
+  .strip > div:nth-child(2) { border-right: 0; }
+  .strip > div:nth-child(1), .strip > div:nth-child(2) { border-bottom: 1px solid var(--rule); }
+  .plate__tb { grid-template-columns: repeat(2, 1fr); }
+  .plate__tb > div:nth-child(2n) { border-right: 0; }
+  .foot { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  body { font-size: 15.5px; }
+  .cover__spec { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: 1fr; }
+  .plate__bd { padding: 8px; }
+  .ctrls { gap: 5px; }
+  .ctrl { font-size: 8px; padding: 4px 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* print ------------------------------------------------------------------ */
+@media print {
+  .rail, .ctrls, .slider-wrap, .seg { display: none !important; }
+  .shell { margin: 0; }
+  .plate { break-inside: avoid; }
+  .sec { padding: 24px 0; }
+  body { background: #fff; }
+}
+
+/* ==========================================================================
+   ZOOM (drawing lightbox)
+   ========================================================================== */
+.zoomhint { font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .1em; color: var(--red); font-style: normal; }
+.plate__bd { cursor: zoom-in; }
+.plate__bd:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+.zoom {
+  position: fixed; inset: 0; z-index: 120;
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  display: none; grid-template-rows: auto 1fr;
+  backdrop-filter: blur(3px);
+}
+.zoom.on { display: grid; }
+.zoom__bar {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid #3a3f47;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: #a8a29a;
+}
+.zoom__bar b { color: var(--paper); font-weight: 500; }
+.zoom__close {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  background: transparent; color: var(--paper); border: 1px solid #4a5058;
+  padding: 6px 12px; cursor: pointer;
+}
+.zoom__close:hover { background: var(--red); border-color: var(--red); }
+.zoom__stage {
+  overflow: auto; padding: 18px; -webkit-overflow-scrolling: touch;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.zoom__stage > svg {
+  width: max(100%, 980px); height: auto; background: var(--paper-2);
+  border: 1px solid #3a3f47; min-height: 40vh;
+}
+@media (max-width: 560px) {
+  .zoom__stage > svg { width: 980px; }
+}
+
+/* rail: never overflow on short screens */
+@media (max-height: 720px) and (min-width: 861px) {
+  .rail__nav { gap: 6px; }
+  .rail__nav a { width: 22px; height: 22px; font-size: 7.5px; }
+}
+
+</style>
+<script>
+/* If someone opens the un-bundled source straight from disk, ES-module imports are blocked
+   by the browser. Point them at the single-file build instead of showing empty plates. */
+if (location.protocol === 'file:') {
+  document.addEventListener('DOMContentLoaded', function () {
+    var b = document.createElement('div');
+    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:200;padding:12px 16px;background:#12141a;color:#f4f1ea;font:13px/1.6 "Hind Siliguri",system-ui,sans-serif;text-align:center';
+    b.innerHTML = 'এটি সোর্স ফাইল — ড্রয়িংগুলো লোড হবে না। সরাসরি খুলতে <b style="color:#e08a7f">dhonashi-house.html</b> ফাইলটি ব্যবহার করুন (একই ফোল্ডারে আছে)।';
+    document.body.appendChild(b);
+  });
+}
+</script>
+</head>
+<body>
+
+<!-- ================= RAIL ================= -->
+<aside class="rail">
+  <div class="rail__mark">DHS · ০১</div>
+  <nav class="rail__nav" id="railNav">
+    <a href="#s01" title="ব্রিফ">01</a>
+    <a href="#s02" title="গবেষণা">02</a>
+    <a href="#s03" title="কনসেপ্ট">03</a>
+    <a href="#s04" title="প্ল্যান">04</a>
+    <a href="#s05" title="ছাদ">05</a>
+    <a href="#s06" title="এলিভেশন">06</a>
+    <a href="#s07" title="সেকশন">07</a>
+    <a href="#s08" title="ডিটেইল">08</a>
+    <a href="#s09" title="কাঠামো">09</a>
+    <a href="#s10" title="উপকরণ">10</a>
+    <a href="#s11" title="দরজা-জানালা">11</a>
+    <a href="#s12" title="সার্ভিস">12</a>
+    <a href="#s13" title="খরচ">13</a>
+    <a href="#s14" title="কর্মসূচি">14</a>
+    <a href="#s15" title="ভবিষ্যৎ">15</a>
+    <a href="#s16" title="রেজিস্টার">16</a>
+  </nav>
+  <div class="rail__foot">NABINAGAR · 2026</div>
+</aside>
+
+<main class="shell">
+
+<!-- ================= COVER ================= -->
+<header class="cover" id="top">
+  <div class="cover__top">
+    <span><b>ধনশি হাউস</b> — স্থাপত্য নকশা ডসিয়ার</span>
+    <span>ড্রয়িং নং DHS-2026-01 · সংশোধন ০৩</span>
+    <span>২৬ অক্টোবর ২০২৬</span>
+  </div>
+
+  <div class="cover__mid">
+    <div>
+      <div class="cover__kicker">৫১২ বর্গফুট · একতলা বাসভবন</div>
+      <h1>ধনশি<br><em>হাউস</em></h1>
+      <p class="cover__sub">
+        ধনশি গ্রাম, নবীনগর, ব্রাহ্মণবাড়িয়া। ৩২'-০" × ১৬'-০" জমির উপর দাঁড়ানো একটি সাদা-ধবধবে মিনিমাল ঘর —
+        লাল-কালো দুই ঢালের টিনের ছাদ, মাঝখানে সার্ভিস কোর, দুই প্রান্তে দুটি শোবার ঘর এবং
+        একটি অনাগত তৃতীয় ঘরের জন্য প্রস্তুত দেয়াল।
+      </p>
+      <dl class="cover__spec">
+        <div><dt>Site</dt><dd>ধনশি, নবীনগর<small>ব্রাহ্মণবাড়িয়া, চট্টগ্রাম</small></dd></div>
+        <div><dt>Footprint</dt><dd>৩২' × ১৬'<small>৫১২ বর্গফুট · গ্রাউন্ড ফ্লোর</small></dd></div>
+        <div><dt>Aesthetic</dt><dd>Minimalist Modern<small>সাদা এক্সটেরিয়র · লাল/কালো টিন</small></dd></div>
+        <div><dt>Structure</dt><dd>লোড-বেয়ারিং + MS ট্রাস<small>BNBC 2020 · সিসমিক জোন ৩</small></dd></div>
+      </dl>
+    </div>
+
+    <figure class="cover__figure" style="margin:0">
+      <div data-draw="axon"></div>
+      <figcaption class="cover__stamp">অ্যাক্সোনোমেট্রিক · ১৫০° / ১৪°</figcaption>
+    </figure>
+  </div>
+
+  <div class="cover__bottom">
+    <span>নকশা: স্থপতি দল · ড্রাফটিং ১:৫০</span>
+    <span>BNBC 2020 মেনে · ঝড় ৫৬.৭ মি/সে · ভূমিকম্প Z=০.২৮</span>
+    <span>↓ স্ক্রল করে সম্পূর্ণ ডসিয়ার দেখুন</span>
+  </div>
+</header>
+
+<!-- ================= 01 BRIEF ================= -->
+<section class="sec" id="s01">
+  <div class="sec__head">
+    <div class="sec__no">০১<span>BRIEF</span></div>
+    <div class="sec__title">
+      <h2>ক্লায়েন্ট যা চেয়েছেন, আর জমি যা বলছে</h2>
+      <span class="en">Client brief · site conditions · design premises</span>
+      <p>
+        প্রাথমিক সারসংক্ষেপে পাঁচটি জিনিস স্থির ছিল: ৫১২ বর্গফুট, মিনিমাল সাদা চেহারা, লাল-কালো দুই ঢালের টিন,
+        মাঝখানে একটি পার্টিশন দিয়ে ইউটিলিটি আলাদা রাখা, আর ডান দিকের দেয়াল ভবিষ্যতের তৃতীয় ঘরের জন্য খালি রাখা।
+        নিচে সেই শর্তগুলোকে ভেঙে দেখানো হয়েছে — কোনটা অক্ষত রাখা হয়েছে, কোনটা বদলাতে হয়েছে এবং কেন।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="strip reveal" style="margin-bottom:34px">
+      <div><div class="n">৫১২<small> sqft</small></div><div class="l">মোট ফ্লোর এরিয়া</div></div>
+      <div><div class="n">৪৬১<small> sqft</small></div><div class="l">কার্পেট এরিয়া · ৯০% দক্ষতা</div></div>
+      <div><div class="n">২<small> + ১</small></div><div class="l">শোবার ঘর · ভবিষ্যতে ৩</div></div>
+      <div><div class="n">২২<small>°</small></div><div class="l">ছাদের ঢাল · দুই ঢাল</div></div>
+    </div>
+
+    <div class="g-1-2">
+      <div class="stack">
+        <div class="card reveal">
+          <span class="card__no">যা অক্ষত রাখা হয়েছে</span>
+          <h4>ডিজাইন ভাষা</h4>
+          <ul>
+            <li>৩২'-০" × ১৬'-০" — এক চুলও বাড়ানো হয়নি</li>
+            <li>সাদা ওয়েদার-প্রুফ এক্সটেরিয়র, কোনো টাইলস নয়</li>
+            <li>লাল + কালো ডুয়াল-টোন করগেটেড শিট, দুই ঢাল</li>
+            <li>নেট সিমেন্ট পলিশড ফ্লোর, যৌথ গ্রুভ সহ</li>
+            <li>থাই স্লাইডিং গ্লাস + ভিতরের নিরাপত্তা গ্রিল</li>
+            <li>ইন্টিগ্রেটেড লক সহ স্টিল দরজা</li>
+            <li>ডান দিকের দেয়াল ভবিষ্যৎ ঘরের জন্য প্রস্তুত</li>
+          </ul>
+        </div>
+        <div class="note reveal">
+          <span class="note__lbl">নকশার মূল সিদ্ধান্ত</span>
+          <b>সার্ভিস কোর কেন মাঝখানে।</b> রান্নাঘর আর বাথরুম একসাথে উত্তর দেয়ালে বসানো হয়েছে, যাতে সব
+          পানির পাইপ এক দেয়ালেই থাকে। এতে পাইপের দৈর্ঘ্য প্রায় ৪০% কমে, একটি মাত্র ট্রেঞ্চ কাটতে হয়,
+          আর দুই শোবার ঘর দুই প্রান্তে সম্পূর্ণ গোপনীয়তা পায়।
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="plate reveal">
+          <div class="plate__hd"><span><span class="dot"></span>পার্টি ডায়াগ্রাম</span><span>PARTI · 1:200</span></div>
+          <div class="plate__bd" data-draw="parti"></div>
+          <div class="plate__tb">
+            <div>Zone<B>PRIVATE / COMMON / SERVICE</B></div>
+            <div>Entry<B>SOUTH · CENTRE</B></div>
+            <div>Vent<B>N–S CROSS FLOW</B></div>
+            <div>Scale<B>NOT TO SCALE</B></div>
+            <div>01 / A</div>
+          </div>
+        </div>
+
+        <div class="plate reveal">
+          <div class="plate__hd"><span><span class="dot"></span>সাইট প্ল্যান</span><span>SITE PLAN · 1:200</span></div>
+          <div class="plate__bd" data-draw="site"></div>
+          <div class="plate__tb">
+            <div>Plot<B>৬০' × ৫০' (ধরা হয়েছে)</B></div>
+            <div>Tubewell<B>SE কোণ · সেপটিক থেকে ২৫'+</B></div>
+            <div>Future<B>পূর্ব দিকে ১২'×১২'</B></div>
+            <div>Access<B>দক্ষিণ — গ্রামের রাস্তা</B></div>
+            <div>02 / A</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-top:26px">
+      <div class="card reveal">
+        <span class="card__no">জমির বাস্তবতা</span>
+        <h4>দিকনির্দেশ ও প্রবেশ</h4>
+        <p>
+          গ্রামের রাস্তা দক্ষিণে — তাই প্রবেশ দক্ষিণ মুখী, আর ৩২ ফুটের লম্বা দিকটাই সম্মুখভাগ। এতে দুটি শোবার ঘরই
+          পূর্ব ও পশ্চিম প্রান্তে পড়ে, আর মাঝের ১০ ফুট অংশ বসার ঘর ও সার্ভিস কোরের জন্য থাকে।
+        </p>
+        <p>
+          পশ্চিম দেয়ালে কোনো জানালা রাখা হয়নি — বাংলাদেশে বিকেল ৩টা থেকে সূর্য পশ্চিম দেয়ালে সবচেয়ে বেশি তাপ
+          ফেলে। বদলে সেই দেয়ালে ৭'-০" উঁচুতে একটি ২৪"×১২" ভেন্টিলেটর রাখা হয়েছে, যা গরম বাতাস বের করে দেয়।
+        </p>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">একটি সতর্কতা</span>
+        <h4>“১২' × ১২'” ঘরটা ৩২ ফুটে ধরে না</h4>
+        <p>
+          মূল স্কেচে ১২ + ৮ + ১২ = ৩২ ফুট ধরা হয়েছে, কিন্তু দেয়ালের পুরুত্ব ধরলে হিসাবটা ভাঙে।
+          ৫" বাইরের দেয়াল আর ৩" পার্টিশনে ভেতরের মাপ থাকে ৩১'-২"। তখন দুই পাশে ১১'-৪" করে রাখলে
+          মাঝখানে থাকে মাত্র ৮'-০" — যেখানে রান্নাঘর ও বাথরুম একসাথে বসানো অসম্ভব।
+        </p>
+        <p>
+          তাই মাঝের বে-টি ১০'-০" করা হয়েছে এবং শোবার ঘর ১০'-৪" × ১৫'-২" (১৫৭ বর্গফুট)। মোট আয়তন কমেনি —
+          বরং বেড়েছে, আর বসার ঘর ৯৭ বর্গফুট হয়েছে। বিস্তারিত ০৩ নম্বরে।
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 RESEARCH ================= -->
+<section class="sec" id="s02">
+  <div class="sec__head">
+    <div class="sec__no">০২<span>RESEARCH</span></div>
+    <div class="sec__title">
+      <h2>জলবায়ু, মাটি ও ঝুঁকির পূর্ণ গবেষণা</h2>
+      <span class="en">Climate · soil · seismic · wind · flood — evidence base</span>
+      <p>
+        নবীনগর উপজেলা তিতাস নদীর অববাহিকায়, সিলেট অববাহিকাজুড়ে বিস্তৃত “নবীনগর সিরিজ”-এর ভারী পলি মাটির উপর।
+        এই মাটি বছরের বেশিরভাগ সময় খুব ভেজা থাকে, পানি নিষ্কাশন খারাপ। তার উপর ব্রাহ্মণবাড়িয়া ভূমিকম্পের
+        সবচেয়ে ঝুঁকিপূর্ণ জোনে পড়ে। প্রতিটি নকশা-সিদ্ধান্তের পেছনে এই তথ্যগুলোই আছে।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g3 reveal" style="margin-bottom:26px">
+      <div class="plate">
+        <div class="plate__hd"><span>সূর্যের পথ</span><span>SOLAR GEOMETRY</span></div>
+        <div class="plate__bd" data-draw="sun"></div>
+        <div class="plate__tb"><div>Lat<B>২৩.৯৬° N</B></div><div>Noon<B>৪৩°–৮৯.৭°</B></div><div class=""><B>—</B></div><div class="">03 / A</div></div>
+      </div>
+      <div class="plate">
+        <div class="plate__hd"><span>বৃষ্টিপাত</span><span>RAINFALL</span></div>
+        <div class="plate__bd" data-draw="rain"></div>
+        <div class="plate__tb"><div>Annual<B>১,৯৫৬ মিমি</B></div><div>Monsoon<B>মে–অক্টোবর</B></div><div class="">04 / A</div></div>
+      </div>
+      <div class="card">
+        <span class="card__no">নকশায় কী প্রভাব পড়ল</span>
+        <h4>চারটি সিদ্ধান্ত</h4>
+        <ul>
+          <li><b>ছাদের ২'-০" ওভারহ্যাং</b> — গ্রীষ্মে দুপুরের রোদ দেয়ালে পড়ে না, বৃষ্টিও দেয়াল ভেজায় না।</li>
+          <li><b>উত্তর-দক্ষিণ ক্রস ভেন্টিলেশন</b> — প্রতিটি শোবার ঘরে দুটি জানালা, বিপরীত দেয়ালে।</li>
+          <li><b>পশ্চিমে ফাঁকা দেয়াল</b> — পশ্চিমা তাপ অর্জন প্রায় শূন্য।</li>
+          <li><b>প্লিন্থ ২'-০"</b> — বর্ষায় পানি ঢোকে না; সিলিং ১০'-০" — গরম বাতাস উপরে জমে।</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="stack">
+        <div class="tbl-wrap reveal">
+          <table>
+            <thead><tr><th>পরামিতি</th><th>মান</th><th>নকশায় প্রতিক্রিয়া</th></tr></thead>
+            <tbody>
+              <tr><td>ভূমিকম্প জোন (BNBC 2020)</td><td class="num">Zone 3 · Z = 0.28</td><td>সব দেয়ালে RCC লিন্টেল ব্যান্ড + ৮টি কর্নার পোস্ট</td></tr>
+              <tr><td>মূল বাতাসের গতি</td><td class="num">৫৬.৭ মি/সে (২০৪ কিমি/ঘ)</td><td>ট্রাস ৪'-০" c/c, প্রতিটি J-বোল্টে অ্যাংকর্ড, ২টি X-ব্রেসিং</td></tr>
+              <tr><td>বৃষ্টিপাত</td><td class="num">১,৯৫৬ মিমি/বছর</td><td>২২° ছাদের ঢাল, গাটার ও ৪টি ডাউনপাইপ, সোক পিট</td></tr>
+              <tr><td>বন্যা (২০২২)</td><td class="num">জেলার ৫৩% প্লাবিত</td><td>প্লিন্থ +২'-০" (BNBC ন্যূনতম ৪৫০মিমি-এর বেশি)</td></tr>
+              <tr><td>মাটির ধরন</td><td class="num">Nabinagar series — silty clay</td><td>স্ট্রিপ ফুটিং ১৬"×৯", প্লিন্থ বিম, ভালো কম্প্যাকশন</td></tr>
+              <tr><td>তাপমাত্রা</td><td class="num">সর্বোচ্চ ৩৮.৩°C / সর্বনিম্ন ১৪.৪°C</td><td>সাদা রঙ (উচ্চ অ্যালবেডো), ফয়েল ইনসুলেশন</td></tr>
+              <tr><td>বায়ুর আর্দ্রতা</td><td class="num">৮১% (জুলাই–আগস্ট)</td><td>বাথরুমে হাই-লেভেল লুভার, ভেন্ট পাইপ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note note--blue reveal">
+          <span class="note__lbl">একটি গুরুত্বপূর্ণ পর্যবেক্ষণ</span>
+          মূল বাজেটের ১ নম্বর লাইনে “ফাউন্ডেশন, একো-ব্লক, বালি ও সিমেন্ট” আছে — কিন্তু <b>রড নেই</b>।
+          ভূমিকম্প জোন ৩-এ (PGA ০.২৮g) রডবিহীন ভিত্তি ঝুঁকিপূর্ণ। মাত্র ~১৮,০০০ টাকার রড
+          (১৮০ কেজি) পুরো বাড়িটাকে রক্ষা করে। এটি ০৯ নম্বরে বিস্তারিত।
+        </div>
+      </div>
+
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>ঝুঁকির ম্যাট্রিক্স</span><span>HAZARD MATRIX</span></div>
+        <div class="plate__bd" data-draw="hazard"></div>
+        <div class="plate__tb">
+          <div>Hazard<B>WIND · SEISMIC · FLOOD</B></div>
+          <div>Source<B>BNBC 2020 · BMD · BWDB</B></div>
+          <div>Return<B>৫০ বছর</B></div>
+          <div>05 / A</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 CONCEPT ================= -->
+<section class="sec" id="s03">
+  <div class="sec__head">
+    <div class="sec__no">০৩<span>CONCEPT</span></div>
+    <div class="sec__title">
+      <h2>তিনটি স্কিম, তারপর একটি সিদ্ধান্ত</h2>
+      <span class="en">Option study · how the plan was resolved</span>
+      <p>
+        একই ৫১২ বর্গফুটে তিনটি ভিন্ন উপায়ে সাজানো যায়। প্রতিটি স্কিমের বাস্তবতা মেপে দেখা হয়েছে —
+        কোন ঘরে বাতাস ঢোকে, কোথায় আলো পড়ে, রান্নাঘরে কতটুকু জায়গা থাকে, আর প্লাম্বিং কত দূর যায়।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g3" style="margin-bottom:30px">
+      <div class="card reveal" style="border-color:var(--rule)">
+        <span class="card__no">স্কিম ০০ · মূল স্কেচ</span>
+        <h4>যেমন ছিল</h4>
+        <p>১২ / ৮ / ১২ ভাগ। মাঝে রান্নাঘর ৬'×৪', বসা ৮'×৮', বাথ ৪'×৪'।</p>
+        <ul>
+          <li>রান্নাঘর ২৪ বর্গফুট — কাউন্টার বসালে হাঁটার জায়গা ২০" থাকে</li>
+          <li>দেয়ালের পুরুত্ব ধরা হয়নি — বাস্তবে ঘর ১০% ছোট হয়</li>
+          <li>শোবার ঘরে একটিমাত্র জানালা, এক দিক থেকেই</li>
+          <li>বসার ঘরের পাশ দিয়ে বাথরুমের দরজা</li>
+        </ul>
+        <p style="margin-top:10px"><span class="tag">ফল: আরাম কম, খরচ একই</span></p>
+      </div>
+
+      <div class="card reveal" style="border-color:var(--red);background:var(--paper-2)">
+        <span class="card__no">স্কিম ০১ · নির্বাচিত ✓</span>
+        <h4>কেন্দ্রীভূত সার্ভিস কোর</h4>
+        <p>১০'-৪" / ১০'-০" / ১০'-৪"। উত্তর দেয়ালে একসাথে রান্নাঘর ও বাথরুম।</p>
+        <ul>
+          <li>শোবার ঘর ১৫৭ বর্গফুট — মূল স্কেচের চেয়ে ২৯% বেশি</li>
+          <li>বসার ঘর ৯৭ বর্গফুট, ১০'-০" চওড়া</li>
+          <li>প্রতিটি ঘরে দুই দিকের জানালা — ক্রস ফ্লো</li>
+          <li>সব পাইপ এক দেয়ালে — খরচ ও লিক ঝুঁকি কম</li>
+          <li>প্রবেশ থেকে বাথরুমের দরজা দেখা যায় না</li>
+        </ul>
+        <p style="margin-top:10px"><span class="tag tag--red">ফল: নির্বাচিত</span></p>
+      </div>
+
+      <div class="card reveal" style="border-color:var(--rule)">
+        <span class="card__no">স্কিম ০২ · বিকল্প</span>
+        <h4>সামনের বারান্দা</h4>
+        <p>দক্ষিণে ৪'-০" বারান্দা যোগ করে ঘর ৫১২ থেকে ৬৪০ বর্গফুট।</p>
+        <ul>
+          <li>বৃষ্টি থেকে সুরক্ষা ও সামাজিক জায়গা — খুব ভালো</li>
+          <li>কিন্তু বাজেট ~৬০,০০০ টাকা বাড়ে</li>
+          <li>ছাদের স্প্যান ও ট্রাস বদলাতে হয়</li>
+        </ul>
+        <p style="margin-top:10px"><span class="tag tag--amber">ফল: ফেজ-৩ এ রাখা হয়েছে</span></p>
+      </div>
+    </div>
+
+    <div class="plate reveal">
+      <div class="plate__hd"><span><span class="dot"></span>নির্বাচিত প্ল্যান · লেয়ার চালু/বন্ধ করুন</span><span>LAYERED DRAWING</span></div>
+      <div class="ctrls" id="planCtrls">
+        <button class="ctrl" data-layer="furniture" aria-pressed="true">আসবাব</button>
+        <button class="ctrl" data-layer="dims" aria-pressed="true">মাপ</button>
+        <button class="ctrl" data-layer="structure" aria-pressed="false">কাঠামো</button>
+        <button class="ctrl" data-layer="plumbing" aria-pressed="false">পানি</button>
+        <button class="ctrl ctrl--red" data-layer="electrical" aria-pressed="false">বিদ্যুৎ</button>
+        <button class="ctrl" data-layer="future" aria-pressed="true">ভবিষ্যৎ</button>
+      </div>
+      <div class="plate__bd" data-draw="plan" id="planHost"></div>
+      <div class="plate__tb">
+        <div>Drawn<B>GROUND FLOOR PLAN 1:50</B></div>
+        <div>Scale<B>৫১২ SQFT · ৩২'×১৬'</B></div>
+        <div>Rev<B>03 · 26.10.2026</B></div>
+        <div>Sheet<B>D-04</B></div>
+        <div>1 / 6</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 PLAN ZOOM ================= -->
+<section class="sec" id="s04">
+  <div class="sec__head">
+    <div class="sec__no">০৪<span>PLAN</span></div>
+    <div class="sec__title">
+      <h2>ঘরগুলোর ভেতরে কী কী বসবে</h2>
+      <span class="en">Room-by-room resolution · furniture · daylight</span>
+      <p>
+        প্রতিটি ঘরের আসবাব এমনভাবে বসানো হয়েছে যেন দরজার সামনে খালি জায়গা থাকে, জানালার আলো পড়ে,
+        আর বিছানার মাথার দিক দেয়ালে ঠেকে। নিচের মাপগুলোই কাঠমিস্ত্রিকে দেওয়ার মাপ।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g4" style="margin-bottom:26px">
+      <div class="card">
+        <span class="card__no">বেডরুম ০১ · পশ্চিম</span>
+        <h4>১৫৭ sqft</h4>
+        <p>১০'-৪" × ১৫'-২". বিছানা ৫'×৬'-৬", ২৪" গভীর ওয়ারড্রোব উত্তর দেয়ালে, দক্ষিণ জানালার নিচে পড়ার টেবিল।</p>
+        <p style="margin-top:6px"><span class="tag tag--green">জানালা ২৫ sqft = ফ্লোরের ১৬%</span></p>
+      </div>
+      <div class="card">
+        <span class="card__no">বেডরুম ০২ · পূর্ব</span>
+        <h4>১৫৭ sqft</h4>
+        <p>দর্পণ প্রতিবিম্ব। সকালের রোদ দক্ষিণ-পূর্ব কোণে; ভবিষ্যৎ রুমের নক-আউট প্যানেল এই ঘরের পূর্ব দেয়ালে।</p>
+        <p style="margin-top:6px"><span class="tag tag--green">জানালা ২৫ sqft</span></p>
+      </div>
+      <div class="card">
+        <span class="card__no">বসার ঘর</span>
+        <h4>৯৭ sqft</h4>
+        <p>১০'-০" × ৯'-৯". ৩ সিট সোফা, ৩৬"×২০" সেন্টার টেবিল, টিভি কনসোল, ৪ জনের ডাইনিং এবং প্রবেশের পাশে জুতার তাক।</p>
+        <p style="margin-top:6px"><span class="tag tag--green">জানালা + দরজা ৪৭ sqft</span></p>
+      </div>
+      <div class="card">
+        <span class="card__no">বাথ + রান্না</span>
+        <h4>২৩ + ২৭ sqft</h4>
+        <p>বাথ ৪'-৬"×৫'-২" — WC, শাওয়ার, বেসিন, ফ্লোর ড্রেন। রান্নাঘর ৫'-৩"×৫'-২" — L কাউন্টার, সিঙ্ক জানালার নিচে, ব্যাক ডোর।</p>
+        <p style="margin-top:6px"><span class="tag tag--amber">BNBC-র চেয়ে ছোট — কিন্তু গ্রামীণ প্রথা অনুযায়ী</span></p>
+      </div>
+    </div>
+
+    <div class="g-2-1">
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>আসবাব বিন্যাস</span><span>FURNITURE LAYOUT · 1:50</span></div>
+        <div class="plate__bd" data-draw="planFurn"></div>
+        <div class="plate__tb">
+          <div>Standard<B>BED 5'×6'-6" · WARDROBE 24" D</B></div>
+          <div>Clearance<B>দরজার সামনে ৩'-০"</B></div>
+          <div>Sheet<B>D-04b</B></div>
+          <div>2 / 6</div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card reveal">
+          <span class="card__no">আলো ও বাতাসের হিসাব</span>
+          <h4>প্রতিটি ঘরের জন্য</h4>
+          <dl class="kv">
+            <dt>বেডরুম</dt><dd>ফ্লোর ১৫৭ sqft → প্রয়োজন ১৫.৭ sqft; আছে ২৫ sqft (দক্ষিণ ১৬ + উত্তর ৯)</dd>
+            <dt>বসার</dt><dd>ফ্লোর ৯৭ sqft → প্রয়োজন ৯.৭; আছে ২৫ (দুই জানালা) + দরজা</dd>
+            <dt>রান্না</dt><dd>ফ্লোর ২৭ sqft → প্রয়োজন ২.৭; আছে ৪.৩ + ব্যাক ডোর</dd>
+            <dt>বাথ</dt><dd>ফ্লোর ২৩ sqft → প্রয়োজন ২.৩; আছে ৩.০ লুভার</dd>
+          </dl>
+        </div>
+        <div class="note reveal">
+          <span class="note__lbl">বিস্তারিত</span>
+          প্রতিটি শোবার ঘরে দুই দিকের জানালা থাকায় বিকেল ৪টার পরেও ঘর ঠান্ডা হয়। বেডরুমের উত্তর জানালা
+          ৩'-৩" সিলে — দেয়ালে ঠেস দিয়ে বসার জায়গা রাখতে।
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 ROOF ================= -->
+<section class="sec" id="s05">
+  <div class="sec__head">
+    <div class="sec__no">০৫<span>ROOF</span></div>
+    <div class="sec__title">
+      <h2>দুই ঢালের ছাদ — জ্যামিতি ও শিটের হিসাব</h2>
+      <span class="en">Double-shed roof · 22° pitch · truss + purlin layout</span>
+      <p>
+        রিজ পূর্ব-পশ্চিমে, অর্থাৎ ৩২ ফুট লম্বা দিক ধরে। ফলে ট্রাসের স্প্যান মাত্র ১৬ ফুট — যা MS অ্যাংগেলে
+        সহজে সম্ভব। ঢাল ২২° (১:২.৫), যা বাংলাদেশে প্রচলিত ১৫°-এর চেয়ে খাড়া: বৃষ্টি দ্রুত নামে,
+        বাতাস কম ধরে, আর লাল-কালো রংটি অনেক ভালো দেখায়।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g-2-1">
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>ছাদের প্ল্যান</span><span>ROOF PLAN · 1:50</span></div>
+        <div class="ctrls" id="roofCtrls">
+          <button class="ctrl" data-layer="structure" aria-pressed="true">ট্রাস ও পার্লিন</button>
+        </div>
+        <div class="plate__bd" data-draw="roof"></div>
+        <div class="plate__tb">
+          <div>Roof area<B>৭৭৭ SQFT · ২ ঢাল</B></div>
+          <div>Pitch<B>২২° · ১:২.৫</B></div>
+          <div>Sheets<B>০.৪৭মিমি · ৩৪ পিস</B></div>
+          <div>Sheet<B>D-05</B></div>
+          <div>3 / 6</div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card reveal">
+          <span class="card__no">শিটের হিসাব</span>
+          <h4>কেন ৩৪ পিস</h4>
+          <p>
+            ঢালের দৈর্ঘ্য = ৮'-০" ÷ cos২২° + ২'-০" ওভারহ্যাং ≈ <b>১০'-১০"</b>। তাই ১১ ফুট শিট কাটা হবে
+            (বা ৬+৬ ফুট জোড়া)।
+          </p>
+          <dl class="kv" style="margin-top:8px">
+            <dt>ছাদের দৈর্ঘ্য</dt><dd>৩৬'-০" (৩২ + দুই পাশে ২'-০")</dd>
+            <dt>কার্যকর কভার</dt><dd>প্রতি শিট ২'-২" (১টি ঢেউ ওভারল্যাপ)</dd>
+            <dt>প্রতি ঢালে</dt><dd>১৭ পিস · দুই ঢালে ৩৪ পিস</dd>
+            <dt>রিজ ক্যাপ</dt><dd>১৮ পিস (২ ফুট লম্বা)</dd>
+          </dl>
+        </div>
+        <div class="note reveal">
+          <span class="note__lbl">রঙের সিদ্ধান্ত</span>
+          <b>দক্ষিণ ঢাল লাল, উত্তর ঢাল কালো।</b> রাস্তা থেকে শুধু লালটাই দেখা যায় — সাদা দেয়ালের সঙ্গে
+          ধারালো কনট্রাস্ট। কালো দিকটা পিছনে, যেখানে স্যাঁতসেঁতে ছোপ লাল রঙে বেশি দেখা যায়; কালোয় তা লুকিয়ে থাকে।
+          রিজ ক্যাপ ও ফ্যাসিয়া কালো — চেহারাটা সাজানো থাকে।
+        </div>
+        <div class="note note--blue reveal">
+          <span class="note__lbl">ভেতরের তাপমাত্রা</span>
+          শিটের নিচে <b>অ্যালুমিনিয়াম ফয়েল + ২৫মিমি এয়ার গ্যাপ</b> দিলে গ্রীষ্মে ঘরের তাপমাত্রা ৪–৬°C কমে।
+          খরচ প্রতি বর্গফুট ~৩৮ টাকা — মোট ৩০,৪০০ টাকা। টিনের ঘরে এটি সবচেয়ে সস্তা আরাম।
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 ELEVATIONS ================= -->
+<section class="sec" id="s06">
+  <div class="sec__head">
+    <div class="sec__no">০৬<span>ELEVATION</span></div>
+    <div class="sec__title">
+      <h2>চারটি দিক থেকে বাড়িটা কেমন দেখায়</h2>
+      <span class="en">Four elevations · 1:50 · material tags</span>
+      <p>
+        সম্মুখভাগ সম্পূর্ণ প্রতিসাম্য — জানালা, দরজা, জানালা, জানালা, দরজা, জানালা। কেন্দ্রে প্রবেশ,
+        দুই পাশে সমান ছন্দ। সাদা দেয়ালের উপরে কালো ফ্যাসিয়া আর লাল ছাদ — তিনটি রঙ, আর কিছু না।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap stack">
+    <div class="plate reveal">
+      <div class="plate__hd"><span><span class="dot"></span>দক্ষিণ — প্রধান সম্মুখভাগ</span><span>SOUTH ELEVATION</span></div>
+      <div class="plate__bd" data-draw="elevS"></div>
+      <div class="plate__tb">
+        <div>Wall<B>সাদা ওয়েদার-প্রুফ</B></div>
+        <div>Roof<B>লাল · ২২°</B></div>
+        <div>Openings<B>২ জানালা ৪'×৪' · ১ দরজা ৩'-৪"</B></div>
+        <div>Sheet<B>D-06</B></div>
+        <div>4 / 6</div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="plate reveal">
+        <div class="plate__hd"><span>উত্তর — পিছন</span><span>NORTH ELEVATION</span></div>
+        <div class="plate__bd" data-draw="elevN"></div>
+        <div class="plate__tb"><div>Roof<B>কালো</B></div><div>Sheet<B>D-06b</B></div><div class="">—</div><div class="">5 / 6</div></div>
+      </div>
+      <div class="plate reveal">
+        <div class="plate__hd"><span>পূর্ব — ভবিষ্যৎ রুমের দিক</span><span>EAST ELEVATION</span></div>
+        <div class="plate__bd" data-draw="elevE"></div>
+        <div class="plate__tb"><div>Gable<B>কোনো জানালা নেই</B></div><div>Sheet<B>D-06c</B></div><div class="">—</div><div class="">5 / 6</div></div>
+      </div>
+    </div>
+
+    <div class="plate reveal">
+      <div class="plate__hd"><span>পশ্চিম — বিকেলের রোদের দিক</span><span>WEST ELEVATION</span></div>
+      <div class="plate__bd" data-draw="elevW"></div>
+      <div class="plate__tb">
+        <div>Strategy<B>পশ্চিমে ফাঁকা</B></div>
+        <div>Vent<B>২৪"×১২" @ ৭'-০"</B></div>
+        <div>Sheet<B>D-06d</B></div>
+        <div>6 / 6</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 07 SECTIONS ================= -->
+<section class="sec" id="s07">
+  <div class="sec__head">
+    <div class="sec__no">০৭<span>SECTION</span></div>
+    <div class="sec__title">
+      <h2>ভেতরে উঁকি — মাটি থেকে রিজ পর্যন্ত</h2>
+      <span class="en">Sections A–A and B–B · 1:50 · level datums</span>
+      <p>
+        সেকশন A–A উত্তর-দক্ষিণে কাটা — দরজা, রান্নাঘরের জানালা, ট্রাস আর ছাদের ট্যাংক একসাথে দেখা যায়।
+        B–B পূর্ব-পশ্চিমে কাটা — দুই শোবার ঘর আর নিচের লিন্টেল ব্যান্ড।
+      </p>
+    </div>
+  </div>
+  <div class="wrap stack">
+    <div class="plate reveal">
+      <div class="plate__hd"><span><span class="dot"></span>সেকশন A–A</span><span>THROUGH SERVICE CORE</span></div>
+      <div class="plate__bd" data-draw="secAA"></div>
+      <div class="plate__tb">
+        <div>FFL<B>+২'-০" গ্ল Ground থেকে</B></div>
+        <div>Wall top<B>+১২'-০"</B></div>
+        <div>Ridge<B>+১৫'-২"</B></div>
+        <div>Sheet<B>D-07</B></div>
+      </div>
+    </div>
+    <div class="plate reveal">
+      <div class="plate__hd"><span><span class="dot"></span>সেকশন B–B</span><span>THROUGH BOTH BEDROOMS</span></div>
+      <div class="plate__bd" data-draw="secBB"></div>
+      <div class="plate__tb">
+        <div>Span<B>১০'-৪" + ১০'-০" + ১০'-৪"</B></div>
+        <div>Band<B>লিন্টেল সর্বত্র ৬"×৬"</B></div>
+        <div>Sheet<B>D-07b</B></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 08 DETAILS ================= -->
+<section class="sec" id="s08">
+  <div class="sec__head">
+    <div class="sec__no">০৮<span>DETAILS</span></div>
+    <div class="sec__title">
+      <h2>মিস্ত্রি যা দেখে কাজ করবে</h2>
+      <span class="en">Construction details · 1:10 / 1:20</span>
+      <p>
+        নকশার আসল পরীক্ষা এই ছয়টি ডিটেইলে। এগুলো ছাড়া ভিত্তি কাটা যায় না, ট্রাস বসানো যায় না,
+        আর বৃষ্টির পানি দেয়াল বেয়ে নামবে।
+      </p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="g3" style="gap:20px">
+      <div class="plate reveal"><div class="plate__hd"><span>০১ · ভিত্তি</span><span>1:10</span></div><div class="plate__bd" data-draw="detFoot"></div><div class="plate__tb"><div>ভিত্তি<B>STRIP FOOTING</B></div><div>Scale<B>1:10</B></div><div>Sheet<B>D-08/1</B></div></div></div>
+      <div class="plate reveal"><div class="plate__hd"><span>০২ · ট্রাস অ্যাংকর</span><span>1:10</span></div><div class="plate__bd" data-draw="detAnchor"></div><div class="plate__tb"><div>ট্রাস অ্যাংকর<B>TRUSS BEARING</B></div><div>Scale<B>1:10</B></div><div>Sheet<B>D-08/2</B></div></div></div>
+      <div class="plate reveal"><div class="plate__hd"><span>০৩ · ইভস ও গাটার</span><span>1:10</span></div><div class="plate__bd" data-draw="detEave"></div><div class="plate__tb"><div>ইভস ও গাটার<B>EAVE + GUTTER</B></div><div>Scale<B>1:10</B></div><div>Sheet<B>D-08/3</B></div></div></div>
+      <div class="plate reveal"><div class="plate__hd"><span>০৪ · জানালা ও গ্রিল</span><span>1:10</span></div><div class="plate__bd" data-draw="detWin"></div><div class="plate__tb"><div>জানালা ও গ্রিল<B>WINDOW + GRILL</B></div><div>Scale<B>1:10</B></div><div>Sheet<B>D-08/4</B></div></div></div>
+      <div class="plate reveal"><div class="plate__hd"><span>০৫ · সেপটিক ও সোক পিট</span><span>1:20</span></div><div class="plate__bd" data-draw="detSeptic"></div><div class="plate__tb"><div>সেপটিক ও সোক পিট<B>SEPTIC + SOAK PIT</B></div><div>Scale<B>1:20</B></div><div>Sheet<B>D-08/5</B></div></div></div>
+      <div class="plate reveal"><div class="plate__hd"><span>০৬ · ট্যাংক প্ল্যাটফর্ম</span><span>1:20</span></div><div class="plate__bd" data-draw="detTank"></div><div class="plate__tb"><div>ট্যাংক প্ল্যাটফর্ম<B>TANK PLATFORM</B></div><div>Scale<B>1:20</B></div><div>Sheet<B>D-08/6</B></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 09 STRUCTURE ================= -->
+<section class="sec" id="s09">
+  <div class="sec__head">
+    <div class="sec__no">০৯<span>STRUCTURE</span></div>
+    <div class="sec__title">
+      <h2>কাঠামো — কেন এই মাপগুলো</h2>
+      <span class="en">Load path · truss design · BNBC 2020 compliance</span>
+      <p>
+        বাড়িটি লোড-বেয়ারিং দেয়ালে দাঁড়ানো: ছাদের ভার ট্রাস → দেয়াল → প্লিন্থ বিম → স্ট্রিপ ফুটিং → মাটি।
+        ভূমিকম্পের সময় অনুভূমিক ধাক্কা ধরার জন্য দেয়ালের মাথায় ও ওপেনিংয়ের উপরে RCC ব্যান্ড অপরিহার্য।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g2" style="margin-bottom:26px">
+      <div class="card reveal">
+        <span class="card__no">ট্রাস ডিজাইন</span>
+        <h4>১৬'-০" স্প্যান · ৪'-০" c/c · ৯টি ট্রাস</h4>
+        <dl class="kv">
+          <dt>ধরন</dt><dd>কিং-পোস্ট / ফিংক, ওয়েলড MS অ্যাংগেল</dd>
+          <dt>বটম কর্ড</dt><dd>৫০×৫০×৫ (৩.৭৭ কেজি/মি)</dd>
+          <dt>টপ কর্ড ও র‍্যাফটার</dt><dd>৫০×৫০×৫</dd>
+          <dt>কিং পোস্ট</dt><dd>৪০×৪০×৪</dd>
+          <dt>পার্লিন</dt><dd>৪০×৪০×৪ @ ২'-০" c/c (প্রতি ঢালে ৬টি)</dd>
+          <dt>ব্রেসিং</dt><dd>২টি X-ব্রেসিং + রিজ বীম</dd>
+          <dt>মোট ইস্পাত</dt><dd>~৭৮০ কেজি (ট্রাস ৫২০ + পার্লিন ২৬০)</dd>
+          <dt>ওয়েল্ড</dt><dd>৩.১৫ মিমি ইলেকট্রোড, গাসেট প্লেট ৪মিমি</dd>
+        </dl>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">লোডের হিসাব (প্রতি বর্গফুট)</span>
+        <h4>কী কী ভার নিচ্ছে</h4>
+        <dl class="kv">
+          <dt>Dead</dt><dd>শিট ২.৫ + পার্লিন ২.৪ + ট্রাস ২.৬ + ইনসুলেশন ০.৫ = <b>৮.০ psf</b></dd>
+          <dt>Live</dt><dd>রক্ষণাবেক্ষণ (কার্যকর) = <b>২০ psf</b></dd>
+          <dt>Wind uplift</dt><dd>৫৬.৭ মি/সে → q ≈ <b>১.৯৩ kN/m²</b>; Cp = −০.৭ → uplift ~<b>২৮ psf</b></dd>
+          <dt>নিয়ন্ত্রণকারী</dt><dd>Uplift — তাই J-বোল্ট অ্যাংকর ও টাই-ডাউন অপরিহার্য</dd>
+          <dt>ট্রাস প্রতি ভার</dt><dd>৪'-০" × ১৬'-০" × (৮+২০) = <b>১,৭৯২ lb ≈ ৮১৩ কেজি</b></dd>
+          <dt>সেফটি ফ্যাক্টর</dt><dd>অ্যাংগেল সেকশনে ~২.৪ (টেনশন), ~১.৯ (কম্প্রেশন)</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="tbl-wrap reveal" style="margin-bottom:26px">
+      <table>
+        <thead><tr><th>BNBC 2020 যাচাই</th><th>কোডের ন্যূনতম</th><th>এই নকশায়</th><th>ফল</th></tr></thead>
+        <tbody>
+          <tr><td>সিসমিক জোন / Z</td><td>Zone 3, Z=০.২৮</td><td>লিন্টেল ব্যান্ড ৬"×৬" + ৮ কর্নার পোস্ট + প্লিন্থ বিম</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>মূল বাতাসের গতি</td><td>৫৬.৭ মি/সে</td><td>৪'-০" c/c ট্রাস, ২'-০" পার্লিন, J-বোল্ট, X-ব্রেসিং</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>প্লিন্থ উচ্চতা</td><td>সড়কের উপর ≥৪৫০ মিমি</td><td>৬০০ মিমি (২'-০")</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>ঘরের উচ্চতা</td><td>≥২,৭৪৪ মিমি (৯'-০")</td><td>৩,০৪৮ মিমি (১০'-০")</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>আলো ও বাতাস</td><td>ফ্লোরের ≥১০% ওপেনিং</td><td>বেডরুম ১৬%, বসার ২৫%, রান্না ১৬%</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>দরজার উচ্চতা</td><td>≥২,০৩২ মিমি (৬'-৮")</td><td>৬'-৮" — ৭'-০"</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+          <tr><td>রান্নাঘরের আয়তন</td><td>আবাসিক নর্ম ~৫.৫ m²</td><td>২.৫ m² (২৭ sqft)</td><td><span class="tag tag--amber">বিচ্যুতি</span></td></tr>
+          <tr><td>বাথরুমের আয়তন</td><td>~২.০ m²</td><td>২.২ m² (২৩ sqft)</td><td><span class="tag tag--green">সন্তুষ্ট</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note note--blue reveal">
+      <span class="note__lbl">বিচ্যুতির যুক্তি</span>
+      রান্নাঘর BNBC-র শহুরে আবাসিক নর্মের চেয়ে ছোট। গ্রামীণ প্রথায় রান্না মূলত উত্তর দিকের খোলা আঙিনায়
+      (বা অস্থায়ী চুলায়) হয়; ঘরের ভেতরের অংশটি শুকনো মসলা, চাল-ডাল ও বাসন রাখার জন্য। তাই
+      রান্নাঘরের উত্তর দেয়ালে ২'-৬" ব্যাক ডোর রাখা হয়েছে, যা দিয়ে সরাসরি শুকানোর আঙিনায় যাওয়া যায়।
+      ভবিষ্যতে পরিবার বড় হলে ভবিষ্যৎ রুমটিকে রান্নাঘর-কাম-ডাইনিং করা যাবে।
+    </div>
+  </div>
+</section>
+
+<!-- ================= 10 MATERIALS ================= -->
+<section class="sec" id="s10">
+  <div class="sec__head">
+    <div class="sec__no">১০<span>SPECIFICATION</span></div>
+    <div class="sec__title">
+      <h2>উপকরণ — প্রতিটি জিনিসের নাম, মাপ ও গ্রেড</h2>
+      <span class="en">Material & workmanship specification · 2026 market</span>
+      <p>
+        ব্রিফের প্রতিটি উপকরণ নেওয়া হয়েছে এবং তার সঙ্গে গ্রেড, মাপ ও বিকল্প যোগ করা হয়েছে।
+        যে জায়গায় বাজারদর বাজেটের সঙ্গে মেলে না, সেখানে সস্তা বিকল্পটিও লেখা আছে।
+      </p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="tbl-wrap reveal">
+      <table id="matTable">
+        <thead>
+          <tr><th>উপাদান</th><th>নির্দিষ্টকরণ</th><th>বাজার/ব্র্যান্ড (২০২৬)</th><th class="num">দর</th><th>সস্তা বিকল্প</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="g3" style="margin-top:24px">
+      <div class="card reveal">
+        <span class="card__no">দেয়াল</span>
+        <h4>একো-সিমেন্ট ব্লক ১০"×৫"×৩"</h4>
+        <p>প্রতি বর্গফুটে ৪.৮টি ব্লক + ১:৬ মসলা। ১০ মিমি জয়েন্ট। ৫" দেয়াল। পরের দিন পানি ছিটিয়ে কিউরিং ৭ দিন।</p>
+        <p style="margin-top:6px"><span class="tag">৳৯–১২ / পিস</span></p>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">ফ্লোর</span>
+        <h4>নেট সিমেন্ট পলিশড</h4>
+        <p>১:৩ সিমেন্ট-বালি + কালো পিগমেন্ট, ১½" পুরু, তারপর ৪'×৪' গ্রুভ। ৭ দিন ভেজা চট দিয়ে কিউরিং — এটাই সবচেয়ে গুরুত্বপূর্ণ ধাপ।</p>
+        <p style="margin-top:6px"><span class="tag">৳৬২–৭৮ / sqft</span></p>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">রং</span>
+        <h4>সাদা ওয়েদার-প্রুফ</h4>
+        <p>ভিতরে: ওয়াল পুট্টি + প্রাইমার + ২ কোট ইমালশন। বাইরে: ২ কোট এক্রিলিক ওয়েদার-কোট, জলেরোধী। বর্ষার আগে শেষ করতে হবে।</p>
+        <p style="margin-top:6px"><span class="tag">৳২২–৩৪ / sqft</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 11 SCHEDULES ================= -->
+<section class="sec" id="s11">
+  <div class="sec__head">
+    <div class="sec__no">১১<span>SCHEDULE</span></div>
+    <div class="sec__title">
+      <h2>দরজা-জানালার তালিকা — মিস্ত্রিকে দেওয়ার মাপ</h2>
+      <span class="en">Window & door schedule · all dimensions in inches</span>
+      <p>
+        প্রতিটি ওপেনিংয়ের নম্বর প্ল্যানে লেখা আছে। মাপ কাঠামোর ভেতরের খালি জায়গার (structural opening)
+        হিসেবে ধরতে হবে, ফ্রেমের বাইরের মাপ নয়।
+      </p>
+    </div>
+  </div>
+  <div class="wrap g2">
+    <div>
+      <h3 style="font-size:18px;margin-bottom:10px">জানালা <span class="mono" style="font-size:10px;color:var(--ink-40)">WINDOWS</span></h3>
+      <div class="tbl-wrap"><table id="winTable"><thead><tr><th>ID</th><th>স্থান</th><th class="num">W×H</th><th class="num">সিল</th><th>ধরন</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div>
+      <h3 style="font-size:18px;margin-bottom:10px">দরজা <span class="mono" style="font-size:10px;color:var(--ink-40)">DOORS</span></h3>
+      <div class="tbl-wrap"><table id="doorTable"><thead><tr><th>ID</th><th>স্থান</th><th class="num">W×H</th><th>ধরন</th></tr></thead><tbody></tbody></table></div>
+      <div class="note" style="margin-top:16px">
+        <span class="note__lbl">লকের সিদ্ধান্ত</span>
+        প্রধান দরজায় <b>৮-লিভার মর্টিস লক</b> + ভিতরে হ্যাজপ। শোবার ঘরে সিলিন্ডার লক।
+        বাথরুমে স্টিল লিফ নয় — <b>PVC/FRP লিফ</b>, কারণ ভেজা জায়গায় স্টিল দ্রুত মরিচা ধরে।
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 12 SERVICES ================= -->
+<section class="sec" id="s12">
+  <div class="sec__head">
+    <div class="sec__no">১২<span>SERVICES</span></div>
+    <div class="sec__title">
+      <h2>পানি, পয়ঃনিষ্কাশন ও বিদ্যুৎ</h2>
+      <span class="en">Water supply · drainage · electrical single-line diagram</span>
+      <p>
+        টিউবওয়েল থেকে ১HP পাম্প, উপরে ৫০০ লিটার ট্যাংক, সেখান থেকে মাধ্যাকর্ষণে রান্নাঘর ও বাথরুমে।
+        বাথরুমের ঠিক উপরে ট্যাংক রাখা হয়েছে যাতে পাইপের দূরত্ব সবচেয়ে কম হয়।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g2" style="margin-bottom:24px">
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>পানির সিস্টেম</span><span>WATER SCHEMATIC</span></div>
+        <div class="plate__bd" data-draw="water"></div>
+        <div class="plate__tb"><div>Pump<B>১HP · ০.৭৫ কিলোওয়াট</B></div><div>Tank<B>৫০০ লিটার · +৯'-০"</B></div><div>Head<B>~১.৫ মিটার</B></div><div>D-12</div></div>
+      </div>
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>বিদ্যুতের একক লাইন</span><span>SINGLE LINE DIAGRAM</span></div>
+        <div class="plate__bd" data-draw="sld"></div>
+        <div class="plate__tb"><div>Supply<B>BREB ১ ফেজ ২৩০V</B></div><div>Load<B>২ কিলোওয়াট স্যাংশন</B></div><div>SDB<B>৬ ওয়ে · RCCB ৩০mA</B></div><div>D-12b</div></div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card reveal">
+        <span class="card__no">পানি</span>
+        <h4>পাম্প ও ট্যাংক</h4>
+        <ul>
+          <li>১HP সেন্ট্রিফিউগাল সাকশন পাম্প — টিউবওয়েলে</li>
+          <li>৫০০L HDPE ট্যাংক, বাথরুমের উপরে MS প্ল্যাটফর্মে</li>
+          <li>ফ্লোট ভালভ দিয়ে অটো লেভেল</li>
+          <li>২৫মিমি uPVC রাইজার, ২০মিমি ব্রাঞ্চ</li>
+          <li>ট্যাংকের তলা +৯'-০" → শাওয়ারে ১.৫ মিটার হেড</li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">পয়ঃনিষ্কাশন</span>
+        <h4>সেপটিক ও সোক পিট</h4>
+        <ul>
+          <li>৮'×৫'×৫' দুই চেম্বার ব্রিক সেপটিক</li>
+          <li>টিউবওয়েল থেকে ২৫ ফুটের বেশি দূরে</li>
+          <li>Ø৪'×৬' গভীর সোক পিট</li>
+          <li>২" ভেন্ট পাইপ ছাদ পর্যন্ত</li>
+          <li>বাথরুমে ১:১০০ ঢাল + ফ্লোর ড্রেন</li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">বিদ্যুৎ</span>
+        <h4>পয়েন্ট ও সুরক্ষা</h4>
+        <ul>
+          <li>BREB আবেদন ১২০ + মিটার ৩৬০ + জামানত ৯৬০</li>
+          <li>৬ ওয়ে SDB: ৩২A মেইন + RCCB ৩০mA</li>
+          <li>লাইট ১.৫RM, সকেট ২.৫RM, পাম্প ৪RM</li>
+          <li>পয়েন্ট: লাইট ৮, ফ্যান ৩, সকেট ১০, সুইচ ৯</li>
+          <li>২টি আর্থ রড, ৮ ফুট দূরে, বন্ডিং সহ</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 13 COST ================= -->
+<section class="sec" id="s13">
+  <div class="sec__head">
+    <div class="sec__no">১৩<span>COST</span></div>
+    <div class="sec__title">
+      <h2>খরচ — একটি সৎ ছবি</h2>
+      <span class="en">Measured bill of quantities · three scenarios · 2026 rates</span>
+      <p>
+        এই অংশটি সবচেয়ে গুরুত্বপূর্ণ। প্রাথমিক সারসংক্ষেপে মোট বাজেট ছিল <b>২,৭৪,৬৪০ টাকা</b> (প্রতি বর্গফুট ৫৩৭ টাকা)।
+        ২০২৬ সালের নবীনগর-ব্রাহ্মণবাড়িয়ার বাজারদর দিয়ে সেই বাজেটটি মাপা হয়েছে — কী কী ধরে, কী বাদ পড়েছে।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="strip reveal" style="margin-bottom:26px">
+      <div><div class="n" id="kBrief">২,৭৪,৬৪০</div><div class="l">প্রাথমিক বাজেট · ৳৫৩৭/sqft</div></div>
+      <div><div class="n" id="kLean">—</div><div class="l">গ্রামীণ স্বনির্ভর বাস্তবতা</div></div>
+      <div><div class="n" id="kFull">—</div><div class="l">পূর্ণ স্পেসিফিকেশন</div></div>
+      <div><div class="n" id="kGap">—</div><div class="l">ঘাটতি (প্রাথমিক বনাম বাস্তব)</div></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+      <div class="seg" id="boqSeg">
+        <button data-scenario="brief" aria-pressed="true">প্রাথমিক বাজেট</button>
+        <button data-scenario="lean">স্বনির্ভর বাস্তব</button>
+        <button data-scenario="full">পূর্ণ স্পেসিফিকেশন</button>
+      </div>
+      <div class="mono" style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-40)">
+        রেট সূত্র: স্থানীয় বাজার + PWD SOR ২০২৫ · ২৬
+      </div>
+    </div>
+
+    <div class="tbl-wrap reveal" style="margin-bottom:20px">
+      <table id="boqTable">
+        <thead>
+          <tr><th>খরচের খাত</th><th class="num">প্রাথমিক</th><th class="num">স্বনির্ভর</th><th class="num">পূর্ণ</th><th>মুল্যায়ন</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note reveal" style="margin-bottom:22px">
+      <span class="note__lbl">হিসাবের নিয়ম</span>
+      মূল সারসংক্ষেপের ৭টি লাইনকে ৯টি কাজের খাতে ভাগ করা হয়েছে — কোনো টাকা যোগ হয়নি বা বাদ পড়েনি।
+      যেমন “ফাউন্ডেশন, একো-ব্লক, বালি ও সিমেন্ট” (৬৭,০৪০) এর ভেতর থেকে ব্লক-বালি-সিমেন্ট ছাড়িয়ে
+      দেয়ালের খাতে নেওয়া হয়েছে, আর “ট্রাস ও ওয়েল্ডার” (৫০,১০০) ট্রাসের খাতে।
+      <b>মোট: ২,৭৪,৬৪০ টাকা — মূল PDF-এর সঙ্গে হুবহু মিলে যায়।</b>
+    </div>
+
+    <div class="g-2-1" style="margin-bottom:24px">
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>খাতভিত্তিক তুলনা</span><span>COST GAP BY HEAD</span></div>
+        <div class="plate__bd" data-draw="gapChart"></div>
+        <div class="plate__tb"><div>Scenario<B>LEAN vs FULL</B></div><div>Basis<B>MEASURED BOQ</B></div><div>D-13</div></div>
+      </div>
+      <div class="stack">
+        <div class="note reveal">
+          <span class="note__lbl">মূল আবিষ্কার</span>
+          <b>ফিনিশিং খাতে শূন্য টাকা।</b> প্রাথমিক ৭ লাইনের কোনো একটিতেই প্লাস্টার, ফ্লোর বা রং নেই।
+          অর্থাৎ সেই বাজেটে ঘরটা <b>কাঁচা ইটের খোলস</b> হিসেবে দাঁড়াবে — থাকার উপযোগী নয়।
+        </div>
+        <div class="note note--blue reveal">
+          <span class="note__lbl">দ্বিতীয় আবিষ্কার</span>
+          <b>দরজা-জানালা, পানি ও বিদ্যুৎ একাই ৯২,০০০ টাকা</b> — বাজেটের ৩৩%। শুধু থাই গ্লাস জানালা
+          (৮৬ বর্গফুট) ও ৬টি দরজার বাজারদর ২০২৬-এ ১ লক্ষ টাকার বেশি। এখানেই সবচেয়ে বড় ফাঁক।
+        </div>
+        <div class="note reveal">
+          <span class="note__lbl">তৃতীয়</span>
+          <b>শ্রম ৪০,০০০ টাকা অসম্ভব।</b> ৫১২ বর্গফুটে ২ রাজমিস্ত্রি + ২ হেল্পার ৬০ দিনে
+          প্রায় ১.৪–১.৮ লক্ষ টাকা। বাজেটটি সম্ভবত নিজের/পরিবারের শ্রম ধরে করা।
+        </div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card reveal">
+        <span class="card__no">পথ ১ · স্পেক ধরে রাখুন</span>
+        <h4>পর্যায়ক্রমে বানান</h4>
+        <p>মোট ১০,৭৫,০০০ টাকা, তিন মৌসুমে। ফেজ-১ এ ঘরটা বৃষ্টি-আটকানো ও এক শোবার ঘর থাকার উপযোগী।</p>
+        <p style="margin-top:6px"><span class="tag tag--blue">সময় লাগে, কিন্তু কিছুই কমে না</span></p>
+      </div>
+      <div class="card reveal" style="border-color:var(--red)">
+        <span class="card__no">পথ ২ · বাজেট ধরে রাখুন ✓</span>
+        <h4>কোর + অস্থায়ী ফিনিশ</h4>
+        <p>প্রথমে শুধু কাঠামো, ছাদ, দরজা-জানালা ও পানি-বিদ্যুৎ। ভেতরে সিমেন্ট ওয়াশ, পরে রং। ~৪.৬ লক্ষ টাকায় বসবাসযোগ্য।</p>
+        <p style="margin-top:6px"><span class="tag tag--red">সুপারিশকৃত</span></p>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">পথ ৩ · যা বাদ দিলে টাকা বাঁচে</span>
+        <h4>ভ্যালু ইঞ্জিনিয়ারিং</h4>
+        <p>ব্র্যান্ডেড থাই গ্লাস → লোকাল অ্যালুমিনিয়াম (−২৫,০০০); ০.৪৭ → ০.৩৬ শিট (−২০,০০০); বাথরুমে টাইলস বাদ (−১৫,০০০); নিজেরা খোঁড়াখুঁড়ি (−২০,০০০)।</p>
+        <p style="margin-top:6px"><span class="tag tag--amber">মোট সাশ্রয় ~৮০,০০০</span></p>
+      </div>
+    </div>
+
+    <div class="note reveal" style="margin-top:26px">
+      <span class="note__lbl">১৪ নম্বর সেকশনের সঙ্গে মিলিয়ে পড়ুন</span>
+      هزینهের এই চিত্র কোনো নিরুৎসাহ নয় — বরং কোন জিনিস আগে, কোনটা পরে, সেটার স্পষ্ট রোডম্যাপ।
+      ৳২.৭৫ লক্ষ দিয়ে ঘরের <b>কাঠামো ও ছাদ</b> দাঁড়িয়ে যাবে (উপকরণের হিসাবে), আর ফিনিশিং ফেজ-২।
+      নিচের সেকশনে চার ধাপের কর্মসূচি দেওয়া আছে।
+    </div>
+  </div>
+</section>
+
+<!-- ================= 14 PROGRAMME ================= -->
+<section class="sec" id="s14">
+  <div class="sec__head">
+    <div class="sec__no">১৪<span>PROGRAMME</span></div>
+    <div class="sec__title">
+      <h2>১৬ সপ্তাহের নির্মাণ কর্মসূচি ও ঝুঁকি</h2>
+      <span class="en">Construction programme · risk register</span>
+      <p>
+        নভেম্বরের শুরুতে কাজ শুরু করলে ফেব্রুয়ারির শেষে হস্তান্তর — বর্ষার অনেক আগেই ছাদ ও প্লাস্টার শুকিয়ে যায়।
+        জুলাই–আগস্টে প্লাস্টার ও রং এড়াতে হবে, নইলে স্যাঁতসেঁতে দাগ চিরস্থায়ী হবে।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap stack">
+    <div class="plate reveal">
+      <div class="plate__hd"><span><span class="dot"></span>গ্যান্ট চার্ট · ১৬ সপ্তাহ</span><span>PROGRAMME · NOV → MAR</span></div>
+      <div class="plate__bd" data-draw="gantt"></div>
+      <div class="plate__tb"><div>Start<B>০১ নভেম্বর ২০২৬</B></div><div>Handover<B>২১ ফেব্রুয়ারি</B></div><div>Cure<B>প্রতি ধাপে ৭ দিন</B></div><div>D-14</div></div>
+    </div>
+
+    <h3 style="font-size:19px;margin:6px 0 10px">ধাপে ধাপে খরচ <span class="mono" style="font-size:10px;color:var(--ink-40)">PHASING</span></h3>
+    <div class="tbl-wrap reveal" style="margin-bottom:26px">
+      <table>
+        <thead><tr><th>ধাপ</th><th>সময়</th><th>যা হবে</th><th class="num">খরচ</th><th>ফল</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">ফেজ ১<br><span class="tag tag--red">অপরিহার্য</span></td>
+            <td>নভে – ফেব্রু</td>
+            <td>ভিত্তি, দেয়াল, লিন্টেল, ট্রাস ও ছাদ, দরজা-জানালা, পানি ও বিদ্যুতের মূল লাইন</td>
+            <td class="num">~৫,০০,০০০</td>
+            <td>বৃষ্টি-আটকানো, তালাবন্ধ, এক শোবার ঘরে থাকা যায়</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">ফেজ ২<br><span class="tag tag--amber">আরাম</span></td>
+            <td>পরের শুকনো মৌসুম</td>
+            <td>প্লাস্টার, নেট সিমেন্ট ফ্লোর, বাথরুমের টাইলস, রং, সিলিং</td>
+            <td class="num">~৩,৫০,০০০</td>
+            <td>পুরো বাড়ি ব্যবহারযোগ্য ও দেখতে প্রস্তুত</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">ফেজ ৩<br><span class="tag tag--blue">সম্প্রসারণ</span></td>
+            <td>১–৩ বছরের মধ্যে</td>
+            <td>পূর্ব দিকে ১২'×১২' ভবিষ্যৎ রুম, অ্যাটাচড বাথ, সীমানা প্রাচীর ও গেট, সোলার প্যানেল</td>
+            <td class="num">~২,৬০,০০০</td>
+            <td>তৃতীয় শোবার ঘর / হোম-অফিস, নিরাপদ আঙিনা</td>
+          </tr>
+          <tr class="tbl-tot"><td colspan="3">সব মিলিয়ে</td><td class="num">~১১,১০,০০০</td><td style="font-family:var(--f-bn);font-size:11.5px;opacity:.75">ভবিষ্যৎ রুম ও প্রাচীর সহ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tbl-wrap reveal">
+      <table id="riskTable">
+        <thead><tr><th>ঝুঁকি</th><th>সম্ভাবনা</th><th>প্রভাব</th><th>প্রতিরোধ</th><th>দায়িত্ব</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 15 FUTURE ================= -->
+<section class="sec" id="s15">
+  <div class="sec__head">
+    <div class="sec__no">১৫<span>EXPANSION</span></div>
+    <div class="sec__title">
+      <h2>তৃতীয় ঘর — আজ যা করা হবে, কাল বাঁচাবে</h2>
+      <span class="en">Future-proofing · 12' × 12' east extension</span>
+      <p>
+        ব্রিফের সবচেয়ে দূরদর্শী সিদ্ধান্তটি হলো “ডান দিকের দেয়াল খালি রাখা”। সেই সুযোগ কাজে লাগাতে
+        আজ পাঁচটি ছোট জিনিস করতে হবে — পরে করলে খরচ তিন গুণ হবে।
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="g-2-1">
+      <div class="stack">
+        <div class="tbl-wrap reveal">
+          <table>
+            <thead><tr><th>এখনই যা করবেন</th><th>কেন</th><th class="num">খরচ</th></tr></thead>
+            <tbody>
+              <tr><td>পূর্ব দেয়ালে ৩'-০"×৬'-৮" নক-আউট প্যানেল + লিন্টেল</td><td>পরে দেয়াল ভাঙতে হবে না</td><td class="num">৳৪,৫০০</td></tr>
+              <tr><td>প্লিন্থ বিম ১'-০" পূর্ব দিকে বাড়িয়ে স্টার্টার রড</td><td>নতুন ঘরের ভিত্তি জোড়া লাগানো</td><td class="num">৳৬,০০০</td></tr>
+              <tr><td>ছাদের পূর্ব প্রান্তে অতিরিক্ত পার্লিন</td><td>নতুন ছাদ ওভারল্যাপ করা</td><td class="num">৳৩,৫০০</td></tr>
+              <tr><td>বেডরুম-২ থেকে একটি ফাঁকা কন্ডুইট</td><td>নতুন ঘরে বিদ্যুৎ টানা</td><td class="num">৳১,২০০</td></tr>
+              <tr><td>বাথরুম থেকে পূর্ব দিকে ৪" ওয়েস্ট পাইপ স্টাব</td><td>ভবিষ্যতে অ্যাটাচড বাথ</td><td class="num">৳২,৮০০</td></tr>
+              <tr class="tbl-tot"><td colspan="2">মোট এখনকার বিনিয়োগ</td><td class="num">৳১৮,০০০</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card reveal">
+          <span class="card__no">ফেজ ৩ · আঙিনা ও শক্তি</span>
+          <h4>সীমানা প্রাচীর, গেট ও সোলার</h4>
+          <ul>
+            <li><b>সীমানা প্রাচীর</b> — ৪" একো-ব্লক, ৫'-৬" উঁচু, প্রতি রানিং ফুটে ২টি পিলার; ১২০ রানিং ফুটে ~৬৫,০০০ টাকা</li>
+            <li><b>লোহার গেট</b> — ৭'×৫', ২"×২" ফ্রেম + ১" বার, ~২৮,০০০ টাকা</li>
+            <li><b>সোলার-রেডি</b> — আজ শুধু একটি ২৫মিমি কন্ডুইট ও SDB-তে একটি স্পেয়ার ব্রেকার রাখুন (~৩,৫০০ টাকা); পরে ১ কিলোওয়াট প্যানেল + হাইব্রিড ইনভার্টার ~১,১০,০০০ টাকা</li>
+            <li><b>নিরাপত্তা</b> — প্রবেশপথে ১টি সোলার লাইট; বিদ্যুৎ না থাকলেও আঙিনা আলোকিত</li>
+          </ul>
+        </div>
+        <div class="note reveal">
+          <span class="note__lbl">ভবিষ্যৎ ঘরের ব্যবহার</span>
+          সবচেয়ে বাস্তব:<b> বেডরুম-২ এর সঙ্গে যুক্ত মাস্টার স্যুট</b> (১২'×১২' ঘর + অ্যাটাচড বাথ), অথবা
+          আলাদা প্রবেশসহ <b>হোম-অফিস / দর্জি-কুটির / ছোট দোকান</b> — গ্রামে আয়ের সুযোগ।
+        </div>
+      </div>
+      <div class="plate reveal">
+        <div class="plate__hd"><span><span class="dot"></span>৩ডি — ছাদ খুলে দেখা</span><span>ROOF OFF · INTERIOR</span></div>
+        <div class="slider-wrap">
+          <label>ঘোরান</label>
+          <input type="range" id="yaw2" min="100" max="215" value="150">
+        </div>
+        <div class="plate__bd" data-draw="axonRoofOff"></div>
+        <div class="plate__tb"><div>View<B>AXONOMETRIC</B></div><div>Roof<B>HIDDEN</B></div><div>D-15</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 16 REGISTER ================= -->
+<section class="sec" id="s16">
+  <div class="sec__head">
+    <div class="sec__no">১৬<span>REGISTER</span></div>
+    <div class="sec__title">
+      <h2>ড্রয়িং রেজিস্টার ও তথ্যসূত্র</h2>
+      <span class="en">Drawing register · data sources</span>
+      <p>এই ডসিয়ারের প্রতিটি সংখ্যার পেছনে একটি সূত্র আছে। নিচে ড্রয়িং তালিকা ও তথ্যসূত্র দেওয়া হলো।</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tbl-wrap reveal" style="margin-bottom:26px">
+      <table>
+        <thead><tr><th>শিট</th><th>নাম</th><th>স্কেল</th><th>তারিখ</th><th>অবস্থা</th></tr></thead>
+        <tbody>
+          <tr><td class="num">D-01</td><td>সাইট প্ল্যান</td><td>1:200</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-02</td><td>পার্টি ডায়াগ্রাম</td><td>NTS</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-03</td><td>ফ্লোর প্ল্যান (লেয়ারড)</td><td>1:50</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-04</td><td>আসবাব বিন্যাস</td><td>1:50</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-05</td><td>ছাদের প্ল্যান</td><td>1:50</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-06</td><td>চারটি এলিভেশন</td><td>1:50</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-07</td><td>সেকশন A–A, B–B</td><td>1:50</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-08</td><td>ডিটেইল শিট (৬টি)</td><td>1:10 / 1:20</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-09</td><td>ট্রাস শিডিউল ও পার্লিন লেআউট (D-05-এর সঙ্গে)</td><td>1:25</td><td>26.10.2026</td><td><span class="tag tag--amber">কাঠামো ইঞ্জিনিয়ারের যাচাই বাকি</span></td></tr>
+          <tr><td class="num">D-12</td><td>পানি ও বিদ্যুৎ স্কিম্যাটিক</td><td>NTS</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-13</td><td>বিল অব কোয়ান্টিটিজ</td><td>—</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+          <tr><td class="num">D-14</td><td>নির্মাণ কর্মসূচি</td><td>—</td><td>26.10.2026</td><td><span class="tag tag--green">ইস্যু</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="plate reveal" style="margin-bottom:26px">
+      <div class="plate__hd"><span><span class="dot"></span>অনুমোদন ও স্বাক্ষর</span><span>SIGN-OFF SHEET · D-16</span></div>
+      <div class="plate__bd" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0">
+        <div style="padding:22px;border-right:1px solid var(--rule)">
+          <div class="mono" style="font-size:8.6px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40)">Designer</div>
+          <div style="font-family:var(--f-bn);font-size:13px;font-weight:600;margin-top:2px">স্থপতি / ডিজাইনার</div>
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid var(--ink);padding-top:6px;font-size:11.5px;color:var(--ink-40)">নাম, স্বাক্ষর ও তারিখ</div>
+        </div>
+        <div style="padding:22px;border-right:1px solid var(--rule)">
+          <div class="mono" style="font-size:8.6px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40)">Structure</div>
+          <div style="font-family:var(--f-bn);font-size:13px;font-weight:600;margin-top:2px">কাঠামো ইঞ্জিনিয়ার</div>
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid var(--ink);padding-top:6px;font-size:11.5px;color:var(--ink-40)">ট্রাস ও RCC ডিজাইনের স্বাক্ষর</div>
+        </div>
+        <div style="padding:22px">
+          <div class="mono" style="font-size:8.6px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40)">Owner</div>
+          <div style="font-family:var(--f-bn);font-size:13px;font-weight:600;margin-top:2px">মালিক / ক্লায়েন্ট</div>
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid var(--ink);padding-top:6px;font-size:11.5px;color:var(--ink-40)">অনুমোদন</div>
+        </div>
+      </div>
+      <div class="plate__tb">
+        <div>Project<B>DHS-2026-01</B></div>
+        <div>Revision<B>০৩</B></div>
+        <div>Date<B>২৬.১০.২০২৬</B></div>
+        <div>Status<B>DESIGN PROPOSAL — NOT FOR CONSTRUCTION</B></div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="card reveal">
+        <span class="card__no">সূত্র</span>
+        <h4>তথ্যসূত্র</h4>
+        <ul class="srcs" style="list-style:none;padding:0;margin:0">
+          <li>১. BNBC 2020 — Part 6, Ch. 2 (Loads): Table 6.2.8, ব্রাহ্মণবাড়িয়া V = ৫৬.৭ m/s; সিসমিক জোন ৩, Z = ০.২৮</li>
+          <li>২. Bangladesh Meteorological Department — ব্রাহ্মণবাড়িয়া বার্ষিক বৃষ্টি ১,৯৫৬ মিমি (১৯৮১–২০১৭)</li>
+          <li>৩. BWDB Rainfall Yearbook ২০১৭–২০১৮ — ব্রাহ্মণবাড়িয়া ১,৯২৭ / ২,৪৪৬ মিমি</li>
+          <li>৪. Properties of Wetland Soils of Brahmanbaria — নবীনগর সিরিজ (P-4), silty clay</li>
+          <li>৫. PWD Schedule of Rates ২০২৫ — সিমেন্ট, ইট, রডের সরকারি দর</li>
+          <li>৬. BERC SRO-43/2024 — নতুন বিদ্যুৎ সংযোগের চার্জ (সব বিতরণ কোম্পানিতে একই)</li>
+          <li>৭. ConstructionMart / বাজার জরিপ — একো-ব্লক ৳৮–১২, AAC ৳৮৩–১০২, টিন ৳১,০৫০/পিস</li>
+          <li>৮. স্থানীয় জরিপ, নবীনগর বাজার — রাজমিস্ত্রি ৳৮০০/দিন, হেল্পার ৳৫৫০/দিন (২০২৬)</li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <span class="card__no">স্বীকৃতি</span>
+        <h4>কী কী এখনও বাকি</h4>
+        <ul style="list-style:none;padding:0;margin:0" class="srcs">
+          <li>△ সয়েল টেস্ট (SPT) — মাটির ভার বহনের ক্ষমতা যাচাই</li>
+          <li>△ কাঠামো ইঞ্জিনিয়ারের স্বাক্ষর — ট্রাস ও RCC ডিজাইন</li>
+          <li>△ ইউনিয়ন পরিষদ / পৌরসভার অনুমোদন ও রাজউক নকশা (প্রযোজ্য হলে)</li>
+          <li>△ সাইট সার্ভে — প্রকৃত জমির মাপ এবং রাস্তার লেভেল</li>
+          <li>△ টিউবওয়েলের পানির আর্সেনিক পরীক্ষা</li>
+          <li>△ বিদ্যুৎ সংযোগের জন্য BREB-তে আবেদন</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="foot">
+  <div>
+    <h3>ধনশি হাউস — ৫১২ বর্গফুট</h3>
+    <p>
+      এই ডসিয়ারটি একটি সম্পূর্ণ নকশা প্রস্তাব — প্ল্যান থেকে বিল অব কোয়ান্টিটি পর্যন্ত।
+      নির্মাণের আগে সয়েল টেস্ট ও কাঠামো ইঞ্জিনিয়ারের স্বাক্ষর নিন।
+    </p>
+  </div>
+  <div class="mono">
+    DHS-2026-01 · REV 03<br>
+    ধনশি, নবীনগর, ব্রাহ্মণবাড়িয়া<br>
+    ২৬ অক্টোবর ২০২৬<br>
+    <a href="#top">↑ শুরুতে ফিরুন</a><br>
+    প্রিন্ট: Ctrl/Cmd + P → A3 ল্যান্ডস্কেপ
+  </div>
+</footer>
+
+</main>
+
+<script>
+(function(){"use strict";const N=s=>(Math.round(s*1e3)/1e3).toString();function Is(s){let t=1e9,e=1e9,r=-1e9,n=-1e9;const f=(l,c)=>{!isFinite(l)||!isFinite(c)||(l<t&&(t=l),l>r&&(r=l),c<e&&(e=c),c>n&&(n=c))},o=l=>(l.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number),i=/<(line|rect|circle|text|polygon|polyline|path)\b([^>]*?)\/?>(?:([^<]*)<\/text>)?/g;let a;for(;a=i.exec(s);){const[l,c]=[a[1],a[2]],d=a[3]||"",v=$=>{const b=c.match(new RegExp($+'="([^"]*)"'));return b?b[1]:null};if(l==="line")f(+v("x1"),+v("y1")),f(+v("x2"),+v("y2"));else if(l==="rect"){const $=+v("x"),b=+v("y"),T=+v("width"),O=+v("height");f($,b),f($+T,b+O)}else if(l==="circle"){const $=+v("cx"),b=+v("cy"),T=+v("r");f($-T,b-T),f($+T,b+T)}else if(l==="text"){const $=+v("x"),b=+v("y"),T=+(v("font-size")||6),O=Math.max(2,d.length*T*.56),H=/text-anchor="end"/.test(c),ns=/text-anchor="middle"/.test(c),Q=H?$-O:ns?$-O/2:$;f(Q,b-T*.8),f(Q+O,b+T*.22)}else if(l==="polygon"||l==="polyline"){const $=o(v("points")||"");for(let b=0;b+1<$.length;b+=2)f($[b],$[b+1])}}return t>r?null:[t,e,r,n]}let Fs=0;function P(s,t,e,r,n=""){const f=`p${++Fs}`;r=r.replace(/id="(hatch[A-Za-z]*)"/g,`id="$1_${f}"`).replace(/url\(#(hatch[A-Za-z]*)\)/g,`url(#$1_${f})`);const o=e.trim().split(/[\s,]+/).map(Number);let[i,a,l,c]=o;const d=Is(r);if(d){const[b,T,O,H]=d;b<i&&(l+=i-b,i=b),T<a&&(c+=a-T,a=T),O>i+l&&(l=O-i),H>a+c&&(c=H-a)}const v=b=>(Math.round(b*10)/10).toString();return`<svg viewBox="${`${v(i)} ${v(a)} ${v(l)} ${v(c)}`}" preserveAspectRatio="xMidYMid meet" class="${n}" xmlns="http://www.w3.org/2000/svg" role="img">${r}</svg>`}function k(s,t,e,r,n={}){const f=n.stroke||"var(--ink)",o=n.sw??1,i=n.dash?` stroke-dasharray="${n.dash}"`:"",a=n.cap?` stroke-linecap="${n.cap}"`:"",l=n.op!=null?` opacity="${n.op}"`:"";return`<line x1="${N(s)}" y1="${N(t)}" x2="${N(e)}" y2="${N(r)}" stroke="${f}" stroke-width="${o}"${i}${a}${l}/>`}function A(s,t={}){const e=s.map(r=>`${N(r[0])},${N(r[1])}`).join(" ");if(t.closed){const r=t.fill||"none",n=t.stroke==="none"?"none":t.stroke||"var(--ink)",f=t.sw??1,o=t.op!=null?` opacity="${t.op}"`:"",i=t.dash?` stroke-dasharray="${t.dash}"`:"";return`<polygon points="${e}" fill="${r}" stroke="${n}" stroke-width="${f}"${i}${o}/>`}return`<polyline points="${e}" fill="none" stroke="${t.stroke||"var(--ink)"}" stroke-width="${t.sw??1}"${t.dash?` stroke-dasharray="${t.dash}"`:""}/>`}function h(s,t,e,r,n={}){const f=n.fill||"none",o=n.stroke==="none"?"none":n.stroke||"var(--ink)",i=n.sw??1,a=n.dash?` stroke-dasharray="${n.dash}"`:"",l=n.op!=null?` opacity="${n.op}"`:"",c=n.rx?` rx="${n.rx}"`:"";return`<rect x="${N(s)}" y="${N(t)}" width="${N(e)}" height="${N(r)}" fill="${f}" stroke="${o}" stroke-width="${i}"${a}${l}${c}/>`}function S(s,t,e,r={}){return`<circle cx="${N(s)}" cy="${N(t)}" r="${N(e)}" fill="${r.fill||"none"}" stroke="${r.stroke==="none"?"none":r.stroke||"var(--ink)"}" stroke-width="${r.sw??1}"${r.op!=null?` opacity="${r.op}"`:""}${r.dash?` stroke-dasharray="${r.dash}"`:""}/>`}function u(s,t,e,r={}){const n=r.anchor||"middle",f=r.fill||"var(--ink)",o=r.fs??6,i=r.ff||"var(--f-mono)",a=r.rot?` transform="rotate(${r.rot} ${N(s)} ${N(t)})"`:"",l=r.ls?` letter-spacing="${r.ls}"`:"",c=r.upper?' style="text-transform:uppercase"':"",d=r.op!=null?` opacity="${r.op}"`:"";return`<text x="${N(s)}" y="${N(t)}" text-anchor="${n}" font-family="${i}" font-size="${o}" fill="${f}"${l}${a}${d}${c}>${e}</text>`}function C(s,t,e,r,n={}){const f=n.ext??5,o=n.stroke||"var(--blue)",i=n.sw??.7,a=n.fs??6,l=[];return l.push(k(s,e-f,s,e+f+1.5,{stroke:o,sw:.45})),l.push(k(t,e-f,t,e+f+1.5,{stroke:o,sw:.45})),l.push(k(s,e,t,e,{stroke:o,sw:i})),l.push(k(s-2,e+2,s+2,e-2,{stroke:o,sw:.8})),l.push(k(t-2,e+2,t+2,e-2,{stroke:o,sw:.8})),r!==null&&l.push(u((s+t)/2,e-(n.up??3),r,{fs:a,fill:n.text||"var(--blue)",ff:"var(--f-mono)"})),l.join("")}function ps(s,t,e,r,n={}){const f=n.ext??5,o=n.stroke||"var(--blue)",i=n.sw??.7,a=n.fs??6,l=[];return l.push(k(e-f,s,e+f+1.5,s,{stroke:o,sw:.45})),l.push(k(e-f,t,e+f+1.5,t,{stroke:o,sw:.45})),l.push(k(e,s,e,t,{stroke:o,sw:i})),l.push(k(e-2,s-2,e+2,s+2,{stroke:o,sw:.8})),l.push(k(e-2,t-2,e+2,t+2,{stroke:o,sw:.8})),r!==null&&l.push(u(e-(n.up??3),(s+t)/2,r,{fs:a,fill:n.text||"var(--blue)",anchor:"middle",rot:-90})),l.join("")}function Ss(s,t,e=13,r={}){const n=r.stroke||"var(--ink)";return[S(s,t,e,{stroke:n,sw:.6}),A([[s,t-e*.82],[s+e*.3,t+e*.5],[s,t+e*.22],[s-e*.3,t+e*.5]],{closed:!0,fill:n,stroke:n,sw:.6}),u(s,t+e+8,"N",{fs:7,fill:n,ff:"var(--f-mono)"})].join("")}function xs(s,t,e,r={}){const n=e/5,f=[];for(let o=0;o<5;o++)f.push(h(s+o*n,t,n,2.4,{fill:o%2?"var(--ink)":"none",stroke:"var(--ink)",sw:.5}));for(let o=0;o<=5;o+=1)f.push(u(s+o*n,t+9,`${o*2}`,{fs:4.6,fill:"var(--ink-40)"}));return f.push(u(s+e+6,t+9,"FT",{fs:4.6,anchor:"start",fill:"var(--ink-40)"})),f.join("")}function G(s,t,e,r,n={}){return h(s,t,e,r,{fill:n.fill||"var(--ink)",stroke:"none",op:n.op??1})}function rs(s,t,e,r,n=!0,f={}){const o=[];if(f.stroke,n){o.push(h(s,e,t-s,r-e,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:.55})),o.push(k(s,e,t,e,{stroke:"var(--ink)",sw:.55})),o.push(k(s,r,t,r,{stroke:"var(--ink)",sw:.55})),o.push(k(s,(e+r)/2,t,(e+r)/2,{stroke:"var(--blue)",sw:.5}));const i=(s+t)/2;o.push(k(i-.8,e,i+.8,r,{stroke:"var(--blue)",sw:.45})),o.push(k(s,(e+r)/2,i,e+.9,{stroke:"var(--blue)",sw:.4})),o.push(k(t,(e+r)/2,i,r-.9,{stroke:"var(--blue)",sw:.4}))}else o.push(h(e,s,r-e,t-s,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:.55})),o.push(k(e,s,e,t,{stroke:"var(--ink)",sw:.55})),o.push(k(r,s,r,t,{stroke:"var(--ink)",sw:.55})),o.push(k((e+r)/2,s,(e+r)/2,t,{stroke:"var(--blue)",sw:.5}));return o.join("")}function as(s,t,e,r,n=1,f={}){const o=e,i=r*Math.PI/180,a=s+Math.cos(i)*e,l=t+Math.sin(i)*e,c=s+Math.cos(i+n*Math.PI/2)*e,d=t+Math.sin(i+n*Math.PI/2)*e;return[`<path d="${`M ${N(a)} ${N(l)} A ${N(o)} ${N(o)} 0 0 ${n>0?1:0} ${N(c)} ${N(d)}`}" fill="none" stroke="var(--ink-40)" stroke-width="0.45" stroke-dasharray="1.6 1.6"/>`,k(s,t,c,d,{stroke:"var(--ink)",sw:1.1}),S(s,t,.9,{fill:"var(--ink)"})].join("")}function D(){return`<defs>
+    <pattern id="hatchD" width="3" height="3" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="3" stroke="var(--ink-40)" stroke-width="0.35"/>
+    </pattern>
+    <pattern id="hatchX" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="3.2" stroke="var(--ink-40)" stroke-width="0.32"/>
+      <line x1="0" y1="0" x2="3.2" y2="0" stroke="var(--ink-40)" stroke-width="0.32"/>
+    </pattern>
+    <pattern id="hatchCon" width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+      <circle cx="0.7" cy="0.7" r="0.32" fill="var(--ink-40)"/>
+      <circle cx="1.9" cy="1.9" r="0.25" fill="var(--ink-40)"/>
+    </pattern>
+    <pattern id="hatchEarth" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="2" stroke="var(--ink-40)" stroke-width="0.4"/>
+      <line x1="2" y1="0" x2="2" y2="2" stroke="var(--ink-40)" stroke-width="0.25" opacity=".6"/>
+    </pattern>
+    <pattern id="hatchTile" width="4" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="4" y2="0" stroke="var(--ink-40)" stroke-width="0.3"/>
+      <line x1="0" y1="0" x2="0" y2="4" stroke="var(--ink-40)" stroke-width="0.3"/>
+    </pattern>
+    <pattern id="hatchRoof" width="5" height="5" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="5" x2="5" y2="0" stroke="var(--rule)" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="hatchGreen" width="4" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="4" y2="4" stroke="var(--green)" stroke-width="0.35" opacity=".55"/>
+      <line x1="4" y1="0" x2="0" y2="4" stroke="var(--green)" stroke-width="0.35" opacity=".55"/>
+    </pattern>
+  </defs>`}function Ts(s,t,e,r,n,f,o={}){return[u(s,t,e,{fs:o.fs??7.4,ff:"var(--f-bn)",fill:"var(--ink)",ls:"0.2"}),u(s,t+7.6,r.toUpperCase(),{fs:4.9,fill:"var(--ink-60)",ls:"1.2"}),u(s,t+14.4,n,{fs:5.2,fill:"var(--ink-60)"}),u(s,t+20.6,`${f} SQFT`,{fs:4.8,fill:"var(--ink-40)"})].join("")}function ys(s,t,e,r,n={}){return[S(s,t,e,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:.6}),u(s,t+2,r,{fs:e*.92,fill:"var(--ink)"}),k(s-e,t,s-e-(n.len??16),t,{stroke:"var(--ink)",sw:.5})].join("")}const W={W:384,D:192,tE:5,open:{wBed1S:[43,91],wSit1:[136,166],doorMain:[172,212],wSit2:[218,248],wBed2S:[293,341],wBed1N:[49,85],wBathN:[144,168],wKitN:[190,216],doorKitRear:[218,248],wBed2N:[279,315],doorBed1:[104,140],doorBed2:[76,112],doorBath:[138,168],doorKit:[198,228],future:[110,146]}},q={bed1:22568/144,bed2:22568/144,sit:14040/144,bath:3348/144,kit:3906/144};q.total=q.bed1+q.bed2+q.sit+q.bath+q.kit;const ks=s=>Math.round(s*10)/10;function U(s,t,e,r,n,f={}){const o=[h(s,t,e,r,{fill:f.fill||"rgba(18,20,26,.045)",stroke:f.stroke||"var(--ink-40)",sw:.5})];return n&&o.push(u(s+e/2,t+r/2+1.8,n,{fs:f.fs||4.6,fill:"var(--ink-40)"})),f.extra&&o.push(f.extra),o.join("")}function Cs(s,t,e,r){return[h(s,t,e,r,{fill:"rgba(18,20,26,.05)",stroke:"var(--ink-40)",sw:.55}),h(s,t,e,r*.22,{fill:"rgba(18,20,26,.09)",stroke:"var(--ink-40)",sw:.45}),k(s+e*.06,t+r*.26,s+e*.94,t+r*.26,{stroke:"var(--ink-40)",sw:.4,dash:"2 1.5"}),u(s+e/2,t+r*.62,`BED 5'-0"×6'-6"`,{fs:4.2,fill:"var(--ink-40)"})].join("")}function js(s,t,e=0){const r=[h(s,t,20,12,{fill:"var(--paper-2)",stroke:"var(--ink-60)",sw:.5,rx:2}),`<ellipse cx="${s+10}" cy="${t+18}" rx="6.6" ry="8" fill="none" stroke="var(--ink-60)" stroke-width="0.5"/>`].join("");return e?`<g transform="rotate(${e} ${s+10} ${t+12})">${r}</g>`:r}function Hs(s,t){return[h(s,t,18,13,{fill:"var(--paper-2)",stroke:"var(--ink-60)",sw:.5,rx:1.5}),`<ellipse cx="${s+9}" cy="${t+6.5}" rx="5.4" ry="3.8" fill="none" stroke="var(--ink-40)" stroke-width="0.45"/>`,S(s+9,t+1.8,1,{fill:"var(--ink-40)",stroke:"none"})].join("")}function Us(s,t,e=18,r=15){return[h(s,t,e,r,{fill:"var(--paper-2)",stroke:"var(--ink-60)",sw:.5}),h(s+1.6,t+1.6,e-3.2,r-3.2,{fill:"none",stroke:"var(--ink-40)",sw:.4,rx:1}),S(s+e/2,t+1.2,1,{fill:"var(--ink-40)",stroke:"none"})].join("")}function Ws(s,t,e=24,r=18){return[h(s,t,e,r,{fill:"var(--paper-2)",stroke:"var(--ink-60)",sw:.5}),S(s+e*.3,t+r*.32,4.2,{stroke:"var(--ink-40)",sw:.4}),S(s+e*.3,t+r*.72,4.2,{stroke:"var(--ink-40)",sw:.4}),S(s+e*.72,t+r*.5,4.2,{stroke:"var(--ink-40)",sw:.4})].join("")}const Gs=[{id:"W1",loc:"বেডরুম-১ / দক্ষিণ",w:48,h:48,sill:33,type:"2-প্যানেল স্লাইডিং থাই গ্লাস",qty:1},{id:"W2",loc:"বসার ঘর / দক্ষিণ (পশ্চিম)",w:30,h:60,sill:21,type:"ফিক্সড + স্লাইডিং",qty:1},{id:"W3",loc:"বসার ঘর / দক্ষিণ (পূর্ব)",w:30,h:60,sill:21,type:"ফিক্সড + স্লাইডিং",qty:1},{id:"W4",loc:"বেডরুম-২ / দক্ষিণ",w:48,h:48,sill:33,type:"2-প্যানেল স্লাইডিং থাই গ্লাস",qty:1},{id:"W5",loc:"বেডরুম-১ / উত্তর",w:36,h:36,sill:39,type:"2-প্যানেল স্লাইডিং",qty:1},{id:"W6",loc:"বেডরুম-২ / উত্তর",w:36,h:36,sill:39,type:"2-প্যানেল স্লাইডিং",qty:1},{id:"W7",loc:"বাথরুম / উত্তর (হাই লেভেল)",w:24,h:18,sill:60,type:"লুভার / ফ্রস্টেড",qty:1},{id:"W8",loc:"রান্নাঘর / উত্তর",w:26,h:24,sill:42,type:"স্লাইডিং, সিঙ্কের উপরে",qty:1}],qs=[{id:"D1",loc:"প্রধান প্রবেশ / দক্ষিণ",w:40,h:84,type:"MS স্টিল দরজা + ৮-লিভার লক",qty:1},{id:"D2",loc:"রান্নাঘর / উত্তর (ব্যাক)",w:30,h:80,type:"MS স্টিল দরজা",qty:1},{id:"D3",loc:"বেডরুম-১",w:36,h:80,type:"MS ফ্রেম + স্টিল লিফ",qty:1},{id:"D4",loc:"বেডরুম-২",w:36,h:80,type:"MS ফ্রেম + স্টিল লিফ",qty:1},{id:"D5",loc:"বাথরুম",w:30,h:80,type:"PVC/FRP লিফ + MS ফ্রেম",qty:1},{id:"D6",loc:"রান্নাঘর (ভিতর)",w:30,h:80,type:"MS ফ্রেম + স্টিল লিফ",qty:1}],cs={bed:"rgba(176,58,46,.045)",live:"rgba(46,76,109,.05)",wet:"rgba(91,115,85,.075)"};function Ms(s={}){const t=i=>s[i]!==!1,e=W.open,r=[D()];r.push(h(0,0,W.W,W.D,{fill:"var(--paper-2)",stroke:"none"})),r.push(h(5,5,124,182,{fill:cs.bed,stroke:"none"})),r.push(h(255,5,124,182,{fill:cs.bed,stroke:"none"})),r.push(h(132,70,120,117,{fill:cs.live,stroke:"none"})),r.push(h(132,5,54,62,{fill:cs.wet,stroke:"none"})),r.push(h(189,5,63,62,{fill:cs.wet,stroke:"none"}));const n=W.tE;if(r.push(G(0,0,n,W.D)),r.push(G(W.W-n,0,n,W.D)),[[5,e.wBed1S[0]],[e.wBed1S[1],e.wSit1[0]],[e.wSit1[1],e.doorMain[0]],[e.doorMain[1],e.wSit2[0]],[e.wSit2[1],e.wBed2S[0]],[e.wBed2S[1],379]].forEach(([i,a])=>i<a&&r.push(G(i,187,a-i,n))),[[5,e.wBed1N[0]],[e.wBed1N[1],e.wBathN[0]],[e.wBathN[1],e.wKitN[0]],[e.wKitN[1],e.doorKitRear[0]],[e.doorKitRear[1],e.wBed2N[0]],[e.wBed2N[1],379]].forEach(([i,a])=>i<a&&r.push(G(i,0,a-i,n))),r.push(G(129,5,3,e.doorBed1[0]-5)),r.push(G(129,e.doorBed1[1],3,187-e.doorBed1[1])),r.push(G(252,5,3,e.doorBed2[0]-5)),r.push(G(252,e.doorBed2[1],3,187-e.doorBed2[1])),r.push(G(132,67,e.doorBath[0]-132,3)),r.push(G(e.doorBath[1],67,e.doorKit[0]-e.doorBath[1],3)),r.push(G(e.doorKit[1],67,252-e.doorKit[1],3)),r.push(G(186,5,3,62)),r.push(rs(e.wBed1S[0],e.wBed1S[1],187,192,!0)),r.push(rs(e.wSit1[0],e.wSit1[1],187,192,!0)),r.push(rs(e.wSit2[0],e.wSit2[1],187,192,!0)),r.push(rs(e.wBed2S[0],e.wBed2S[1],187,192,!0)),r.push(rs(e.wBed1N[0],e.wBed1N[1],0,5,!0)),r.push(rs(e.wBed2N[0],e.wBed2N[1],0,5,!0)),r.push(rs(e.wBathN[0],e.wBathN[1],0,5,!0)),r.push(rs(e.wKitN[0],e.wKitN[1],0,5,!0)),r.push(as(e.doorMain[0],187,40,0,-1)),r.push(as(e.doorKitRear[1],5,30,180,-1)),r.push(as(129,e.doorBed1[0],36,90,1)),r.push(as(255,e.doorBed2[0],36,90,-1)),r.push(as(e.doorBath[0],70,30,0,-1)),r.push(as(e.doorKit[1],70,30,180,1)),t("future")&&(r.push(h(379,e.future[0],5,e.future[1]-e.future[0],{fill:"none",stroke:"var(--red)",sw:.7,dash:"2.4 1.8"})),r.push(u(390,(e.future[0]+e.future[1])/2,"FUTURE",{fs:4.4,fill:"var(--red)",anchor:"start",rot:90}))),t("furniture")&&(r.push(Cs(9,62,60,78)),r.push(U(9,40,20,18,"")),r.push(U(6,7,122,22,'WARDROBE  24" DEEP')),r.push(U(40,160,48,22,"STUDY")),r.push(S(64,148,8,{stroke:"var(--ink-40)",sw:.45})),r.push(Cs(315,62,60,78)),r.push(U(355,40,20,18,"")),r.push(U(256,7,122,22,'WARDROBE  24" DEEP')),r.push(U(296,160,48,22,"STUDY")),r.push(S(320,148,8,{stroke:"var(--ink-40)",sw:.45})),r.push(U(134,92,28,62,"SOFA 3")),r.push(U(170,106,36,20,"CT")),r.push(U(234,96,15,56,"TV")),r.push(U(182,78,46,30,"DINING 4")),r.push(U(136,168,26,14,"SHOE")),r.push(js(156,44)),r.push(Hs(166,12)),r.push(U(133,6,30,34,"SHOWER",{fill:"rgba(46,76,109,.06)"})),r.push(S(150,60,2.4,{stroke:"var(--ink-40)",sw:.4,dash:"1 1"})),r.push(U(189,6,63,22,'COUNTER 24"')),r.push(U(189,28,22,20,"")),r.push(Us(196,9)),r.push(Ws(191,30,20,16)),r.push(U(230,30,20,22,"FRIDGE"))),t("structure")){[[0,0],[129,5],[252,5],[379,0],[0,187],[129,187],[252,187],[379,187]].forEach(([a,l])=>{r.push(h(a-2.5+(a===0?2.5:a===379?-2.5:1.5),l-2.5+(l===0?2.5:-2.5),5,5,{fill:"var(--red)",op:.5,stroke:"var(--red)",sw:.4}))}),r.push(h(-10,-10,W.W+20,W.D+20,{fill:"none",stroke:"var(--ink-40)",sw:.6,dash:"5 3"})),r.push(u(-12,-13,'PLINTH BEAM 6"×9" (RCC) — CONTINUOUS',{fs:4.2,anchor:"start",fill:"var(--ink-40)"}));for(let a=1;a<=7;a++){const l=W.W/8*a;r.push(k(l,-6,l,W.D+6,{stroke:"var(--red)",sw:.4,dash:"1.5 3",op:.55}))}r.push(u(W.W/2,W.D+13,`MS ট্রাস @ 4'-0" c/c  (৯টি ট্রাস)`,{fs:4.4,fill:"var(--red)"}))}if(t("plumbing")){const i="var(--blue)";r.push(h(138,14,42,42,{fill:"none",stroke:"var(--blue)",sw:.6,dash:"2 2",op:.75})),r.push(u(159,32,"↑ ৫০০L",{fs:4.6,fill:i})),r.push(u(159,38,"TANK ABOVE",{fs:3.8,fill:i}));const a={stroke:i,sw:.9,cap:"round"};r.push(k(159,56,159,44,a)),r.push(k(159,44,148,44,a)),r.push(k(159,44,175,44,a)),r.push(k(175,44,175,18,a)),r.push(k(159,56,159,62,a)),r.push(A([[159,56],[159,74],[210,74],[210,46],[210,20]],a));const l={stroke:"var(--green)",sw:1.1,dash:"3 2"};r.push(A([[150,58],[140,58],[140,8]],l)),r.push(A([[140,8],[136,8]],l)),r.push(u(124,12,'SOIL 4"',{fs:3.8,fill:"var(--green)",anchor:"end"})),r.push(u(200,84,"CW 20mm",{fs:3.8,fill:i,anchor:"start"})),r.push(S(159,62,2.6,{stroke:i,sw:.6})),r.push(k(156,59,162,65,{stroke:i,sw:.6}))}if(t("electrical")){const i="var(--red)",a=(v,$)=>[S(v,$,2.4,{stroke:i,sw:.55}),k(v-3.4,$,v+3.4,$,{stroke:i,sw:.4}),k(v,$-3.4,v,$+3.4,{stroke:i,sw:.4})].join(""),l=(v,$)=>[S(v,$,3.4,{stroke:i,sw:.55}),u(v,$+1.3,"F",{fs:3.8,fill:i})].join(""),c=(v,$)=>`<path d="M ${v-3} ${$} a 3 3 0 0 1 6 0" fill="none" stroke="${i}" stroke-width="0.55"/>${k(v,$,v,$+3,{stroke:i,sw:.5})}`,d=(v,$)=>[h(v-2,$-2,4,4,{fill:"var(--paper-2)",stroke:i,sw:.5}),S(v,$,.8,{fill:i,stroke:"none"})].join("");r.push(a(67,44)),r.push(l(67,106)),r.push(a(67,150)),r.push(c(120,40)),r.push(c(120,60)),r.push(c(12,150)),r.push(d(126,118)),r.push(a(317,44)),r.push(l(317,106)),r.push(a(317,150)),r.push(c(262,40)),r.push(c(262,60)),r.push(c(360,150)),r.push(d(258,86)),r.push(a(192,96)),r.push(l(192,140)),r.push(a(192,172)),r.push(c(136,130)),r.push(c(230,78)),r.push(c(246,168)),r.push(d(178,178)),r.push(a(220,36)),r.push(c(240,40)),r.push(c(196,54)),r.push(d(196,74)),r.push(a(158,26)),r.push(d(178,74)),r.push(c(182,58)),r.push(h(126,150,6,14,{fill:"var(--ink)",stroke:"none"})),r.push(u(118,158,"SDB",{fs:4.2,fill:"var(--ink)",anchor:"end"})),r.push(u(118,164,"6-WAY",{fs:3.4,fill:"var(--ink-40)",anchor:"end"})),r.push(A([[129,158],[180,158],[180,120],[120,120]],{stroke:i,sw:.35,dash:"3 2",op:.5})),r.push(A([[192,96],[192,74],[220,74],[220,36]],{stroke:i,sw:.35,dash:"3 2",op:.5})),r.push(c(200,210)),r.push(u(207,213,"পাম্প পয়েন্ট 16A",{fs:3.8,fill:i,anchor:"start"}))}return r.push(Ts(67,96,"বেডরুম ১","Bedroom 01",`10'-4" × 15'-2"`,ks(q.bed1))),r.push(Ts(317,96,"বেডরুম ২","Bedroom 02",`10'-4" × 15'-2"`,ks(q.bed2))),r.push(Ts(192,122,"বসার ঘর","Living / Sit-out",`10'-0" × 9'-9"`,ks(q.sit))),r.push(u(159,62,"বাথরুম",{fs:6.6,ff:"var(--f-bn)",fill:"var(--ink)"})),r.push(u(159,69,`4'-6"×5'-2" · `+ks(q.bath)+" SQFT",{fs:4.4,fill:"var(--ink-60)"})),r.push(u(220,62,"রান্নাঘর",{fs:6.6,ff:"var(--f-bn)",fill:"var(--ink)"})),r.push(u(220,69,`5'-3"×5'-2" · `+ks(q.kit)+" SQFT",{fs:4.4,fill:"var(--ink-60)"})),t("dims")&&(r.push(C(0,384,208,`32'-0"`,{fs:6.4})),r.push(C(5,129,196,`10'-4"`)),r.push(C(132,252,196,`10'-0"`)),r.push(C(255,379,196,`10'-4"`)),r.push(C(132,186,184,`4'-6"`,{fs:5.2})),r.push(C(189,252,184,`5'-3"`,{fs:5.2})),r.push(ps(5,67,-18,`5'-2"`)),r.push(ps(70,187,-18,`9'-9"`)),r.push(ps(0,192,-36,`16'-0"`,{fs:6.4})),r.push(C(43,91,196,`4'-0"`,{fs:4.6,ext:3})),r.push(C(172,212,196,`3'-4"`,{fs:4.6,ext:3})),r.push(C(293,341,196,`4'-0"`,{fs:4.6,ext:3}))),r.push(Ss(430,34,13)),r.push(xs(-60,236,120)),r.push(ys(-52,96,7,"A",{len:20})),r.push(k(-45,96,-14,96,{stroke:"var(--ink)",sw:.5,dash:"6 3"})),r.push(u(-46,116,"A",{fs:6,fill:"var(--ink)"})),r.push(ys(110,232,7,"B",{len:0})),r.push(ys(300,232,7,"B",{len:0})),r.push(k(110,225,300,225,{stroke:"var(--ink)",sw:.5,dash:"6 3"})),r.push(u(192,-26,"ফ্লোর প্ল্যান",{fs:8.4,ff:"var(--f-bn)",fill:"var(--ink-60)",ls:"1"})),r.push(u(192,-16,"GROUND FLOOR PLAN — 1:50",{fs:4.8,fill:"var(--ink-40)",ls:"1.6"})),P(560,300,"-82 -50 552 300",r.join(""))}function Ks(){const s=[D()];s.push(h(0,0,720,600,{fill:"rgba(91,115,85,.05)",stroke:"var(--ink)",sw:1.2,dash:"8 4"})),s.push(u(360,-12,"সীমানা / PLOT BOUNDARY",{fs:6,fill:"var(--ink-40)",ls:"1.2"}));const t=150,e=150;s.push(h(t,e,384,192,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:2})),s.push(h(t-24,e-30,432,252,{fill:"none",stroke:"var(--ink-40)",sw:.7,dash:"6 3"})),s.push(u(t+192,e+102,"মূল ভবন",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(t+192,e+112,`MAIN HOUSE · 32'-0" × 16'-0"`,{fs:4.6,fill:"var(--ink-60)"})),s.push(h(t,e+192,384,60,{fill:"rgba(18,20,26,.03)",stroke:"var(--ink-40)",sw:.6})),s.push(u(t+192,e+226,`প্রবেশ চত্বর ও শুকানোর আঙিনা · 5'-0" APRON`,{fs:4.6,fill:"var(--ink-60)"})),s.push(h(t+384,e+24,144,144,{fill:"none",stroke:"var(--red)",sw:.8,dash:"7 4"})),s.push(u(t+456,e+92,"ভবিষ্যৎ রুম",{fs:6,ff:"var(--f-bn)",fill:"var(--red)"})),s.push(u(t+456,e+101,"FUTURE ROOM F1",{fs:4.2,fill:"var(--red)"})),s.push(u(t+456,e+110,`12'-0" × 12'-0"`,{fs:4.2,fill:"var(--red)"}));const r=[96,470];return s.push(S(r[0],r[1],9,{fill:"var(--paper-2)",stroke:"var(--blue)",sw:1.1})),s.push(S(r[0],r[1],3,{fill:"var(--blue)",stroke:"none"})),s.push(u(r[0],r[1]+22,"টিউবওয়েল",{fs:5.4,ff:"var(--f-bn)",fill:"var(--blue)"})),s.push(u(r[0],r[1]+30,"TUBEWELL (EXISTING)",{fs:4,fill:"var(--blue)"})),s.push(h(r[0]-16,r[1]-24,32,20,{fill:"none",stroke:"var(--blue)",sw:.6,dash:"3 2"})),s.push(u(r[0],r[1]-29,"১HP পাম্প",{fs:4.4,fill:"var(--blue)"})),s.push(h(t+60,e-96,96,62,{fill:"url(#hatchX)",stroke:"var(--green)",sw:.8})),s.push(u(t+108,e-62,"সেপটিক ট্যাংক",{fs:4.8,ff:"var(--f-bn)",fill:"var(--green)"})),s.push(u(t+108,e-54,`SEPTIC 8'-0"×5'-0"×5'-0"`,{fs:4,fill:"var(--green)"})),s.push(S(t+190,e-66,20,{fill:"url(#hatchGreen)",stroke:"var(--green)",sw:.8})),s.push(u(t+190,e-64,"সোক পিট",{fs:4.4,ff:"var(--f-bn)",fill:"var(--green)"})),s.push(u(t+190,e-57,"Ø4'×6' DEEP",{fs:3.6,fill:"var(--green)"})),s.push(S(t-40,e+220,14,{fill:"url(#hatchGreen)",stroke:"var(--blue)",sw:.7})),s.push(u(t-40,e+244,"বৃষ্টির পানি",{fs:4.4,ff:"var(--f-bn)",fill:"var(--blue)"})),s.push(u(t-40,e+251,"SOAK PIT",{fs:3.6,fill:"var(--blue)"})),s.push(S(t+424,e+220,14,{fill:"url(#hatchGreen)",stroke:"var(--blue)",sw:.7})),s.push(h(t+150,e+252,84,300,{fill:"rgba(18,20,26,.04)",stroke:"var(--ink-40)",sw:.5,dash:"4 4"})),s.push(u(t+192,e+400,`প্রবেশ পথ · 7'-0" PATH`,{fs:4.6,fill:"var(--ink-60)"})),s.push(A([[t+192,e+252],[t+192,e+192]],{stroke:"var(--ink)",sw:1.2,dash:"7 4"})),[[60,90],[660,120],[700,480],[40,560]].forEach(([n,f])=>{s.push(S(n,f,22,{fill:"rgba(91,115,85,.10)",stroke:"var(--green)",sw:.6,dash:"2 2"})),s.push(S(n,f,5,{fill:"var(--green)",stroke:"none",op:.5}))}),s.push(Ss(680,40,15)),s.push(xs(30,570,120)),s.push(k(0,596,720,596,{stroke:"var(--ink-40)",sw:1.4})),s.push(u(360,614,"গ্রামের রাস্তা · VILLAGE ROAD (SOUTH)",{fs:5,fill:"var(--ink-60)",ls:"1"})),P(760,640,"-20 -30 760 660",s.join(""))}function Vs(s={}){const t=a=>s[a]!==!1,e=[D()],r=24,n=30,f=432,o=252,i=n+o/2;e.push(h(r,n,f,o,{fill:"var(--paper-2)",stroke:"none"})),e.push(h(r,n,f,o/2,{fill:"rgba(176,58,46,.14)",stroke:"none"})),e.push(h(r,i,f,o/2,{fill:"rgba(35,40,47,.13)",stroke:"none"})),e.push(h(r,n,f,o,{fill:"none",stroke:"var(--ink)",sw:1.4})),e.push(k(r,i,r+f,i,{stroke:"var(--ink)",sw:1.8}));for(let a=r+26;a<r+f;a+=26)e.push(k(a,n,a,n+o,{stroke:"var(--ink)",sw:.3,op:.35}));if(t("structure")){for(let a=n+24;a<n+o;a+=24)Math.abs(a-i)<6||e.push(k(r,a,r+f,a,{stroke:"var(--blue)",sw:.4,dash:"4 2",op:.6}));for(let a=0;a<=432&&!(a>432);a+=48)e.push(k(r+a,n,r+a,n+o,{stroke:"var(--red)",sw:.8,dash:"7 3",op:.85}))}return e.push(h(r-4,i-5,f+8,10,{fill:"rgba(35,40,47,.22)",stroke:"var(--ink)",sw:.6})),e.push(u(r+f/2,i+1.8,`RIDGE CAP 2'-0" BLACK`,{fs:4.6,fill:"var(--ink)"})),e.push(h(r-2,n-6,f+4,6,{fill:"var(--blue)",op:.25,stroke:"var(--blue)",sw:.6})),e.push(h(r-2,n+o,f+4,6,{fill:"var(--blue)",op:.25,stroke:"var(--blue)",sw:.6})),[r+6,r+f-6].forEach(a=>{e.push(S(a,n-9,3,{fill:"var(--blue)",stroke:"none"})),e.push(S(a,n+o+9,3,{fill:"var(--blue)",stroke:"none"}))}),e.push(u(r+f/2,n-14,'GUTTER 3" PVC + DOWNPIPE 3" → SOAK PIT',{fs:4.2,fill:"var(--blue)"})),e.push(u(r+f/2,n+o+18,'GUTTER 3" PVC + DOWNPIPE 3" → SOAK PIT',{fs:4.2,fill:"var(--blue)"})),[[r+90,n+26],[r+250,n+26],[r+350,n+26]].forEach(([a,l])=>{e.push(k(a,l,a,l+34,{stroke:"var(--red)",sw:.9})),e.push(A([[a-4,l+28],[a,l+36],[a+4,l+28]],{closed:!0,fill:"var(--red)",stroke:"none"}))}),[[r+90,i+70],[r+250,i+70],[r+350,i+70]].forEach(([a,l])=>{e.push(k(a,l,a,l+34,{stroke:"var(--ink)",sw:.9})),e.push(A([[a-4,l+28],[a,l+36],[a+4,l+28]],{closed:!0,fill:"var(--ink)",stroke:"none"}))}),e.push(u(r+250,n+96,"দক্ষিণ ঢাল · লাল",{fs:8,ff:"var(--f-bn)",fill:"var(--red)"})),e.push(u(r+250,n+107,"SOUTH SLOPE · ROOF RED 22°",{fs:4.8,fill:"var(--red)",ls:"1"})),e.push(u(r+250,i+116,"উত্তর ঢাল · কালো",{fs:8,ff:"var(--f-bn)",fill:"var(--ink)"})),e.push(u(r+250,i+127,"NORTH SLOPE · CHARCOAL BLACK 22°",{fs:4.8,fill:"var(--ink)",ls:"1"})),e.push(h(r+138,i-46,46,40,{fill:"var(--paper-2)",stroke:"var(--blue)",sw:.8,dash:"3 2"})),e.push(u(r+161,i-24,"৫০০L",{fs:5,fill:"var(--blue)"})),e.push(u(r+161,i-16,"TANK",{fs:3.8,fill:"var(--blue)"})),e.push(h(r+24,n+30,384,192,{fill:"none",stroke:"var(--ink-40)",sw:.6,dash:"5 3"})),e.push(C(r,r+f,n+o+40,`36'-0" ROOF`,{fs:6})),e.push(ps(n,n+o,r-18,`21'-0"`,{fs:6})),e.push(u(r+f/2,n-26,"ছাদের প্ল্যান",{fs:8.2,ff:"var(--f-bn)",fill:"var(--ink-60)"})),e.push(u(r+f/2,n-16,"ROOF PLAN — 1:50 · DOUBLE-SHED 22°",{fs:4.6,fill:"var(--ink-40)",ls:"1.4"})),e.push(Ss(r+f+44,n+22,12)),P(540,330,"-40 -36 540 336",e.join(""))}function _s(){const s=[D()],t=5.6,e=32*t,r=16*t;s.push(h(0,0,e,r,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:1.2}));const n=124/12*t;s.push(h(0,0,n,r,{fill:"rgba(176,58,46,.13)",stroke:"var(--ink)",sw:.6})),s.push(h(e-n,0,n,r,{fill:"rgba(176,58,46,.13)",stroke:"var(--ink)",sw:.6}));const f=120/12*t,o=n+3/12*t;s.push(h(o,0,f,r,{fill:"rgba(46,76,109,.10)",stroke:"var(--ink)",sw:.6}));const i=62/12*t;return s.push(h(o,0,f,i,{fill:"rgba(91,115,85,.20)",stroke:"var(--ink)",sw:.6})),s.push(u(n/2,r/2+3,"PRIVATE",{fs:5.2,fill:"var(--red)",ls:".6"})),s.push(u(e-n/2,r/2+3,"PRIVATE",{fs:5.2,fill:"var(--red)",ls:".6"})),s.push(u(o+f/2,r/2+14,"COMMON",{fs:5.2,fill:"var(--blue)",ls:".6"})),s.push(u(o+f/2,i/2+2,"SERVICE",{fs:4.4,fill:"var(--green)",ls:".5"})),s.push(A([[o+f/2,r+26],[o+f/2,r+6]],{stroke:"var(--ink)",sw:1})),s.push(A([[o+f/2-4,r+12],[o+f/2,r+5],[o+f/2+4,r+12]],{closed:!0,fill:"var(--ink)",stroke:"none"})),s.push(u(o+f/2,r+36,"ENTRY · SOUTH",{fs:4.2,fill:"var(--ink-60)",ls:".8"})),[.28,.72].forEach(a=>{const l=e*a;s.push(k(l,4,l,r-4,{stroke:"var(--blue)",sw:.5,dash:"3 3",op:.6}))}),s.push(u(e/2,-8,"SERVICE CORE CENTRED · BEDROOMS FLANK · CROSS VENTILATION",{fs:4,fill:"var(--ink-40)",ls:".8"})),P(230,130,"-6 -18 194 122",s.join(""))}const w={plinth:24,ffl:24,wallTop:144,eaveTip:134,ridge:182},p=s=>268-s,os={red:"rgba(176,58,46,.80)",black:"rgba(35,40,47,.86)"};function Ls(s,t,e){return[k(s,e,t,e,{stroke:"var(--ink)",sw:1.4}),h(s,e,t-s,22,{fill:"url(#hatchEarth)",stroke:"none"}),u(s+4,e+16,"NGL",{fs:4.4,anchor:"start",fill:"var(--ink-40)"})].join("")}function K(s,t,e,r="left"){const n=p(t),f=r==="left"?-1:1;return[k(s,n,s+f*16,n,{stroke:"var(--blue)",sw:.5}),A([[s,n-3],[s+f*5,n],[s,n+3]],{closed:!0,fill:"var(--blue)",stroke:"none"}),u(s+f*19,n+1.8,e,{fs:4.6,anchor:r==="left"?"end":"start",fill:"var(--blue)"})].join("")}function zs(s,t,e,r,n="window",f={}){const o=[],i=p(r),a=r-e;if(o.push(h(s,i,t,a,{fill:"rgba(18,20,26,.10)",stroke:"none"})),o.push(h(s,i,t,a,{fill:"none",stroke:"var(--ink)",sw:1})),n==="window"){o.push(h(s+1.6,i+1.6,t-3.2,a-3.2,{fill:"rgba(46,76,109,.13)",stroke:"none"}));const l=s+t/2;if(o.push(k(l,i+1.6,l,i+a-1.6,{stroke:"var(--ink)",sw:.55})),o.push(k(l-3,i+1.6,l+3,i+a-1.6,{stroke:"var(--ink-40)",sw:.3})),f.grill!==!1){const c=(t-3)/Math.max(3,Math.round(t/8));for(let d=s+2;d<s+t-1;d+=Math.max(6,c))o.push(k(d,i+2,d,i+a-2,{stroke:"var(--ink)",sw:.28,op:.45}));for(let d=i+2;d<i+a-1;d+=Math.max(7,a/4))o.push(k(s+2,d,s+t-2,d,{stroke:"var(--ink)",sw:.28,op:.45}))}}else if(n==="door")o.push(h(s+1.6,i+1.6,t-3.2,a-1.6,{fill:"rgba(35,40,47,.88)",stroke:"none"})),o.push(h(s+5,i+5,t-10,a*.42,{fill:"none",stroke:"rgba(244,241,234,.35)",sw:.5})),o.push(h(s+5,i+a*.55,t-10,a*.36,{fill:"none",stroke:"rgba(244,241,234,.28)",sw:.5})),o.push(S(s+t-5,i+a*.5,1.4,{fill:"rgba(244,241,234,.8)",stroke:"none"})),f.lock&&o.push(h(s+t-12,i+a*.5-5,4,10,{fill:"none",stroke:"rgba(244,241,234,.5)",sw:.45}));else if(n==="louver"){for(let l=i+1.5;l<i+a-1;l+=3)o.push(k(s+1.5,l,s+t-1.5,l,{stroke:"var(--ink)",sw:.45}));o.push(h(s+1.5,i+1.5,t-3,a-3,{fill:"rgba(46,76,109,.10)",stroke:"none"}))}return e>w.ffl&&o.push(h(s-2,p(e),t+4,2.4,{fill:"rgba(18,20,26,.10)",stroke:"var(--ink)",sw:.4})),o.join("")}function vs({width:s,overhang:t,roof:e,openings:r,title:n,subtitle:f,tags:o,northSide:i="north",isGable:a=!1}){const l=[D()],c=-t,d=s+t,v=c-30,$=d+34;if(l.push(Ls(v,$,p(0))),l.push(h(c+t,p(w.plinth),s,w.plinth,{fill:"rgba(18,20,26,.07)",stroke:"none"})),l.push(k(0,p(0),0,p(w.plinth),{stroke:"var(--ink)",sw:.8})),l.push(k(s,p(0),s,p(w.plinth),{stroke:"var(--ink)",sw:.8})),!a)l.push(h(0,p(w.wallTop),s,w.wallTop-w.plinth,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:1}));else{l.push(h(0,p(w.wallTop),s,w.wallTop-w.plinth,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:1})),l.push(A([[0,p(w.wallTop)],[s/2,p(w.ridge)],[s,p(w.wallTop)]],{closed:!0,fill:"var(--paper-2)",stroke:"var(--ink)",sw:1}));const b=(T,O,H)=>{const ns=O[0]-T[0],Q=O[1]-T[1],I=Math.hypot(ns,Q);let ls=-Q/I*5.5,j=ns/I*5.5;return j<0&&(ls=-ls,j=-j),A([[T[0],p(T[1])],[O[0],p(O[1])],[O[0]+ls,p(O[1])+j],[T[0]+ls,p(T[1])+j]],{closed:!0,fill:H,stroke:"var(--ink)",sw:.5,op:.95}).replace(/F/g,"F")};l.push(b([-t,w.eaveTip],[s/2,w.ridge],os.red)),l.push(b([s+t,w.eaveTip],[s/2,w.ridge],os.black)),l.push(k(-t,p(w.eaveTip)+5.5,s/2,p(w.ridge)+5.5,{stroke:"var(--ink)",sw:.9})),l.push(k(s+t,p(w.eaveTip)+5.5,s/2,p(w.ridge)+5.5,{stroke:"var(--ink)",sw:.9}))}if(!a){const b=e==="south"?os.red:os.black;l.push(h(c,p(w.ridge),d-c,w.ridge-w.eaveTip,{fill:b,stroke:"var(--ink)",sw:.6,op:.95}));for(let T=c+6;T<d;T+=13)l.push(k(T,p(w.ridge),T,p(w.eaveTip),{stroke:"rgba(0,0,0,.18)",sw:.35}));l.push(h(c,p(w.ridge)-6,d-c,7,{fill:"rgba(35,40,47,.92)",stroke:"var(--ink)",sw:.5})),l.push(h(c,p(w.eaveTip),d-c,6,{fill:"rgba(35,40,47,.70)",stroke:"var(--ink)",sw:.5})),l.push(h(0,p(w.eaveTip)+6,s,7,{fill:"var(--ink)",op:.08,stroke:"none"}))}return r.forEach(b=>l.push(zs(b.x,b.w,b.sill,b.head,b.kind||"window",b))),l.push(k(s,p(w.wallTop),s,p(w.plinth),{stroke:"var(--ink)",sw:.6,op:.5})),l.push(K(-4,0,"±0 GL","left")),l.push(K(-4,w.ffl,`+2'-0" FFL`,"left")),l.push(K(-4,w.wallTop,`+12'-0" WALL TOP`,"left")),l.push(K(-4,w.ridge,`+15'-2" RIDGE`,"left")),l.push(C(0,s,p(0)+34,a?`16'-0"`:`32'-0"`,{fs:6.4})),a||(l.push(C(43,91,p(0)+22,`4'-0"`,{fs:4.6,ext:3})),l.push(C(172,212,p(0)+22,`3'-4"`,{fs:4.6,ext:3})),l.push(C(293,341,p(0)+22,`4'-0"`,{fs:4.6,ext:3}))),l.push(u(s/2,-46,n,{fs:9,ff:"var(--f-bn)",fill:"var(--ink-60)",ls:".6"})),l.push(u(s/2,-35,f,{fs:4.8,fill:"var(--ink-40)",ls:"1.5"})),(o||[]).forEach(b=>{const T=b.x,O=p(b.z);l.push(k(T,O,T+b.dx,O+b.dy,{stroke:"var(--red)",sw:.4})),l.push(S(T,O,1.4,{fill:"var(--red)",stroke:"none"})),l.push(u(T+b.dx,O+b.dy-2,b.label,{fs:4.4,anchor:b.anchor||"start",fill:"var(--red)"}))}),a&&l.push(u(i==="north"?-12:s+12,p(w.eaveTip)+12,i==="north"?"← N":"N →",{fs:4.6,fill:"var(--ink-40)"})),P(480,350,`${v} -60 ${$-v} 350`,l.join(""))}function Ys(){return vs({width:384,overhang:24,roof:"south",title:"দক্ষিণ সম্মুখভাগ — প্রধান প্রবেশ",subtitle:"SOUTH ELEVATION · FRONT · 1:50 · RED SLOPE",openings:[{x:43,w:48,sill:57,head:105,kind:"window"},{x:136,w:30,sill:45,head:105,kind:"window"},{x:172,w:40,sill:24,head:108,kind:"door",lock:!0},{x:218,w:30,sill:45,head:105,kind:"window"},{x:293,w:48,sill:57,head:105,kind:"window"}],tags:[{x:306,z:168,dx:26,dy:-16,label:"রেড কার্টেন-কোটেড করগেটেড শিট ০.৪৭মিমি"},{x:348,z:138,dx:26,dy:10,label:"চারকোল ফ্যাসিয়া + গাটার"},{x:20,z:120,dx:-34,dy:-12,label:"সাদা ওয়েদার-প্রুফ ফিনিশ (২ কোট)",anchor:"end"},{x:316,z:78,dx:30,dy:-4,label:"থাই স্লাইডিং গ্লাস + ইন্টেরিয়র গ্রিল"},{x:176,z:66,dx:-40,dy:18,label:"MS স্টিল দরজা + ৮-লিভার লক"}]})}function Xs(){return vs({width:384,overhang:24,roof:"north",title:"উত্তর সম্মুখভাগ — পিছনের আঙিনা",subtitle:"NORTH ELEVATION · REAR · 1:50 · CHARCOAL SLOPE",openings:[{x:49,w:36,sill:63,head:99,kind:"window"},{x:144,w:24,sill:84,head:102,kind:"louver"},{x:190,w:26,sill:66,head:90,kind:"window"},{x:218,w:30,sill:24,head:104,kind:"door"},{x:279,w:36,sill:63,head:99,kind:"window"}],tags:[{x:300,z:168,dx:24,dy:-14,label:"ব্ল্যাক শিট — উত্তরের আর্দ্রতা ও শ্যাওলা প্রতিরোধী"},{x:156,z:92,dx:30,dy:-20,label:`বাথরুম হাই-লেভেল লুভার (৬'-০" সিল)`},{x:230,z:60,dx:26,dy:16,label:"রান্নাঘরের ব্যাক ডোর → শুকানোর আঙিনা"}]})}function Qs(){return vs({width:192,overhang:24,roof:"gable",isGable:!0,northSide:"north",title:"পশ্চিম প্রান্ত — গ্যাবল",subtitle:"WEST ELEVATION · GABLE END · 1:50 · NO WEST OPENING",openings:[{x:66,w:24,sill:108,head:120,kind:"louver"}],tags:[{x:90,z:158,dx:30,dy:-12,label:"রিজ ক্যাপ + বার্জ বোর্ড"},{x:78,z:114,dx:34,dy:6,label:"হাই-লেভেল ভেন্টিলেটর (গরম বাতাস বের)"},{x:96,z:40,dx:34,dy:14,label:"পশ্চিমে কোনো জানালা নেই — বিকেলের রোদ ব্লক"}]})}function Zs(){return vs({width:192,overhang:24,roof:"gable",isGable:!0,northSide:"south",title:"পূর্ব প্রান্ত — ভবিষ্যৎ রুমের দিক",subtitle:"EAST ELEVATION · GABLE END · 1:50 · FUTURE OPENING",openings:[{x:66,w:24,sill:108,head:120,kind:"louver"}],tags:[{x:96,z:96,dx:34,dy:-6,label:"ভবিষ্যৎ রুমের জন্য নক-আউট প্যানেল (লিন্টেল সহ)"},{x:60,z:150,dx:32,dy:-10,label:"ট্রাসের বেয়ারিং ও অ্যাংকর"}]})}function Ps(s,t,e){s.push(Ls(t,e,p(0))),s.push(h(t,p(-30),e-t,30,{fill:"url(#hatchEarth)",stroke:"none",op:.5})),s.push(k(t,p(-30),e,p(-30),{stroke:"var(--ink-40)",sw:.4,dash:"4 3"}))}function Js(){const s=[D()];Ps(s,-56,248);const r=p(-34),n=9;s.push(h(-16,r,208,n,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.9})),s.push(h(-19,r+n,214,4,{fill:"rgba(18,20,26,.15)",stroke:"var(--ink)",sw:.6})),s.push(h(0,p(24),5,58,{fill:"rgba(18,20,26,.10)",stroke:"var(--ink)",sw:.8})),s.push(h(187,p(24),5,58,{fill:"rgba(18,20,26,.10)",stroke:"var(--ink)",sw:.8})),s.push(h(0,p(24)-9,192,9,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.7})),s.push(u(96,p(19)+2.6,'RCC PLINTH BEAM 6"×9" · 4-Ø12',{fs:4.2,fill:"var(--ink-60)"})),s.push(h(5,p(24),182,12,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.5})),s.push(h(5,p(24)-3,182,3,{fill:"rgba(18,20,26,.35)",stroke:"var(--ink)",sw:.5})),s.push(u(96,p(24)+16,'৩" কংক্রিট + ১½" নেট সিমেন্ট পলিশ ফ্লোর',{fs:4.2,fill:"var(--ink-60)"})),s.push(h(0,p(w.wallTop),5,w.wallTop-24,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(187,p(w.wallTop),5,w.wallTop-24,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(67,p(w.wallTop),3,w.wallTop-24,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.7})),s.push(h(187,p(108),5,84,{fill:"none",stroke:"var(--ink)",sw:.4,dash:"2 2"})),s.push(u(196,p(60),"D1",{fs:4.4,anchor:"start",fill:"var(--ink-60)"})),s.push(h(0,p(90),5,24,{fill:"rgba(46,76,109,.18)",stroke:"var(--ink)",sw:.6})),s.push(u(9,p(78),"W8",{fs:4.4,anchor:"start",fill:"var(--ink-60)"})),s.push(h(0,p(w.wallTop)-0,192,7,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.5,op:.9}));const f=[208,w.eaveTip],o=[96,w.ridge],i=[-16,w.eaveTip],a=(c,d,v)=>{const $=d[0]-c[0],b=d[1]-c[1],T=Math.hypot($,b);let O=b/T*5,H=-$/T*5;return H<0&&(O=-O,H=-H),A([[c[0],p(c[1])],[d[0],p(d[1])],[d[0]+O,p(d[1])+H],[c[0]+O,p(c[1])+H]],{closed:!0,fill:v,stroke:"var(--ink)",sw:.6,op:.95})};s.push(a(f,o,os.red)),s.push(a(i,o,os.black)),s.push(k(-16,p(w.eaveTip)+5,96,p(w.ridge)+5,{stroke:"var(--ink)",sw:.4,dash:"3 2"})),s.push(k(208,p(w.eaveTip)+5,96,p(w.ridge)+5,{stroke:"var(--ink)",sw:.4,dash:"3 2"})),s.push(k(0,p(w.wallTop),192,p(w.wallTop),{stroke:"var(--ink)",sw:.9})),s.push(k(96,p(w.wallTop),96,p(w.ridge)-4,{stroke:"var(--ink)",sw:.8})),s.push(k(48,p(w.wallTop),48,p(w.wallTop+20),{stroke:"var(--ink)",sw:.6,dash:"3 2"})),s.push(u(96,p(150),"KING POST TRUSS 50×50×5 MS ANGLE",{fs:4.2,fill:"var(--ink-60)"})),s.push(h(8,p(146),54,3,{fill:"var(--ink)",stroke:"none",op:.8})),s.push(k(8,p(146),8,p(144),{stroke:"var(--ink)",sw:.6})),s.push(h(14,p(146)-26,42,26,{fill:"var(--blue)",op:.13,stroke:"var(--blue)",sw:.7})),s.push(u(35,p(133),"৫০০L",{fs:5,fill:"var(--blue)"})),s.push(u(35,p(126),"TANK",{fs:3.6,fill:"var(--blue)"})),s.push(k(5,p(120),187,p(120),{stroke:"var(--ink-40)",sw:.5,dash:"5 3"})),s.push(u(150,p(117),"সিলিং (ঐচ্ছিক)",{fs:4,fill:"var(--ink-40)"})),s.push(K(-8,0,"±0","left")),s.push(K(-8,24,`+2'-0"`,"left")),s.push(K(-8,144,`+12'-0"`,"left")),s.push(K(-8,182,`+15'-2" RIDGE`,"left")),s.push(C(0,192,p(-52),`16'-0"`,{fs:6})),s.push(C(0,67,p(-44),`5'-7"`,{fs:4.4,ext:3})),s.push(C(70,187,p(-44),`9'-9"`,{fs:4.4,ext:3})),s.push(C(5,67,p(-62),"রান্নাঘর",{fs:4.4,ext:0,text:"var(--ink-40)"})),s.push(ps(p(24),p(144),224,`10'-0"`)),s.push(u(96,-46,"সেকশন A–A",{fs:9,ff:"var(--f-bn)",fill:"var(--ink-60)"})),s.push(u(96,-35,"SECTION A–A THROUGH SERVICE CORE · 1:50",{fs:4.8,fill:"var(--ink-40)",ls:"1.4"}));const l=(c,d,v,$,b)=>[k(c,p(d),c+v,p(d)+$,{stroke:"var(--red)",sw:.4}),S(c,p(d),1.3,{fill:"var(--red)",stroke:"none"}),u(c+v,p(d)+$-2,b,{fs:4.2,anchor:v<0?"end":"start",fill:"var(--red)"})].join("");return s.push(l(120,176,30,-14,"রিজ ক্যাপ")),s.push(l(150,160,24,16,"০.৪৭ মিমি শিট + অ্যালু ফয়েল ইনসুলেশন")),s.push(l(30,30,-30,16,'স্ট্রিপ ফুটিং ১৬"×৯"')),s.push(l(160,138,22,20,"ট্রাস বটম কর্ড = ওয়াল টপ")),s.push(l(35,150,20,-18,"MS প্ল্যাটফর্মে ট্যাংক")),P(480,360,"-70 -60 360 380",s.join(""))}function sr(){const s=[D()];Ps(s,-56,440);const n=(a=>w.ridge-(a-96)*.404)(120);[0,384].forEach(a=>{s.push(h(a-16,p(-34),21,9,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.9})),s.push(h(a-2,p(24),5,58,{fill:"rgba(18,20,26,.10)",stroke:"var(--ink)",sw:.8}))}),s.push(h(129,p(24),3,120,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.7})),s.push(h(252,p(24),3,120,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.7})),s.push(h(0,p(24),5,96,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(379,p(24),5,96,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(5,p(24),374,12,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.5})),s.push(h(5,p(24)-3,374,3,{fill:"rgba(18,20,26,.35)",stroke:"none"})),s.push(h(-24,p(n),432,6,{fill:os.red,stroke:"var(--ink)",sw:.6,op:.95}));const f=p(w.wallTop),o=p(w.ridge);s.push(A([[0,f],[192,o],[384,f]],{stroke:"var(--ink-40)",sw:.5,dash:"4 2"})),s.push(k(0,f,384,f,{stroke:"var(--ink)",sw:.8})),s.push(k(192,f,192,o,{stroke:"var(--ink-40)",sw:.5,dash:"4 2"}));for(let a=1;a<6;a++){const l=64*a;s.push(S(l,p(n)+3,1.6,{fill:"var(--ink-60)",stroke:"none"}))}s.push(h(0,p(144),384,6,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.5})),s.push(h(129,p(104),3,80,{fill:"none",stroke:"var(--ink-40)",sw:.4,dash:"2 2"})),s.push(h(252,p(104),3,80,{fill:"none",stroke:"var(--ink-40)",sw:.4,dash:"2 2"})),s.push(k(5,p(120),379,p(120),{stroke:"var(--ink-40)",sw:.5,dash:"5 3"})),s.push(K(-8,0,"±0","left")),s.push(K(-8,24,`+2'-0"`,"left")),s.push(K(-8,144,`+12'-0"`,"left")),s.push(K(-8,Math.round(n),"ROOF","left")),s.push(C(5,129,p(-44),`10'-4"`,{fs:5})),s.push(C(132,252,p(-44),`10'-0"`,{fs:5})),s.push(C(255,379,p(-44),`10'-4"`,{fs:5})),s.push(C(0,384,p(-56),`32'-0"`,{fs:6.4})),s.push(u(192,-46,"সেকশন B–B",{fs:9,ff:"var(--f-bn)",fill:"var(--ink-60)"})),s.push(u(192,-35,"SECTION B–B THROUGH BOTH BEDROOMS · 1:50",{fs:4.8,fill:"var(--ink-40)",ls:"1.4"}));const i=(a,l,c,d,v)=>[k(a,p(l),a+c,p(l)+d,{stroke:"var(--red)",sw:.4}),S(a,p(l),1.3,{fill:"var(--red)",stroke:"none"}),u(a+c,p(l)+d-2,v,{fs:4.2,anchor:c<0?"end":"start",fill:"var(--red)"})].join("");return s.push(i(300,150,26,-16,"লিন্টেল ব্যান্ড সব ওপেনিংয়ের উপরে")),s.push(i(140,120,-30,-14,'৪" পার্টিশন — ৭৫মিমি ব্লক')),s.push(i(200,40,20,20,"প্লিন্থ বিম — ভূমিকম্প জোন ৩ (Z=0.28)")),s.push(i(360,166,22,10,"রুফ লাইন (y=120-এ কাট)")),P(520,360,"-70 -60 520 380",s.join(""))}const is="0 -18 300 214";function rr(){const s=[D()];s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"}));const t=118;s.push(k(0,t,300,t,{stroke:"var(--ink)",sw:1.1})),s.push(h(0,t,300,96,{fill:"url(#hatchEarth)",stroke:"none",op:.6})),s.push(h(56,t+48,150,20,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.9})),s.push(h(50,t+68,162,10,{fill:"rgba(18,20,26,.14)",stroke:"var(--ink)",sw:.7})),s.push(h(80,t+26,102,22,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.7})),s.push(h(92,t+4,78,22,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.8})),s.push(h(98,t+10,66,5,{fill:"none",stroke:"var(--red)",sw:.6})),s.push(h(106,t-66,50,70,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(156,t-10,110,10,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.5})),s.push(h(156,t-12,110,2,{fill:"var(--ink)",stroke:"none",op:.75})),s.push(k(98,t+4,170,t+4,{stroke:"var(--blue)",sw:1.4})),s.push(u(150,20,"স্ট্রিপ ফুটিং ও প্লিন্থ বিম",{fs:7.4,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,30,"STRIP FOOTING + PLINTH BEAM · 1:10",{fs:4.4,fill:"var(--ink-40)",ls:"1.2"}));const e=(r,n,f,o="start")=>u(r,n,f,{fs:4,anchor:o,fill:"var(--ink-60)"});return s.push(e(214,t+22,'6"×9" RCC plinth beam',"start")),s.push(e(214,t+30,'4-Ø12 + Ø8 stirrup @ 6" c/c',"start")),s.push(e(214,t+58,'16"×9" RCC footing',"start")),s.push(e(214,t+66,"4-Ø10 main bar","start")),s.push(e(214,t+76,'3" PCC 1:3:6 bed',"start")),s.push(e(240,t+16,'DPC 1½" 1:2',"start")),s.push(e(240,t+-8,'৩" কংক্রিট + নেট সিমেন্ট',"start")),s.push(e(64,t-74,'১০" একো-ব্লক',"end")),s.push(e(45,t+40,"২ কোর্স ব্রিক ফুটিং","end")),s.push(u(150,208,`প্লিন্থ GL থেকে ২'-০" — ২০২২ বন্যায় ব্রাহ্মণবাড়িয়ার সর্বোচ্চ পানির স্তরের উপরে`,{fs:3.8,fill:"var(--red)"})),P(300,214,is,s.join(""))}function tr(){const s=[D()];s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"})),s.push(h(60,90,80,120,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(h(52,78,96,14,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.8})),s.push(k(92,92,92,58,{stroke:"var(--red)",sw:2})),s.push(S(92,92,5,{stroke:"var(--red)",sw:2,fill:"none"})),s.push(h(84,52,16,6,{fill:"var(--ink)",stroke:"none"})),s.push(A([[80,76],[104,76],[104,70],[80,70]],{closed:!0,fill:"var(--ink)",stroke:"none"})),s.push(h(30,52,240,6,{fill:"var(--ink)",stroke:"none",op:.85})),s.push(A([[30,52],[150,-6],[156,-6],[36,52]],{closed:!0,fill:"rgba(35,40,47,.8)",stroke:"var(--ink)",sw:.5})),s.push(A([[180,12],[200,12],[200,2],[180,2]],{closed:!0,fill:"var(--ink)",stroke:"none"})),s.push(A([[130,6],[270,52],[270,60],[130,14]],{closed:!0,fill:"rgba(176,58,46,.85)",stroke:"var(--ink)",sw:.6})),s.push(A([[136,14],[270,57],[270,60],[136,17]],{closed:!0,fill:"rgba(184,134,43,.55)",stroke:"none"})),s.push(u(150,16,"ওয়াল-টপ অ্যাংকর ও ট্রাস বেয়ারিং",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,26,"TRUSS BEARING + ANCHOR · 1:10",{fs:4.2,fill:"var(--ink-40)",ls:"1.2"}));const t=(e,r,n,f="start")=>u(e,r,n,{fs:3.9,anchor:f,fill:"var(--ink-60)"});return s.push(t(110,50,`M12 J-বোল্ট @ ৪'-০" c/c`,"start")),s.push(t(110,76,"৫০×৫০×৫ MS ক্লিট অ্যাংকর","start")),s.push(t(110,100,"বটম কর্ড ৫০×৫০×৫","start")),s.push(t(196,44,"০.৪৭মিমি শিট","start")),s.push(t(196,52,"অ্যালু ফয়েল + ২৫মিমি এয়ার গ্যাপ","start")),s.push(t(214,20,`৪০×৪০×৪ পার্লিন @ ২'-০" c/c`,"start")),s.push(t(48,130,'১০" দেয়াল',"end")),s.push(u(150,208,"প্রতিটি ট্রাস ২টি J-বোল্টে অ্যাংকর্ড — ৫৬.৭ মি/সে বাতাসের লিফটের জন্য",{fs:3.7,fill:"var(--red)"})),P(300,214,is,s.join(""))}function er(){const s=[D()];s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"})),s.push(h(180,96,90,110,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.8})),s.push(A([[20,20],[250,104],[250,112],[20,28]],{closed:!0,fill:"rgba(176,58,46,.85)",stroke:"var(--ink)",sw:.6})),s.push(A([[24,28],[250,109],[250,112],[24,31]],{closed:!0,fill:"rgba(184,134,43,.5)",stroke:"none"})),s.push(A([[196,92],[222,92],[222,82],[196,82]],{closed:!0,fill:"var(--ink)",stroke:"none"})),s.push(h(240,106,8,26,{fill:"rgba(35,40,47,.85)",stroke:"var(--ink)",sw:.5})),s.push('<path d="M 248 132 q 16 0 16 10 l 0 6 q 0 8 -8 8 l -8 0" fill="rgba(46,76,109,.25)" stroke="var(--blue)" stroke-width="1.2"/>'),s.push(h(262,146,8,70,{fill:"rgba(46,76,109,.3)",stroke:"var(--blue)",sw:1})),s.push(A([[248,196],[284,204],[284,212],[248,204]],{closed:!0,fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.6})),s.push(k(20,20,250,104,{stroke:"var(--ink)",sw:.5})),s.push(u(150,16,"ইভস, গাটার ও ডাউনপাইপ",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,26,"EAVE + GUTTER + DOWNPIPE · 1:10",{fs:4.2,fill:"var(--ink-40)",ls:"1.2"}));const t=(e,r,n,f="start")=>u(e,r,n,{fs:3.9,anchor:f,fill:"var(--ink-60)"});return s.push(t(24,46,`০.৪৭মিমি শিট, ২'-০" ওভারহ্যাং`,"start")),s.push(t(228,78,"পার্লিন","start")),s.push(t(228,124,"ফ্যাসিয়া বোর্ড","start")),s.push(t(276,160,'৩" PVC ডাউনপাইপ',"start")),s.push(t(276,200,"স্প্ল্যাশ ব্লক","start")),s.push(t(170,150,'১০" দেয়াল',"end")),s.push(u(150,208,`পানি দেয়াল থেকে ২'-০" দূরে ফেলা হয় → নিচে সোক পিট`,{fs:3.7,fill:"var(--red)"})),P(300,214,is,s.join(""))}function nr(){const s=[D()];s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"})),s.push(h(30,30,240,34,{fill:"url(#hatchD)",stroke:"var(--ink)",sw:.7})),s.push(h(96,30,110,34,{fill:"var(--paper-2)",stroke:"none"})),s.push(h(96,30,110,34,{fill:"none",stroke:"var(--ink)",sw:.7})),s.push(h(96,40,110,4,{fill:"var(--ink)",stroke:"none"})),s.push(h(96,50,110,4,{fill:"var(--ink)",stroke:"none"})),s.push(h(100,44,102,6,{fill:"rgba(46,76,109,.28)",stroke:"var(--blue)",sw:.6})),s.push(h(100,44,49,6,{fill:"rgba(46,76,109,.16)",stroke:"var(--blue)",sw:.5}));for(let t=104;t<205;t+=14)s.push(S(t,60,2.4,{fill:"var(--ink)",stroke:"none"}));return s.push(h(98,58,106,3,{fill:"none",stroke:"var(--ink)",sw:.5})),s.push(A([[92,64],[210,64],[206,72],[96,72]],{closed:!0,fill:"rgba(18,20,26,.10)",stroke:"var(--ink)",sw:.6})),s.push(u(44,96,"ভিতর",{fs:4.4,fill:"var(--ink-40)"})),s.push(u(240,96,"বাহির",{fs:4.4,fill:"var(--ink-40)"})),s.push(h(96,120,110,6,{fill:"var(--ink)",stroke:"none"})),s.push(h(96,126,6,30,{fill:"var(--ink)",stroke:"none"})),s.push(h(200,126,6,30,{fill:"var(--ink)",stroke:"none"})),s.push(u(150,148,"ড্রেনেজ ওয়েপ হোল",{fs:3.9,fill:"var(--ink-60)"})),s.push(u(150,16,"থাই গ্লাস জানালা ও গ্রিল",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,26,"WINDOW SECTION + SAFETY GRILL · 1:10",{fs:4.2,fill:"var(--ink-40)",ls:"1.2"})),s.push(u(150,208,"গ্রিল ভিতরের দিকে — বাইরের সাদা ফ্যাসাড পরিষ্কার থাকে",{fs:3.7,fill:"var(--red)"})),P(300,214,is,s.join(""))}function or(){const s=[D()];s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"}));const t=70;s.push(k(0,t,300,t,{stroke:"var(--ink)",sw:1.1})),s.push(h(0,t,300,120,{fill:"url(#hatchEarth)",stroke:"none",op:.5})),s.push(h(24,t+20,96,70,{fill:"rgba(46,76,109,.06)",stroke:"var(--ink)",sw:1})),s.push(k(72,t+20,72,t+90,{stroke:"var(--ink)",sw:.8,dash:"4 2"})),s.push(h(24,t+16,96,5,{fill:"url(#hatchCon)",stroke:"var(--ink)",sw:.6})),s.push(k(24,t+34,10,t+34,{stroke:"var(--green)",sw:2})),s.push(h(24,t+44,96,46,{fill:"rgba(91,115,85,.18)",stroke:"none"})),s.push(S(190,t+60,42,{fill:"url(#hatchX)",stroke:"var(--ink)",sw:1})),s.push(k(120,t+34,190,t+34,{stroke:"var(--green)",sw:2})),s.push(k(100,t+20,100,t-40,{stroke:"var(--ink)",sw:.8})),s.push(u(104,t-42,'২" ভেন্ট পাইপ',{fs:3.9,anchor:"start",fill:"var(--ink-60)"})),s.push(u(150,16,"সেপটিক ট্যাংক ও সোক পিট",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,26,"SEPTIC TANK + SOAK PIT · 1:20",{fs:4.2,fill:"var(--ink-40)",ls:"1.2"}));const e=(r,n,f,o="start")=>u(r,n,f,{fs:3.9,anchor:o,fill:"var(--ink-60)"});return s.push(e(28,t+12,`৮'-০"×৫'-০"×৫'-০" দুই চেম্বার`,"start")),s.push(e(128,t+30,'পাইপ Ø4"',"start")),s.push(e(146,t+96,`Ø৪'-০" × ৬'-০" গভীর`,"start")),s.push(e(12,t+96,`টিউবওয়েল থেকে ২৫'-০" এর বেশি দূরে`,"start")),s.push(u(150,208,"সেপটিক ট্যাংক বাথরুমের উত্তর-পশ্চিমে, টিউবওয়েলের উজানে নয়",{fs:3.7,fill:"var(--red)"})),P(300,214,is,s.join(""))}function lr(){const s=[D()];return s.push(h(0,0,300,214,{fill:"var(--paper-2)",stroke:"none"})),s.push(k(20,40,280,40,{stroke:"var(--ink)",sw:2})),s.push(k(150,40,150,8,{stroke:"var(--ink)",sw:1.6})),s.push(h(70,56,120,5,{fill:"var(--ink)",stroke:"none"})),s.push(k(70,56,90,40,{stroke:"var(--ink)",sw:1.2})),s.push(k(190,56,170,40,{stroke:"var(--ink)",sw:1.2})),s.push(h(84,12,92,44,{fill:"rgba(46,76,109,.16)",stroke:"var(--blue)",sw:1.1,rx:4})),s.push(k(84,26,176,26,{stroke:"var(--blue)",sw:.5,dash:"2 2"})),s.push(u(130,40,"৫০০ L",{fs:5.4,fill:"var(--blue)"})),s.push(S(176,30,3,{stroke:"var(--blue)",sw:.8})),s.push(k(176,30,196,30,{stroke:"var(--blue)",sw:1.4})),s.push(k(196,30,196,150,{stroke:"var(--blue)",sw:1.4})),s.push(k(196,150,240,150,{stroke:"var(--blue)",sw:1.4})),s.push(k(130,12,130,0,{stroke:"var(--blue)",sw:1.4,dash:"4 2"})),s.push(u(136,6,"১HP পাম্প থেকে ↑",{fs:3.9,anchor:"start",fill:"var(--blue)"})),s.push(k(240,150,240,158,{stroke:"var(--blue)",sw:2})),s.push(u(246,158,"ফিক্সচারে",{fs:3.9,anchor:"start",fill:"var(--ink-60)"})),s.push(u(130,78,"MS প্ল্যাটফর্ম ৫০×৫০×৫ অ্যাংগেল",{fs:4,fill:"var(--ink-60)"})),s.push(u(130,86,"ট্রাসের বটম কর্ডে বোল্টেড",{fs:4,fill:"var(--ink-60)"})),s.push(u(150,118,"ছাদের ট্যাংক প্ল্যাটফর্ম",{fs:7,ff:"var(--f-bn)",fill:"var(--ink)"})),s.push(u(150,128,"OVERHEAD TANK PLATFORM · 1:20",{fs:4.2,fill:"var(--ink-40)",ls:"1.2"})),s.push(u(150,160,"বাথরুমের ঠিক উপরে — পাইপের দূরত্ব সবচেয়ে কম",{fs:4.4,fill:"var(--red)"})),s.push(u(150,170,`ট্যাংকের তলা +৯'-০" → সব কল/শাওয়ারে মাধ্যাকর্ষণে পানি`,{fs:4.4,fill:"var(--ink-60)"})),s.push(u(150,180,`বার্ষিক পরিষ্কারের জন্য ২'-০"×২'-০" ম্যানহোল`,{fs:4.4,fill:"var(--ink-60)"})),P(300,214,is,s.join(""))}function ar(){const s=[D()],t=100,e=100,r=78;s.push(S(t,e,r,{stroke:"var(--rule)",sw:.7,dash:"3 3"})),s.push(k(t-r-10,e,t+r+10,e,{stroke:"var(--rule)",sw:.6})),s.push(k(t,e-r-10,t,e+r+10,{stroke:"var(--rule)",sw:.6})),s.push(h(t-34,e-16,68,32,{fill:"var(--ink)",stroke:"none",op:.82})),s.push(u(t,e+3,"HOUSE",{fs:4,fill:"var(--paper-2)"}));const n=(f,o,i,a)=>{const l=[];for(let c=0;c<=180;c+=4){const d=c*Math.PI/180,v=t+Math.cos(Math.PI-d)*r*.98,$=e+Math.sin(Math.PI-d)*-r*Math.sin(f*Math.PI/180);l.push([v,$])}return`<path d="M ${l.map(c=>c.join(" ")).join(" L ")}" fill="none" stroke="${i}" stroke-width="1" stroke-dasharray="${a}"/>`};return s.push(n(88,"","var(--red)","0")),s.push(n(70,"","var(--amber)","4 2")),s.push(n(46,"","var(--blue)","2 2")),s.push(S(t,e-r*.999,3,{fill:"var(--red)",stroke:"none"})),s.push(u(t+8,e-r*.99,"২১ জুন · ৮৯.৭°",{fs:3.8,anchor:"start",fill:"var(--red)"})),s.push(S(t,e-r*Math.sin(70*Math.PI/180),2.6,{fill:"var(--amber)",stroke:"none"})),s.push(u(t+8,e-r*Math.sin(70*Math.PI/180)+1,"২১ মার্চ/সেপ্ট · ৬৬°",{fs:3.8,anchor:"start",fill:"var(--amber)"})),s.push(S(t,e-r*Math.sin(46*Math.PI/180),2.6,{fill:"var(--blue)",stroke:"none"})),s.push(u(t+8,e-r*Math.sin(46*Math.PI/180)+1,"২১ ডিসে · ৪৩°",{fs:3.8,anchor:"start",fill:"var(--blue)"})),s.push(u(t,e+r+16,"S",{fs:5,fill:"var(--ink-40)"})),s.push(u(t,e-r-12,"N",{fs:5,fill:"var(--ink-40)"})),s.push(u(t+r+10,e+2,"E",{fs:5,fill:"var(--ink-40)"})),s.push(u(t-r-10,e+2,"W",{fs:5,fill:"var(--ink-40)"})),s.push(u(t,e+r+30,`ছাদের ২'-০" ওভারহ্যাং গ্রীষ্মের দুপুরের রোদ काटে`,{fs:3.8,fill:"var(--ink-60)"})),P(210,202,"-10 -18 220 216",s.join(""))}function ir(){const s=["জা","ফে","মা","এপ","মে","জুন","জু","আ","সে","অ","ন","ডি"],t=[14,40,73,168,315,345,368,248,198,149,30,9],e=[D()],r=22,n=118,f=158,o=86,i=400;e.push(k(r,n-o,r,n,{stroke:"var(--ink)",sw:.7})),e.push(k(r,n,r+f,n,{stroke:"var(--ink)",sw:.7})),[100,200,300,400].forEach(l=>{const c=n-l/i*o;e.push(k(r,c,r+f,c,{stroke:"var(--rule)",sw:.4,dash:"2 2"})),e.push(u(r-3,c+1.4,`${l}`,{fs:3.4,anchor:"end",fill:"var(--ink-40)"}))});const a=f/12;return t.forEach((l,c)=>{const d=l/i*o;e.push(h(r+c*a+1.2,n-d,a-2.4,d,{fill:c>=4&&c<=8?"rgba(46,76,109,.55)":"rgba(46,76,109,.22)",stroke:"none"})),e.push(u(r+c*a+a/2,n+6,s[c],{fs:3.3,fill:"var(--ink-40)",ff:"var(--f-bn)"}))}),e.push(u(r-16,n-o-6,"মিমি",{fs:3.4,anchor:"start",fill:"var(--ink-40)"})),e.push(u(60,132,"বার্ষিক বৃষ্টি ১,৯৫৬ মিমি · ৮৪% মে–অক্টোবর",{fs:3.8,fill:"var(--ink-60)"})),P(200,142,"-6 -6 200 142",e.join(""))}const x=384,F=192,R=24,Y=144,X=182,J=134,ws=24,B={ground:"#e7e2d5",plinth:"#dbd4c3",wallOut:"#fbf8f2",wallIn:"#efeade",part:"#e7e1d3",partTop:"#f0ebdf",roofS:"#b03a2e",roofN:"#39404a",ridge:"#262b32",glass:"#8fa8c3",door:"#2a2f36",tank:"#9db5cd",floor:"#f1ecdf",furn:"#ded5c2",gable:"#f5f1e7"},ts=(s,t)=>{if(!/^#[0-9a-fA-F]{6}$/.test(s))return s;const e=parseInt(s.slice(1),16);let r=(e>>16)+t,n=(e>>8&255)+t,f=(e&255)+t;return r=Math.max(0,Math.min(255,r)),n=Math.max(0,Math.min(255,n)),f=Math.max(0,Math.min(255,f)),"#"+(r<<16|n<<8|f).toString(16).padStart(6,"0")};function As(s={}){const t=(s.yaw??32)*Math.PI/180,e=(s.pitch??26)*Math.PI/180,r=s.scale??1,n=Math.sin(t),f=Math.cos(t),o=Math.sin(e),i=Math.cos(e),a=n>.02,l=f<-.02,c=s.roof!==!1,d=s.interior!==!1;let v="",$=1e9,b=-1e9,T=1e9,O=-1e9;const H=(g,m)=>{g<$&&($=g),g>b&&(b=g),m<T&&(T=m),m>O&&(O=m)},ns=(g,m,y)=>{const M=(g*f-m*n)*r,E=((g*n+m*f)*o-y*i)*r;return[M,E]},Q=(g,m)=>g*n+m*f,I=(g,m,y={})=>{const M=g.map(E=>ns(E[0],E[1],E[2]));M.forEach(E=>H(E[0],E[1])),v+=`<polygon points="${M.map(E=>E[0].toFixed(2)+","+E[1].toFixed(2)).join(" ")}" fill="${m}" stroke="${y.stroke||"rgba(18,20,26,.45)"}" stroke-width="${y.sw??.6}" stroke-linejoin="round"${y.dash?` stroke-dasharray="${y.dash}"`:""}/>`},ls=(g,m,y={})=>{const M=ns(...g),E=ns(...m);H(M[0],M[1]),H(E[0],E[1]),v+=`<line x1="${M[0].toFixed(2)}" y1="${M[1].toFixed(2)}" x2="${E[0].toFixed(2)}" y2="${E[1].toFixed(2)}" stroke="${y.stroke}" stroke-width="${y.sw??.6}"/>`},j=(g,m,y,M,E,L,z={})=>{const ss=z.fill||B.wallOut,Z={stroke:z.stroke||"rgba(18,20,26,.45)",sw:z.sw??.6,dash:z.dash},gs=l?M:y,ms=l?y:M,$s=a?m:g,Es=a?g:m;I([[g,ms,E],[m,ms,E],[m,ms,L],[g,ms,L]],ts(z.face||ss,-14),Z),I([[Es,y,E],[Es,M,E],[Es,M,L],[Es,y,L]],ts(z.face||ss,-20),Z),I([[g,y,L],[m,y,L],[m,M,L],[g,M,L]],z.top||ts(ss,9),Z),I([[g,gs,E],[m,gs,E],[m,gs,L],[g,gs,L]],z.face||ss,Z),I([[$s,y,E],[$s,M,E],[$s,M,L],[$s,y,L]],ts(z.face||ss,-8),Z)};I([[-140,-150,0],[x+220,-150,0],[x+220,F+180,0],[-140,F+180,0]],B.ground,{stroke:"none",sw:0}),j(-6,x+6,-6,F+6,0,R,{fill:B.plinth,sw:.8}),I([[0,0,R+.6],[x,0,R+.6],[x,F,R+.6],[0,F,R+.6]],B.floor,{sw:1,stroke:"rgba(18,20,26,.35)"}),j(0,x,l?0:F-5,l?5:F,R,Y,{fill:B.wallIn}),j(a?0:x-5,a?5:x,0,F,R,Y,{fill:B.wallIn});const Bs=a?.5:x-.5;I([[Bs,0,Y],[Bs,F,Y],[Bs,F/2,X]],ts(B.gable,-20),{sw:.7}),[[129,132,5,104],[129,132,140,187],[252,255,5,76],[252,255,112,187],[132,138,67,70],[168,198,67,70],[228,252,67,70],[186,189,5,67]].sort((g,m)=>Q(g[0],g[2])-Q(m[0],m[2])).forEach(([g,m,y,M])=>j(g,m,y,M,R,Y-4,{fill:B.part,top:B.partTop,sw:.45,stroke:"rgba(18,20,26,.25)"})),c||(j(129.6,131.4,104,140,R,104,{fill:B.door,top:"#3a4048",sw:.3}),j(252.6,254.4,76,112,R,104,{fill:B.door,top:"#3a4048",sw:.3})),d&&[[9,69,62,140,R+20],[315,375,62,140,R+20],[6,128,7,29,R+66],[256,378,7,29,R+66],[134,162,92,154,R+28],[170,206,106,126,R+15],[189,252,6,28,R+32]].sort((m,y)=>Q(m[0],m[2])-Q(y[0],y[2])).forEach(([m,y,M,E,L])=>j(m,y,M,E,R,L,{fill:B.furn,top:ts(B.furn,12),sw:.3,stroke:"rgba(18,20,26,.2)"})),j(138,180,14,56,150,178,{fill:B.tank,top:ts(B.tank,14),sw:.7,stroke:"rgba(30,60,95,.6)"}),j(0,x,l?F-5:0,l?F:5,R,Y,{fill:B.wallOut}),j(a?x-5:0,a?x:5,0,F,R,Y,{fill:B.wallOut});const Ns=a?x-.5:.5;I([[Ns,0,Y],[Ns,F,Y],[Ns,F/2,X]],ts(B.gable,-6),{sw:.7});const Er=[[43,48,57,105,"win"],[136,30,45,105,"win"],[172,40,R,108,"door"],[218,30,45,105,"win"],[293,48,57,105,"win"]],Sr=[[49,36,63,99,"win"],[144,24,84,102,"win"],[190,26,66,90,"win"],[218,30,R,104,"door"],[279,36,63,99,"win"]],hs=l?F+.8:-.8;if((l?Er:Sr).forEach(([g,m,y,M,E])=>{I([[g,hs,y],[g+m,hs,y],[g+m,hs,M],[g,hs,M]],E==="door"?B.door:B.glass,{sw:.55}),E==="win"&&ls([g+m/2,hs,y],[g+m/2,hs,M],{stroke:"rgba(18,20,26,.5)",sw:.4})}),a&&(I([[x+.8,66,108],[x+.8,90,108],[x+.8,90,120],[x+.8,66,120]],B.glass,{sw:.4}),I([[x+.8,110,R],[x+.8,146,R],[x+.8,146,104],[x+.8,110,104]],"rgba(201,86,74,.28)",{sw:.9,dash:"5 3",stroke:"rgba(201,86,74,.95)"}),s.future!==!1)){const g=x+10,m=144,y=24,M=168,E="rgba(201,86,74,.11)";j(g,g+m,y,M,0,R,{fill:E,top:"rgba(201,86,74,.18)",face:E,stroke:"rgba(201,86,74,.55)",dash:"6 4",sw:.7}),j(g,g+m,y,M,R,Y,{fill:"rgba(201,86,74,.05)",top:"rgba(201,86,74,.09)",face:"rgba(201,86,74,.05)",stroke:"rgba(201,86,74,.45)",dash:"6 4",sw:.7})}if(c){const g=-ws,m=x+ws,y=-ws-6,M=F+ws+6,E=F/2,L=l?M:y,z=l?B.roofS:B.roofN;I([[g,L,J],[m,L,J],[m,E,X],[g,E,X]],z,{sw:1});for(let Z=g+13;Z<m;Z+=26)ls([Z,L,J],[Z,E,X],{stroke:"rgba(0,0,0,.16)",sw:.45});I([[g,L,J],[m,L,J],[m,L,J-8],[g,L,J-8]],"rgba(35,40,47,.9)",{sw:.6}),I([[g-3,E-5,X+2],[m+3,E-5,X+2],[m+3,E+5,X+2],[g-3,E+5,X+2]],B.ridge,{sw:.8});const ss=a?m:g;I([[ss,y,J],[ss,M,J],[ss,E,X]],"rgba(40,46,53,.55)",{sw:.6})}const bs=16;return`<svg viewBox="${`${($-bs).toFixed(1)} ${(T-bs).toFixed(1)} ${(b-$+bs*2).toFixed(1)} ${(O-T+bs*2).toFixed(1)}`}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img">${v}</svg>`}function ur(){const s=[D()],t=34,e=20,r=150,n=120;s.push(h(t,e,r,n,{fill:"none",stroke:"var(--ink)",sw:.7})),s.push(h(t,e,r/3,n,{fill:"rgba(91,115,85,.06)",stroke:"none"})),s.push(h(t+r/3,e,r/3,n,{fill:"rgba(184,134,43,.07)",stroke:"none"})),s.push(h(t+2*r/3,e,r/3,n,{fill:"rgba(176,58,46,.06)",stroke:"none"}));for(let o=1;o<3;o++)s.push(k(t+r/3*o,e,t+r/3*o,e+n,{stroke:"var(--rule)",sw:.5,dash:"2 2"})),s.push(k(t,e+n/3*o,t+r,e+n/3*o,{stroke:"var(--rule)",sw:.5,dash:"2 2"}));return s.push(u(t-4,e+4,"উচ্চ",{fs:4.2,anchor:"end",fill:"var(--ink-40)"})),s.push(u(t-4,e+n/2+2,"মধ্যম",{fs:4.2,anchor:"end",fill:"var(--ink-40)"})),s.push(u(t-4,e+n-1,"নিম্ন",{fs:4.2,anchor:"end",fill:"var(--ink-40)"})),s.push(u(t+r/6,e+n+10,"কম",{fs:4.2,fill:"var(--ink-40)"})),s.push(u(t+r/2,e+n+10,"মাঝারি",{fs:4.2,fill:"var(--ink-40)"})),s.push(u(t+5*r/6,e+n+10,"বেশি",{fs:4.2,fill:"var(--ink-40)"})),s.push(u(14,e+n/2,"প্রভাব →",{fs:4.4,fill:"var(--ink-40)",rot:-90})),[[3,1,"বন্যা",9,"var(--blue)"],[2,1,"ভূমিকম্প",9.5,"var(--red)"],[1,2,"বাতাস",8,"var(--amber)"],[3,2,"ভেজা দেয়াল",6,"var(--green)"],[2,3,"মাটি ধসা",6.4,"var(--amber)"],[1,3,"বিদ্যুৎ",5.6,"var(--red)"]].forEach(([o,i,a,l,c])=>{const d=t+r/3*(o-.5),v=e+n/3*(i-.5);s.push(S(d,v,l,{fill:c,op:.55,stroke:c,sw:.7})),s.push(u(d,v+1.6,a,{fs:3.5,fill:"var(--ink)"}))}),s.push(u(t+r/2,10,"সম্ভাবনা →",{fs:4.4,fill:"var(--ink-40)"})),s.push(u(t+r/2,e+n+24,"উপরের-ডান কোণে থাকা ঝুঁকিগুলোই নকশায় সরাসরি সমাধান করা হয়েছে",{fs:3.7,fill:"var(--ink-60)"})),P(220,190,"-6 -2 220 190",s.join(""))}function fr(){const s=[D()],t=(r,n,f,o,i,a,l="var(--blue)")=>[h(r,n,f,o,{fill:"rgba(46,76,109,.06)",stroke:l,sw:.8}),u(r+f/2,n+9,i,{fs:4.6,ff:"var(--f-bn)",fill:"var(--ink)"}),a?u(r+f/2,n+16,a,{fs:3.3,fill:"var(--ink-60)"}):""].join(""),e=(r,n,f,o,i="var(--blue)")=>{const a=Math.atan2(o-n,f-r),l=3.4;return k(r,n,f,o,{stroke:i,sw:.9})+A([[f,o],[f-l*Math.cos(a-.45),o-l*Math.sin(a-.45)],[f-l*Math.cos(a+.45),o-l*Math.sin(a+.45)]],{closed:!0,fill:i,stroke:"none"})};return s.push(t(8,132,54,22,"টিউবওয়েল","EXISTING","var(--ink)")),s.push(t(82,126,54,28,"১HP পাম্প","SUCTION","var(--red)")),s.push(t(156,10,56,26,"৫০০L ট্যাংক",`+৯'-০"`,"var(--blue)")),s.push(t(156,84,56,26,"বাথরুম","WC · শাওয়ার","var(--green)")),s.push(t(156,132,56,24,"রান্নাঘর","সিঙ্ক","var(--green)")),s.push(t(60,66,52,22,"ফ্লোট ভালভ","AUTO LEVEL","var(--blue)")),s.push(e(62,143,82,143)),s.push(A([[109,126],[109,60],[156,60]],{stroke:"var(--blue)",sw:.9})),s.push(e(150,60,156,60)),s.push(k(156,60,160,60,{stroke:"var(--blue)",sw:.9})),s.push(e(184,36,184,84)),s.push(A([[184,110],[184,120],[200,120],[200,132]],{stroke:"var(--blue)",sw:.9})),s.push(e(200,126,200,132)),s.push(k(212,97,222,97,{stroke:"var(--green)",sw:1.1,dash:"3 2"})),s.push(u(224,98,"→ সেপটিক",{fs:3.6,anchor:"start",fill:"var(--green)"})),s.push(u(224,104,`Ø4" · ২৫'+ দূরে`,{fs:3.2,anchor:"start",fill:"var(--green)"})),s.push(u(10,168,'সাকশন লাইন ১" · রাইজার ২৫মিমি · ব্রাঞ্চ ২০মিমি',{fs:3.6,anchor:"start",fill:"var(--ink-60)"})),s.push(u(10,176,"ট্যাংক থেকে শাওয়ার হেড পর্যন্ত হেড ~১.৫ মিটার",{fs:3.6,anchor:"start",fill:"var(--ink-60)"})),s.push(u(10,184,"শীতকালে ট্যাংক ও পাইপে ইনসুলেশন বা মোটা কাপড়",{fs:3.6,anchor:"start",fill:"var(--red)"})),P(240,196,"0 0 240 196",s.join(""))}function hr(){const s=[D()],t="var(--red)";return s.push(k(18,22,18,190,{stroke:t,sw:1.1})),s.push(u(24,18,"BREB · ১ ফেজ ২৩০V",{fs:3.8,anchor:"start",fill:"var(--ink-60)"})),s.push(S(18,34,7,{fill:"var(--paper-2)",stroke:t,sw:.9})),s.push(u(18,36,"kWh",{fs:3.4,fill:t})),s.push(u(30,36,"মিটার",{fs:3.6,anchor:"start",fill:"var(--ink-60)"})),s.push(h(10,54,16,12,{fill:"var(--ink)",stroke:"none"})),s.push(u(30,63,"৩২A মেইন",{fs:3.6,anchor:"start",fill:"var(--ink-60)"})),s.push(h(10,76,16,12,{fill:"var(--red)",stroke:"none"})),s.push(u(30,85,"RCCB ৩০mA",{fs:3.6,anchor:"start",fill:t})),s.push(k(18,88,18,100,{stroke:t,sw:1.1})),s.push(h(80,96,140,4,{fill:t,stroke:"none"})),s.push(k(18,100,80,100,{stroke:t,sw:1.1})),s.push(u(84,92,"SDB ৬ ওয়ে",{fs:3.8,anchor:"start",fill:"var(--ink-60)"})),[["C1 · 10A","লাইট ১.৫RM",8],["C2 · 10A","ফ্যান ১.৫RM",3],["C3 · 16A","সকেট ২.৫RM",10],["C4 · 16A","সকেট ২.৫RM",4],["C5 · 20A","পাম্প ৪RM",1],["C6 · 16A","স্পেয়ার",0]].forEach(([r,n,f],o)=>{const i=88+o*22;s.push(k(i,100,i,116,{stroke:t,sw:.9})),s.push(h(i-7,116,14,11,{fill:"var(--paper-2)",stroke:"var(--ink)",sw:.7})),s.push(u(i,123,r.split("·")[0].trim(),{fs:3.2,fill:"var(--ink)"})),s.push(u(i,134,n.split(" ")[0],{fs:3,fill:"var(--ink-40)"})),s.push(u(i,142,`${f} pts`,{fs:3,fill:"var(--ink-40)"})),s.push(k(i,146,i,154,{stroke:t,sw:.7,dash:"2 2"})),s.push(S(i,158,2.6,{stroke:t,sw:.5}))}),s.push(k(18,100,18,168,{stroke:"var(--green)",sw:1})),s.push(k(8,168,28,168,{stroke:"var(--green)",sw:1.4})),s.push(k(12,172,24,172,{stroke:"var(--green)",sw:1})),s.push(u(32,170,"আর্থ ২ রড · ৮' দূরে",{fs:3.5,anchor:"start",fill:"var(--green)"})),P(230,196,"0 0 230 200",s.join(""))}function pr(){const s=[D()],t=[["সাইট প্রস্তুতি ও লেআউট",0,1,"var(--ink-40)"],["খনন ও ফুটিং",1,2,"var(--blue)"],["প্লিন্থ বিম ও প্লিন্থ দেয়াল",3,1,"var(--blue)"],["স্যান্ড ফিল ও DPC",4,1,"var(--blue)"],['দেয়াল গাঁথুনি (৫" ব্লক)',5,3,"var(--red)"],["লিন্টেল ব্যান্ড + কিউরিং",8,1,"var(--red)"],["ট্রাস ফেব্রিকেশন",8,2,"var(--amber)"],["ট্রাস ইরেকশন ও পার্লিন",10,1,"var(--amber)"],["ছাদের শিট ও গাটার",11,1,"var(--amber)"],["প্লাস্টার (ভিতর + বাইর)",11,2,"var(--green)"],["ফ্লোর ও নেট সিমেন্ট",13,1,"var(--green)"],["দরজা-জানালা ও গ্রিল",13,2,"var(--ink-60)"],["পানি ও বিদ্যুৎ ফিটিং",14,1,"var(--ink-60)"],["রং ও ফিনিশিং",15,1,"var(--red)"],["পরিচ্ছন্নতা ও হস্তান্তর",15,1,"var(--ink)"]],e=116,r=16,n=190,f=9.4,o=n/16;for(let i=0;i<=16;i++)s.push(k(e+i*o,r-6,e+i*o,r+t.length*f+4,{stroke:i%4===0?"var(--ink-40)":"var(--rule)",sw:i%4===0?.5:.35}));return[1,5,9,13,17].forEach((i,a)=>{s.push(u(e+a*o*4,r-10,`সপ্তাহ ${i}`,{fs:3.4,fill:"var(--ink-40)"}))}),t.forEach(([i,a,l,c],d)=>{const v=r+d*f;s.push(u(e-4,v+5.4,i,{fs:3.8,anchor:"end",fill:"var(--ink-80)",ff:"var(--f-bn)"})),s.push(h(e+a*o+.4,v+1.2,l*o-.8,f-3,{fill:c,op:.82,stroke:"none"}))}),s.push(S(e+16*o,r+t.length*f+8,3,{fill:"var(--red)",stroke:"none"})),s.push(u(e+16*o-6,r+t.length*f+10,"হস্তান্তর",{fs:3.4,anchor:"end",fill:"var(--red)"})),s.push(u(e+2*o,r+t.length*f+10,"← বর্ষা এড়িয়ে নভেম্বরে শুরু",{fs:3.4,anchor:"start",fill:"var(--ink-40)"})),P(320,172,"0 0 322 172",s.join(""))}function kr(s){const t=[D()],e=Math.max(...s.map(l=>Math.max(l.brief,l.lean,l.full))),r=96,n=16,f=150,o=11;s.forEach((l,c)=>{const d=n+c*o;t.push(u(r-4,d+5,l.short,{fs:3.8,anchor:"end",fill:"var(--ink-80)",ff:"var(--f-bn)"})),t.push(h(r,d+.5,f,7.6,{fill:"var(--paper-3)",stroke:"none"})),t.push(h(r,d+.5,l.full/e*f,7.6,{fill:"var(--ink)",op:.16,stroke:"none"})),t.push(h(r,d+.5,l.lean/e*f,7.6,{fill:"var(--blue)",op:.55,stroke:"none"})),t.push(h(r,d+.5,Math.max(1.2,l.brief/e*f),7.6,{fill:"var(--red)",stroke:"none"})),t.push(u(r+f+4,d+6,`${(l.full/1e3).toFixed(0)}k`,{fs:3.4,anchor:"start",fill:"var(--ink-40)"}))});const i=n+s.length*o+8;return[["প্রাথমিক","var(--red)"],["স্বনির্ভর","var(--blue)"],["পূর্ণ","rgba(18,20,26,.16)"]].forEach(([l,c],d)=>{t.push(h(r+d*54,i,8,4,{fill:c,stroke:"none"})),t.push(u(r+d*54+11,i+4,l,{fs:3.6,anchor:"start",fill:"var(--ink-60)",ff:"var(--f-bn)"}))}),t.push(u(r-4,i+4,"",{fs:3.4})),P(320,160,"0 0 322 160",t.join(""))}const V=(s,t=document)=>t.querySelector(s),us=(s,t=document)=>[...t.querySelectorAll(s)],es=s=>s.toLocaleString("bn-BD",{maximumFractionDigits:0}),Os=s=>"৳"+s.toLocaleString("bn-BD",{maximumFractionDigits:0}),fs=[{short:"ভিত্তি ও মাটি",name:"মাটি কাটা, ভিত্তি ও প্লিন্থ",en:"Earthwork & foundation",brief:26e3,lean:62e3,full:128e3,note:"প্রাথমিকে রড নেই — কাঠামোগত ঝুঁকি"},{short:"দেয়াল ও ট্রাস",name:"দেয়াল গাঁথুনি, লিন্টেল ও MS ট্রাস",en:"Walls, lintel & truss",brief:91140,lean:132e3,full:178e3,note:"১,২২০ বর্গফুট নেট দেয়াল"},{short:"ছাদের শিট",name:"ছাদের শিট, রিজ ও ফিটিংস",en:"Roof sheeting",brief:25500,lean:52e3,full:78e3,note:"৭৭৭ বর্গফুট ছাদ · ৩৪ পিস"},{short:"দরজা-জানালা",name:"দরজা, জানালা ও নিরাপত্তা গ্রিল",en:"Doors & windows",brief:45200,lean:96e3,full:148e3,note:"৫ দরজা + ৮ জানালা + ২ ভেন্ট"},{short:"ফিনিশিং",name:"প্লাস্টার, ফ্লোর, টাইলস ও রং",en:"Finishes",brief:0,lean:168e3,full:238e3,note:"প্রাথমিকে এই খাতে শূন্য টাকা"},{short:"পানি ও পয়ঃ",name:"পানি, স্যানিটেশন ও বৃষ্টির পানি",en:"Water & sanitation",brief:25800,lean:68e3,full:84e3,note:"পাম্প, ট্যাংক, সেপটিক, গাটার"},{short:"বিদ্যুৎ",name:"বিদ্যুৎ সংযোগ, তার ও ফিটিংস",en:"Electrical",brief:21e3,lean:34e3,full:52e3,note:"BREB সংযোগ + SDB + পয়েন্ট"},{short:"শ্রম",name:"শ্রম ও সাইট ব্যবস্থাপনা",en:"Labour & management",brief:4e4,lean:13e4,full:138e3,note:"২ রাজমিস্ত্রি + ২ হেল্পার × ৬০ দিন"},{short:"কন্টিনজেন্সি",name:"অন্যান্য ও কন্টিনজেন্সি",en:"Sundries & contingency",brief:0,lean:3e4,full:31e3,note:"৫% — অপরিহার্য"}],_={brief:fs.reduce((s,t)=>s+t.brief,0),lean:fs.reduce((s,t)=>s+t.lean,0),full:fs.reduce((s,t)=>s+t.full,0)},Rs=512,cr=[["দেয়ালের ব্লক",'একো-সিমেন্ট ব্লক ১০"×৫"×৩", ৫" দেয়াল, ১:৬ মসলা',"লোকাল / ফ্লাই-অ্যাশ","৳৯–১২ /পিস","ক্লে ব্রিক ৳১০–১২"],["সিমেন্ট","PCC ১:৩:৬ · RCC ১:২:৪ · মসলা ১:৬","Seven Ring / Scan / Bashundhara","৳৪৮০–৫৪০ /ব্যাগ","—"],["বালি","স্থানীয় নদীর বালি, ধুয়ে ব্যবহার","নবীনগর / ভৈরব ঘাট","৳৪৫–৫৫ /cft","—"],["ব্রিক চিপস",'৩/৪" সাইজ, পরিষ্কার',"লোকাল","৳১১০–১৩০ /cft","—"],["রড","৬০ গ্রেড TMT, Ø১০ ও Ø১২","BSRM / AKS / Abul Khair","৳৯৫–১০৫ /কেজি","—"],["MS অ্যাংগেল","৫০×৫০×৫ ট্রাস · ৪০×৪০×৪ পার্লিন","BSRM / SSR / লোকাল","৳১০০–১১৫ /কেজি","কাট+ওয়েল্ড প্যাকেজ"],["ছাদের শিট","করগেটেড ০.৪৭মিমি কালার-কোটেড, ১১' কাট","PHP / KAI / লোকাল","৳১,২০০–১,৪০০ /পিস","০.৩৬মিমি ৳১,০৫০"],["রিজ ও বার্জ","২' লম্বা, কালো পাউডার-কোট","লোকাল","৳৩৮০–৪৫০ /পিস","—"],["ইনসুলেশন","অ্যালু ফয়েল + ২৫মিমি এয়ার গ্যাপ","লোকাল / BMS","৳৩৫–৪২ /sqft","বাদ দেওয়া যায়"],["থাই জানালা",'৪" অ্যালু সেকশন + ৫মিমি গ্লাস, স্লাইডিং',"KAI / PHP / Chung Hua","৳৫৫০–৬৫০ /sqft","লোকাল ৳৪২০"],["সেফটি গ্রিল",'১২মিমি বার @৪" + ৮মিমি ক্রস, পাউডার-কোট',"লোকাল ফেব্রিকেশন","৳১৯০–২৩০ /sqft","—"],["স্টিল দরজা",'১.২মিমি শিট + ২"×১.৫" ফ্রেম + ৮-লিভার লক',"লোকাল / RFL / Protector","৳১২,০০০–২২,০০০ /পিস","লোকাল ৳৯,৫০০"],["ফ্লোর","নেট সিমেন্ট ১:৩ + কালো পিগমেন্ট, পলিশড","—","৳৬২–৭৮ /sqft","—"],["বাথ টাইলস","ম্যাট ফিনিশ, ৪' উচ্চতা পর্যন্ত","Rak / লোকাল","৳১৪০–১৮০ /sqft","সিমেন্ট ওয়াশ"],["রং","ওয়েদার-কোট এক্রিলিক ২ কোট + প্রাইমার","Berger / Nippon","৳২২–৩৪ /sqft","সিমেন্ট পেইন্ট"],["পাম্প","১HP সেন্ট্রিফিউগাল সাকশন","Watermax / সোনালী","৳১১,৫০০–১৩,৫০০","—"],["ট্যাংক","৫০০L HDPE ৩-লেয়ার, ফ্লোট ভালভ সহ","RFL / Poly","৳৬,৫০০–৭,৫০০","—"],["পাইপ","uPVC ২৫মিমি রাইজার + ২০মিমি ব্রাঞ্চ","National / RFL","৳১১০–১৪০ /rft","—"],["SDB","৬ ওয়ে SPN + ৩২A মেইন + RCCB ৩০mA","লোকাল / Schneider","৳৬,৫০০–৭,২০০","—"],["তার","১.৫ / ২.৫ / ৪ RM, BDS মেনে","BBS / Paradise","৳৩,২০০–৩,৮০০ /কয়েল","—"],["গাটার",'৩" PVC + ৪টি ডাউনপাইপ',"লোকাল","৳২২০–২৬০ /rft","—"]],dr=[["বাজেট প্রায় ৩ গুণ কম","নিশ্চিত","উচ্চ","ফেজিং — কাঠামো আগে, ফিনিশিং পরে (১৩ ও ১৪ নম্বর)","মালিক"],["ভিত্তিতে রড নেই","নিশ্চিত","উচ্চ","প্লিন্থ বিম + লিন্টেল ব্যান্ডে ন্যূনতম ৩৫০ কেজি রড","কাঠামো ইঞ্জি."],["বর্ষায় প্লাবন","উচ্চ","উচ্চ",`প্লিন্থ +২'-০", প্লিন্থ প্রোটেকশন, সোক পিট`,"স্থপতি"],["ভূমিকম্প Z=০.২৮","মধ্যম","উচ্চ","কর্নার পোস্ট ৮টি + লিন্টেল ব্যান্ড নিরবচ্ছিন্ন","কাঠামো ইঞ্জি."],["বাতাসে ছাদ উড়ে যাওয়া","মধ্যম","মধ্যম",`J-বোল্ট @৪'-০" c/c, ২টি X-ব্রেসিং, টাই-ডাউন`,"ফেব্রিকেটর"],["মাটির বসে যাওয়া / ফাটল","মধ্যম","মধ্যম",'ভালো কম্প্যাকশন, স্ট্রিপ ফুটিং ১৬"×৯", কিউরিং',"ঠিকাদার"],["সেপটিক ও টিউবওয়েলের দূরত্ব","নিম্ন","উচ্চ","কমপক্ষে ২৫ ফুট, টিউবওয়েল সেপটিকের উজানে","স্থপতি"],["বৈদ্যুতিক শক","মধ্যম","উচ্চ","RCCB ৩০mA, ২টি আর্থ রড, বন্ডিং","ইলেকট্রিশিয়ান"],["বর্ষায় প্লাস্টার-রং নষ্ট","উচ্চ","মধ্যম","জুলাই–আগস্টে রং নয়; নভেম্বরে শুরু","ঠিকাদার"],["শ্রমিক সংকট (ধান কাটার মরসুম)","মধ্যম","নিম্ন","কর্মসূচি ধান কাটার আগে-পরে সাজানো","মালিক"]],Ds={axon:()=>As({yaw:150,pitch:14}),axonRoofOff:()=>As({yaw:+(V("#yaw2")?.value||150),pitch:40,roof:!1}),plan:()=>Ms(ds),planFurn:()=>Ms({furniture:!0,dims:!1,structure:!1,plumbing:!1,electrical:!1,future:!1}),site:Ks,roof:()=>Vs({structure:!0}),parti:_s,elevS:Ys,elevN:Xs,elevE:Zs,elevW:Qs,secAA:Js,secBB:sr,detFoot:rr,detAnchor:tr,detEave:er,detWin:nr,detSeptic:or,detTank:lr,sun:ar,rain:ir,hazard:ur,water:fr,sld:hr,gantt:pr,gapChart:()=>kr(fs)};function vr(){us("[data-draw]").forEach(s=>{const t=s.dataset.draw;if(Ds[t])try{s.innerHTML=Ds[t]()}catch(e){s.innerHTML=`<div style="padding:20px;font-family:monospace;font-size:11px;color:#b03a2e">drawing error: ${t}</div>`,console.error(t,e)}})}const ds={furniture:!0,dims:!0,structure:!1,plumbing:!1,electrical:!1,future:!0};function wr(){const s=V("#planCtrls");s&&s.addEventListener("click",t=>{const e=t.target.closest("[data-layer]");if(!e)return;const r=e.dataset.layer;ds[r]=!ds[r],e.setAttribute("aria-pressed",String(ds[r])),V("#planHost").innerHTML=Ms(ds)})}function br(){const s=V("#matTable tbody");s&&(s.innerHTML=cr.map(([o,i,a,l,c])=>`
+      <tr><td style="font-weight:500">${o}</td><td>${i}</td><td style="color:var(--ink-60)">${a}</td>
+      <td class="num">${l}</td><td style="color:var(--ink-40)">${c}</td></tr>`).join(""));const t=V("#winTable tbody");t&&(t.innerHTML=Gs.map(o=>`<tr><td class="num" style="color:var(--red)">${o.id}</td><td>${o.loc}</td>
+      <td class="num">${o.w}" × ${o.h}"</td><td class="num">${o.sill}"</td><td style="font-size:12px">${o.type}</td></tr>`).join(""));const e=V("#doorTable tbody");e&&(e.innerHTML=qs.map(o=>`<tr><td class="num" style="color:var(--red)">${o.id}</td><td>${o.loc}</td>
+      <td class="num">${o.w}" × ${o.h}"</td><td style="font-size:12px">${o.type}</td></tr>`).join(""));const r=V("#boqTable tbody");r&&(r.innerHTML=fs.map(o=>`
+      <tr>
+        <td><span style="font-weight:500">${o.name}</span><br><span style="font-size:11px;color:var(--ink-40);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase">${o.en}</span></td>
+        <td class="num" style="color:${o.brief===0?"var(--ink-40)":"var(--ink)"}">${o.brief===0?"—":es(o.brief)}</td>
+        <td class="num">${es(o.lean)}</td>
+        <td class="num">${es(o.full)}</td>
+        <td style="font-size:11.5px;color:var(--ink-60)">${o.note}</td>
+      </tr>`).join("")+`
+      <tr class="tbl-tot">
+        <td>মোট</td>
+        <td class="num">${es(_.brief)}</td>
+        <td class="num">${es(_.lean)}</td>
+        <td class="num">${es(_.full)}</td>
+        <td style="font-family:var(--f-bn);font-size:11.5px;opacity:.75">${Os(Math.round(_.brief/Rs))} / ${Os(Math.round(_.lean/Rs))} / ${Os(Math.round(_.full/Rs))} প্রতি বর্গফুট</td>
+      </tr>`);const n=V("#riskTable tbody");if(n){const o=i=>i==="উচ্চ"?"tag--red":i==="মধ্যম"?"tag--amber":"tag--green";n.innerHTML=dr.map(([i,a,l,c,d])=>`
+      <tr><td style="font-weight:500">${i}</td><td><span class="tag ${o(a)}">${a}</span></td>
+      <td><span class="tag ${o(l)}">${l}</span></td><td style="font-size:12px">${c}</td>
+      <td style="font-size:12px;color:var(--ink-40)">${d}</td></tr>`).join("")}const f=(o,i)=>{const a=V(o);a&&(a.textContent=i)};f("#kLean",es(_.lean)),f("#kFull",es(_.full)),f("#kGap","×"+(_.full/_.brief).toFixed(1).replace(".",".").replace(/\d/g,o=>"০১২৩৪৫৬৭৮৯"[+o]))}function gr(){const s=V("#yaw2");if(!s)return;let t=null;const e=()=>{const r=V('[data-draw="axonRoofOff"]');r&&(r.innerHTML=As({yaw:+s.value,pitch:40,roof:!1}))};s.addEventListener("input",()=>{if(typeof requestAnimationFrame>"u"){e();return}t&&cancelAnimationFrame(t),t=requestAnimationFrame(e)})}function mr(){if(typeof IntersectionObserver>"u"){us(".reveal").forEach(n=>n.classList.add("in"));return}const s=new IntersectionObserver(n=>{n.forEach(f=>{f.isIntersecting&&(f.target.classList.add("in"),s.unobserve(f.target))})},{threshold:.08,rootMargin:"0px 0px -40px 0px"});us(".reveal").forEach(n=>s.observe(n));const t=us("#railNav a"),e=t.map(n=>document.querySelector(n.getAttribute("href"))),r=new IntersectionObserver(n=>{n.forEach(f=>{f.isIntersecting&&t.forEach(o=>o.classList.toggle("on",o.getAttribute("href")==="#"+f.target.id))})},{threshold:0,rootMargin:"-45% 0px -50% 0px"});e.forEach(n=>n&&r.observe(n))}function $r(){const s=document.createElement("div");s.className="zoom",s.innerHTML=`
+    <div class="zoom__bar">
+      <span>ড্রয়িং দেখুন · <b data-zoom-title>PLATE</b></span>
+      <span>স্ক্রল / ড্র্যাগ করে সরান · ESC বন্ধ</span>
+      <button class="zoom__close" type="button">✕ বন্ধ করুন</button>
+    </div>
+    <div class="zoom__stage"><div data-zoom-body></div></div>`,document.body.appendChild(s);const t=s.querySelector("[data-zoom-body]"),e=s.querySelector("[data-zoom-title]");let r=null;const n=(o,i)=>{r=o,t.innerHTML=o.innerHTML,e.textContent=i||o.dataset.draw,s.classList.add("on"),document.body.style.overflow="hidden",s.querySelector(".zoom__close").focus()},f=()=>{s.classList.remove("on"),t.innerHTML="",document.body.style.overflow="",r&&r.focus()};us(".plate").forEach(o=>{const i=o.querySelector(".plate__tb"),a=o.querySelector(".plate__bd");if(!i||!a||i.querySelector(".zoomhint"))return;const l=document.createElement("div");l.className="zoomhint",l.style.cssText="padding:6px 12px;border-left:1px solid var(--rule);color:var(--red)",l.textContent="⤢ জুম",i.appendChild(l)}),us(".plate__bd").forEach(o=>{o.tabIndex=0,o.setAttribute("role","button"),o.setAttribute("aria-label","ড্রয়িং বড় করে দেখুন");const i=o.closest(".plate")?.querySelector(".plate__hd")?.innerText?.split(`
+`)[0]||o.dataset.draw;o.addEventListener("click",()=>n(o,i)),o.addEventListener("keydown",a=>{(a.key==="Enter"||a.key===" ")&&(a.preventDefault(),n(o,i))})}),s.querySelector(".zoom__close").addEventListener("click",f),s.addEventListener("click",o=>{(o.target===s||o.target.classList.contains("zoom__stage"))&&f()}),document.addEventListener("keydown",o=>{o.key==="Escape"&&s.classList.contains("on")&&f()})}vr(),br(),wr(),gr(),mr(),$r(),window.__dhs={AREA:q,SC:_,HEADS:fs}})();
+
+</script>
+</body>
+</html>
