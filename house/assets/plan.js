@@ -50,7 +50,7 @@ function bed(x, y, w, h) {
     R(x, y, w, h, { fill: 'rgba(18,20,26,.05)', stroke: 'var(--ink-40)', sw: 0.55 }),
     R(x, y, w, h * 0.22, { fill: 'rgba(18,20,26,.09)', stroke: 'var(--ink-40)', sw: 0.45 }),
     L(x + w * 0.06, y + h * 0.26, x + w * 0.94, y + h * 0.26, { stroke: 'var(--ink-40)', sw: 0.4, dash: '2 1.5' }),
-    T(x + w / 2, y + h * 0.62, 'BED 5\'-0"×6\'-6"', { fs: 4.2, fill: 'var(--ink-40)' }),
+    T(x + w / 2, y + h + 5.5, 'BED 5\'-0"×6\'-6"', { fs: 4.2, fill: 'var(--ink-40)' }),
   ].join('');
 }
 
@@ -196,21 +196,20 @@ export function floorPlan(active = {}) {
     out.push(C(320, 148, 8, { stroke: 'var(--ink-40)', sw: 0.45 }));
     /* sitting */
     out.push(furn(134, 92, 28, 62, 'SOFA 3'));
-    out.push(furn(170, 106, 36, 20, 'CT'));
+    out.push(furn(170, 106, 36, 20, ''));
     out.push(furn(234, 96, 15, 56, 'TV'));
     out.push(furn(182, 78, 46, 30, 'DINING 4'));
     out.push(furn(136, 168, 26, 14, 'SHOE'));
     /* bath */
     out.push(wc(156, 44));
     out.push(basin(166, 12));
-    out.push(furn(133, 6, 30, 34, 'SHOWER', { fill: 'rgba(46,76,109,.06)' }));
+    out.push(furn(133, 6, 30, 34, '', { fill: 'rgba(46,76,109,.06)' }));
     out.push(C(150, 60, 2.4, { stroke: 'var(--ink-40)', sw: 0.4, dash: '1 1' }));
     /* kitchen */
     out.push(furn(189, 6, 63, 22, 'COUNTER 24"'));
     out.push(furn(189, 28, 22, 20, ''));
     out.push(sink(196, 9));
-    out.push(hob(191, 30, 20, 16));
-    out.push(furn(230, 30, 20, 22, 'FRIDGE'));
+    out.push(furn(230, 30, 20, 22, ''));
   }
 
   /* ---- structure ---- */
@@ -226,7 +225,7 @@ export function floorPlan(active = {}) {
       const x = (G.W / 8) * i;
       out.push(L(x, -6, x, G.D + 6, { stroke: 'var(--red)', sw: 0.4, dash: '1.5 3', op: 0.55 }));
     }
-    out.push(T(G.W / 2, G.D + 13, 'MS ট্রাস @ 4\'-0" c/c  (৯টি ট্রাস)', { fs: 4.4, fill: 'var(--red)' }));
+    out.push(T(-12, -25, 'MS ট্রাস @ 4\'-0" c/c — ৯টি ট্রাস', { fs: 4.4, anchor: 'start', fill: 'var(--red)' }));
   }
 
   /* ---- plumbing ---- */
@@ -263,16 +262,16 @@ export function floorPlan(active = {}) {
     const sock = (x, y) => `<path d="M ${x - 3} ${y} a 3 3 0 0 1 6 0" fill="none" stroke="${red}" stroke-width="0.55"/>${L(x, y, x, y + 3, { stroke: red, sw: 0.5 })}`;
     const sw = (x, y) => [R(x - 2, y - 2, 4, 4, { fill: 'var(--paper-2)', stroke: red, sw: 0.5 }), C(x, y, 0.8, { fill: red, stroke: 'none' })].join('');
     /* bedroom 1 */
-    out.push(light(67, 44)); out.push(fan(67, 106));
+    out.push(light(67, 40)); out.push(fan(100, 52));
     out.push(light(67, 150));
     out.push(sock(120, 40)); out.push(sock(120, 60)); out.push(sock(12, 150));
     out.push(sw(126, 118));
     /* bedroom 2 */
-    out.push(light(317, 44)); out.push(fan(317, 106)); out.push(light(317, 150));
+    out.push(light(317, 40)); out.push(fan(280, 52)); out.push(light(317, 152));
     out.push(sock(262, 40)); out.push(sock(262, 60)); out.push(sock(360, 150));
     out.push(sw(258, 86));
     /* sitting */
-    out.push(light(192, 96)); out.push(fan(192, 140)); out.push(light(192, 172));
+    out.push(light(192, 92)); out.push(fan(215, 168)); out.push(light(192, 186));
     out.push(sock(136, 130)); out.push(sock(230, 78)); out.push(sock(246, 168));
     out.push(sw(178, 178));
     /* kitchen + bath */
@@ -295,22 +294,25 @@ export function floorPlan(active = {}) {
   out.push(roomLabel(67, 96, 'বেডরুম ১', 'Bedroom 01', '10\'-4" × 15\'-2"', r1(AREA.bed1)));
   out.push(roomLabel(317, 96, 'বেডরুম ২', 'Bedroom 02', '10\'-4" × 15\'-2"', r1(AREA.bed2)));
   out.push(roomLabel(192, 122, 'বসার ঘর', 'Living / Sit-out', '10\'-0" × 9\'-9"', r1(AREA.sit)));
-  out.push(T(159, 62, 'বাথরুম', { fs: 6.6, ff: 'var(--f-bn)', fill: 'var(--ink)' }));
-  out.push(T(159, 69, '4\'-6"×5\'-2" · ' + r1(AREA.bath) + ' SQFT', { fs: 4.4, fill: 'var(--ink-60)' }));
-  out.push(T(220, 62, 'রান্নাঘর', { fs: 6.6, ff: 'var(--f-bn)', fill: 'var(--ink)' }));
-  out.push(T(220, 69, '5\'-3"×5\'-2" · ' + r1(AREA.kit) + ' SQFT', { fs: 4.4, fill: 'var(--ink-60)' }));
+  /* the two service rooms are small — labels sit in the clear band above the
+     door swings, at a size that still reads when printed at 1:50 */
+  /* the two service rooms are small: the name sits in the wet strip at the top,
+     the size sits just under it — clear of the door swings and fixtures */
+  out.push(T(159, 21, 'বাথরুম', { fs: 5.6, ff: 'var(--f-bn)', fill: 'var(--ink)' }));
+  out.push(T(159, 27, '4\'-6"×5\'-2"', { fs: 4.1, fill: 'var(--ink-60)' }));
+  out.push(T(206, 38, 'রান্নাঘর', { fs: 5.6, ff: 'var(--f-bn)', fill: 'var(--ink)' }));
+  out.push(T(206, 43.5, '5\'-3"×5\'-2"', { fs: 4.1, fill: 'var(--ink-60)' }));
 
   /* ---- dimensions ---- */
   if (on('dims')) {
-    const dy = 208;
-    out.push(dimH(0, 384, dy, '32\'-0"', { fs: 6.4 }));
-    const chain = [0, 5, 129, 132, 252, 255, 379, 384].slice(0, 8);
-    /* simplified chain */
-    out.push(dimH(5, 129, dy - 12, '10\'-4"'));
-    out.push(dimH(132, 252, dy - 12, '10\'-0"'));
-    out.push(dimH(255, 379, dy - 12, '10\'-4"'));
-    out.push(dimH(132, 186, dy - 24, '4\'-6"', { fs: 5.2 }));
-    out.push(dimH(189, 252, dy - 24, '5\'-3"', { fs: 5.2 }));
+    /* four clean rows under the plan, outer-most last:
+       196 openings · 206 service rooms · 216 rooms · 228 overall */
+    out.push(dimH(0, 384, 228, '32\'-0"', { fs: 6.4 }));
+    out.push(dimH(5, 129, 216, '10\'-4"'));
+    out.push(dimH(132, 252, 216, '10\'-0"'));
+    out.push(dimH(255, 379, 216, '10\'-4"'));
+    out.push(dimH(132, 186, 206, '4\'-6"', { fs: 5.2 }));
+    out.push(dimH(189, 252, 206, '5\'-3"', { fs: 5.2 }));
     out.push(dimV(5, 67, -18, '5\'-2"'));
     out.push(dimV(70, 187, -18, '9\'-9"'));
     out.push(dimV(0, 192, -36, '16\'-0"', { fs: 6.4 }));
@@ -455,8 +457,7 @@ export function roofPlan(active = {}) {
     out.push(C(x, OY - 9, 3, { fill: 'var(--blue)', stroke: 'none' }));
     out.push(C(x, OY + RH + 9, 3, { fill: 'var(--blue)', stroke: 'none' }));
   });
-  out.push(T(OX + RW / 2, OY - 14, 'GUTTER 3" PVC + DOWNPIPE 3" → SOAK PIT', { fs: 4.2, fill: 'var(--blue)' }));
-  out.push(T(OX + RW / 2, OY + RH + 18, 'GUTTER 3" PVC + DOWNPIPE 3" → SOAK PIT', { fs: 4.2, fill: 'var(--blue)' }));
+  out.push(T(OX + RW / 2, OY + RH + 20, 'GUTTER 3" PVC · ৪টি DOWNPIPE 3" · → SOAK PIT', { fs: 4.4, fill: 'var(--blue)' }));
 
   /* slope arrows */
   [[OX + 90, OY + 26], [OX + 250, OY + 26], [OX + 350, OY + 26]].forEach(([x, y]) => {

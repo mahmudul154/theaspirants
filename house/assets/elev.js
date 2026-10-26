@@ -601,7 +601,7 @@ export function detailSeptic() {
   out.push(L(120, gy + 34, 190, gy + 34, { stroke: 'var(--green)', sw: 2 }));
   /* vent pipe */
   out.push(L(100, gy + 20, 100, gy - 40, { stroke: 'var(--ink)', sw: 0.8 }));
-  out.push(T(104, gy - 42, '২" ভেন্ট পাইপ', { fs: 3.9, anchor: 'start', fill: 'var(--ink-60)' }));
+  out.push(T(112, gy - 26, '২" ভেন্ট পাইপ', { fs: 3.9, anchor: 'start', fill: 'var(--ink-60)' }));
 
   out.push(T(150, 16, 'সেপটিক ট্যাংক ও সোক পিট', { fs: 7, ff: 'var(--f-bn)', fill: 'var(--ink)' }));
   out.push(T(150, 26, 'SEPTIC TANK + SOAK PIT · 1:20', { fs: 4.2, fill: 'var(--ink-40)', ls: '1.2' }));

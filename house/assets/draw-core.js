@@ -57,7 +57,14 @@ function contentBox(inner) {
     } else if (tag === 'text') {
       const x = +get('x'), y = +get('y');
       const fs = +(get('font-size') || 6);
-      const w = Math.max(2, textContent.length * fs * 0.56);
+      /* Text width estimate for the viewBox. JetBrains Mono advances a full
+         0.6 em per glyph and every technical label is letter-spaced, while
+         Bengali clusters run wider still — under-estimating clips the label,
+         over-estimating only adds margin, so err generous. */
+      const mono = /f-mono/.test(attr);
+      const ls = parseFloat((attr.match(/letter-spacing="([-\d.]+)"/) || [0, 0])[1]) || 0;
+      const perChar = mono ? 0.62 : 0.56;
+      const w = Math.max(2, textContent.length * (fs * perChar + ls) + fs * 0.2);
       const end = /text-anchor="end"/.test(attr);
       const mid = /text-anchor="middle"/.test(attr);
       const x0 = end ? x - w : mid ? x - w / 2 : x;
