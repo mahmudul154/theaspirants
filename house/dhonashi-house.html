@@ -531,6 +531,21 @@ if (location.protocol === 'file:') {
 </script>
 </head>
 <body>
+<noscript>
+  <div style="padding:16px 20px;background:#12141a;color:#f4f1ea;font:14px/1.6 'Hind Siliguri',system-ui,sans-serif">
+    ড্রয়িংগুলো দেখতে জাভাস্ক্রিপ্ট দরকার। অনুগ্রহ করে ব্রাউজারে জাভাস্ক্রিপ্ট চালু করে পেজটি রিফ্রেশ করুন।
+  </div>
+</noscript>
+<div id="jsFail" style="display:none;padding:12px 16px;background:#b03a2e;color:#fff;font:13px/1.6 system-ui,sans-serif"></div>
+<script>
+  window.addEventListener('error', function (e) {
+    var el = document.getElementById('jsFail');
+    if (!el) return;
+    el.style.display = 'block';
+    el.textContent = 'স্ক্রিপ্ট ত্রুটি: ' + (e.message || 'unknown') +
+      ' — অনুগ্রহ করে dhonashi-house.html ফাইলটি ব্যবহার করুন।';
+  });
+</script>
 
 <!-- ================= RAIL ================= -->
 <aside class="rail">
